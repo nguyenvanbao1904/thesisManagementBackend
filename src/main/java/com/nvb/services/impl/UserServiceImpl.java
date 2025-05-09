@@ -8,6 +8,10 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.nvb.pojo.User;
 import com.nvb.repositories.UserRepository;
+import com.nvb.services.AcademicsStaffService;
+import com.nvb.services.AdminService;
+import com.nvb.services.LecturerService;
+import com.nvb.services.StudentService;
 import com.nvb.services.UserService;
 import java.io.IOException;
 import java.util.HashSet;
@@ -36,6 +40,14 @@ public class UserServiceImpl implements UserService{
     private BCryptPasswordEncoder passwordEncoder;
     @Autowired
     private Cloudinary cloudinary;
+    @Autowired 
+    private AdminService adminService;
+    @Autowired
+    private AcademicsStaffService academicsStaffService;
+    @Autowired
+    private LecturerService lecturerService;
+    @Autowired
+    private StudentService studentService;
 
     @Override
     public User getUserByUsername(String username) {
@@ -62,7 +74,26 @@ public class UserServiceImpl implements UserService{
             }
         }
         
-        return this.userRepository.addUser(u);
+        this.userRepository.addUser(u);
+        
+        switch (params.get("role")) {
+            case "ROLE_ADMIN":
+                adminService.addAdmin(params);
+                break;
+            case "ROLE_ACADEMICSTAFF":
+                academicsStaffService.addAcademicStaff(params);
+                break;
+            case "ROLE_LECTURER":
+                lecturerService.addLecturer(params);
+                break;
+            case "ROLE_STUDENT":
+                studentService.addStudent(params);
+                break;
+            default:
+                throw new AssertionError();
+        }
+        
+        return u;
     }
 
     @Override

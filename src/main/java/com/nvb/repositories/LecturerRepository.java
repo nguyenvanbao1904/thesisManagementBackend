@@ -4,16 +4,12 @@
  */
 package com.nvb.repositories;
 
-import com.nvb.pojo.Major;
-import java.util.List;
-import java.util.Map;
+import com.nvb.pojo.Lecturer;
 
 /**
  *
  * @author nguyenvanbao
  */
-public interface MajorRepository {
-    Major addMajor(Major major);
-    List<Major> getMajors(Map<String, String> params);
-    Major getMajorById(int majorId);
+public interface LecturerRepository {
+    Lecturer addLecturer(Lecturer lecturer);
 }

@@ -4,7 +4,9 @@
  */
 package com.nvb.controllers;
 
+import com.nvb.dto.UserDTO;
 import com.nvb.pojo.User;
+import com.nvb.services.MajorService;
 import com.nvb.services.UserService;
 import java.util.HashMap;
 import org.springframework.ui.Model;
@@ -26,7 +28,9 @@ public class UserController {
 
     @Autowired
     private UserService userDetailsService;
-
+    
+    @Autowired
+    private MajorService majorService;
     @GetMapping("/login")
     public String login(Model model, @RequestParam Map<String, String> params) {
         String error = params.get("error");
@@ -44,12 +48,13 @@ public class UserController {
 
     @GetMapping("/users/add")
     public String addView(Model model) {
-        model.addAttribute("user", new User());
+        model.addAttribute("user", new UserDTO());
+        model.addAttribute("majors", majorService.getMajors(null));
         return "users/add";
     }
 
     @PostMapping("/users/add")
-    public String addUser(@ModelAttribute("user") User user,
+    public String addUser(@ModelAttribute("user") UserDTO user,
             @RequestParam("file") MultipartFile avatar,
             Model model) {
         Map<String, String> params = new HashMap<>();
@@ -60,6 +65,11 @@ public class UserController {
         params.put("email", user.getEmail());
         params.put("phone", user.getPhone());
         params.put("role", user.getRole());
+        params.put("studentId", user.getStudentId());
+        params.put("majorId", user.getMajorId().toString());
+        params.put("academicTitle", user.getAcademicTitle());
+        params.put("academicDegree", user.getAcademicDegree());
+
 
         userDetailsService.addUser(params, avatar);
 

@@ -33,5 +33,10 @@ public class MajorServiceImpl implements MajorService{
     public List<Major> getMajors(Map<String, String> params) {
         return majorRepository.getMajors(params);
     }
+
+    @Override
+    public Major getMajorById(int majorId) {
+        return majorRepository.getMajorById(majorId);
+    }
     
 }

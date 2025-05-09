@@ -10,6 +10,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
@@ -43,8 +44,9 @@ public class AcademicStaff implements Serializable {
     private Set<Committee> committees;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdBy")
     private Set<EvaluationCriteriaCollection> evaluationCriteriaCollections;
-    @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "id")
     @OneToOne(optional = false)
+    @MapsId
     private User user;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdBy")
     private Set<Thesis> theses;

@@ -41,8 +41,8 @@ public class MajorRepositoryImpl implements MajorRepository{
 
     @Override
     public List<Major> getMajors(Map<String, String> params) {
+        Session s = factory.getObject().getCurrentSession();
         
-        Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder buider = s.getCriteriaBuilder();
         CriteriaQuery<Major> query = buider.createQuery(Major.class);
         Root root = query.from(Major.class);
@@ -81,6 +81,12 @@ public class MajorRepositoryImpl implements MajorRepository{
             q.setFirstResult(start);
         }
         return q.getResultList();
+    }
+
+    @Override
+    public Major getMajorById(int majorId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.get(Major.class, majorId);
     }
     
 }

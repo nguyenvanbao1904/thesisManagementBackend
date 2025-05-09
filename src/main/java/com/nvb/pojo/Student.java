@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToOne;
@@ -56,9 +57,10 @@ public class Student implements Serializable {
     private Set<Thesis> theses;
     @JoinColumn(name = "major_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
-    private Major majorId;
-    @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
+    private Major major;
+    @JoinColumn(name = "id")
     @OneToOne(optional = false)
+    @MapsId
     private User user;
 
     public Student() {
@@ -98,12 +100,12 @@ public class Student implements Serializable {
         this.theses = theses;
     }
 
-    public Major getMajorId() {
-        return majorId;
+    public Major getMajor() {
+        return major;
     }
 
-    public void setMajorId(Major majorId) {
-        this.majorId = majorId;
+    public void setMajor(Major major) {
+        this.major = major;
     }
 
     public User getUser() {

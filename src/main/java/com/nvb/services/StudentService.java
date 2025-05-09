@@ -4,16 +4,13 @@
  */
 package com.nvb.services;
 
-import com.nvb.pojo.Major;
-import java.util.List;
+import com.nvb.pojo.Student;
 import java.util.Map;
 
 /**
  *
  * @author nguyenvanbao
  */
-public interface MajorService {
-    Major addMajor(Major major);
-    List<Major> getMajors(Map<String, String> params);
-    Major getMajorById(int majorId);
+public interface StudentService {
+    Student addStudent(Map<String, String> params);
 }

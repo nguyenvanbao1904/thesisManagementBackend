@@ -1,8 +1,36 @@
-<!<!doctype html>
-<html xmls:th="http://wwww.thymeleaf.org">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
     <head>
         <title>Quản lý người dùng</title>
     <th:block th:replace="/base/base :: bootstrap" ></th:block>
+    <script>
+        function toggleRoleFields() {
+            // Ẩn tất cả các phần của vai trò trước
+            document.getElementById('studentFields').style.display = 'none';
+            document.getElementById('lecturerFields').style.display = 'none';
+
+            // Hiển thị phần tương ứng với vai trò được chọn
+            const selectedRole = document.getElementById('role').value;
+            console.log("Selected role:", selectedRole); // Debug log
+            if (selectedRole === 'ROLE_STUDENT') {
+                document.getElementById('studentFields').style.display = 'block';
+            } else if (selectedRole === 'ROLE_LECTURER') {
+                document.getElementById('lecturerFields').style.display = 'block';
+            }
+        }
+
+        // Kích hoạt khi trang được tải
+        window.onload = function () {
+            // Gọi hàm lần đầu khi trang tải
+            toggleRoleFields();
+
+            // Đảm bảo gắn sự kiện onchange cho dropdown role
+            const roleSelect = document.getElementById('role');
+            if (roleSelect) {
+                roleSelect.addEventListener('change', toggleRoleFields);
+            }
+        };
+    </script>
 </head>
 <body>
     <div th:replace="/base/base :: header"></div> <main>
@@ -43,7 +71,42 @@
                         <option value="ROLE_STUDENT">Sinh viên</option>
                     </select>
                 </div>
+                <!-- Phần thông tin dành cho sinh viên -->
+                <div id="studentFields" class="border p-3 mb-3 rounded bg-light" style="display: none;">
+                    <h4 class="mb-3">Thông tin sinh viên</h4>
+                    <div class="mb-3">
+                        <label for="studentId" class="form-label">Mã sinh viên:</label>
+                        <input type="text" class="form-control" id="studentId" placeholder="Mã sinh viên" th:field="*{studentId}" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="major" class="form-label">Ngành học:</label>
+                        <select class="form-select" id="major" th:field="*{majorId}">
+                            <option value="" disabled selected>-- Chọn ngành --</option>
+                            <option th:each="major : ${majors}" th:value="${major.id}" th:text="${major.name}"></option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Phần thông tin dành cho giảng viên -->
+                <div id="lecturerFields" class="border p-3 mb-3 rounded bg-light" style="display: none;">
+                    <h4 class="mb-3">Thông tin giảng viên</h4>
+                    <div class="mb-3">
+                        <label for="academicTitle" class="form-label">Học hàm:</label>
+                        <select class="form-select" id="academicTitle" th:field="*{academicTitle}">
+                            <option value="">-- Không có --</option>
+                            <option value="ASSOCIATE_PROFESSOR">Phó giáo sư</option>
+                            <option value="PROFESSOR">Giáo sư</option>
+                        </select>
+                    </div>
 
+                    <div class="mb-3">
+                        <label for="academicDegree" class="form-label">Học vị:</label>
+                        <select class="form-select" id="academicDegree" th:field="*{academicDegree}" required>
+                            <option value="" disabled selected>-- Chọn học vị --</option>
+                            <option value="MASTER">Thạc sĩ</option>
+                            <option value="DOCTOR">Tiến sĩ</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="mb-3">
                     <label for="avatar" class="form-label">Ảnh đại diện:</label>
                     <input type="file" class="form-control" th:field="*{file}" id="avatar" />

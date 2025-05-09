@@ -1,5 +1,5 @@
-<!<!doctype html>
-<html xmls:th="http://wwww.thymeleaf.org"
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
     <head>
         <title>Trang chu</title>
@@ -21,7 +21,7 @@
 
             <div class="collapse navbar-collapse" id="navbarContent" sec:authorize="isAuthenticated()">
                 <!-- Menu trái -->
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li>
                         <a class="nav-link" th:href="@{/users}">Quản lý người dùng</a>
                     </li>

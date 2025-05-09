@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
@@ -46,21 +47,21 @@ public class Lecturer implements Serializable {
     @NotNull
     @Column(name = "id")
     private Integer id;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 19)
-    @Column(name = "academic_title")
+    @Size(max = 19)
+    @Column(name = "academic_title", nullable = true)
     private String academicTitle;
     @Size(max = 6)
-    @Column(name = "academic_degree")
+    @Column(name = "academic_degree", nullable = false)
+    @NotNull
     private String academicDegree;
     @JoinTable(name = "thesis_supervisors", joinColumns = {
         @JoinColumn(name = "lecturer_id", referencedColumnName = "id")}, inverseJoinColumns = {
         @JoinColumn(name = "thesis_id", referencedColumnName = "id")})
     @ManyToMany
     private Set<Thesis> thesesSupervisors;
-    @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "id")
     @OneToOne(optional = false)
+    @MapsId
     private User user;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lecturer")
     private Set<CommitteeMember> committeeMembers;

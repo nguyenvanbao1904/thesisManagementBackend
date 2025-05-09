@@ -49,7 +49,7 @@ public class Major implements Serializable {
     @NotNull
     @Column(name = "is_active")
     private boolean isActive = true;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "majorId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "major")
     private Set<Student> students;
 
     public Major() {
