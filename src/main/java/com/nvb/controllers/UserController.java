@@ -7,7 +7,6 @@ package com.nvb.controllers;
 import com.nvb.pojo.User;
 import com.nvb.services.UserService;
 import java.util.HashMap;
-import java.util.List;
 import org.springframework.ui.Model;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +33,7 @@ public class UserController {
         if (error != null) {
             model.addAttribute("error", "Login fail");
         }
-        return "login";
+        return "users/login";
     }
 
     @GetMapping("/users")

@@ -1,0 +1,29 @@
+<!<!doctype html>
+<html xmls:th="http://wwww.thymeleaf.org">
+    <head>
+        <title>Quản lý ngành</title>
+    <th:block th:replace="/base/base :: bootstrap" ></th:block>
+</head>
+<body>
+    <div th:replace="/base/base :: header"></div> <main>
+        <div class="container mt-5 mb-5">
+            <h1 class="text-center mb-4">Thêm hoặc cập nhật ngành</h1>
+            <form method="post" th:action="@{/majors/add}" th:object="${major}" class="border p-4 rounded shadow">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name: </label>
+                    <input type="text" class="form-control" id="name" placeholder="name" th:field="*{name}" required />
+                </div>
+
+                <div class="text-center">
+                    <button class="btn btn-success mt-3" type="submit">
+                        <span th:if="${major.id == null}">Thêm ngành</span>
+                        <span th:unless="${major.id == null}">Cập nhật ngành</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <div th:replace="/base/base :: footer"></div>
+</body>
+</html>

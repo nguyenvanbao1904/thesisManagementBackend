@@ -22,7 +22,11 @@
             <div class="collapse navbar-collapse" id="navbarContent" sec:authorize="isAuthenticated()">
                 <!-- Menu trái -->
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">">
+                    <li>
                         <a class="nav-link" th:href="@{/users}">Quản lý người dùng</a>
+                    </li>
+                    <li>
+                        <a class="nav-link" th:href="@{/majors}">Quản lý ngành</a>
                     </li>
                 </ul>
 

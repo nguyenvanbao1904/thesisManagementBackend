@@ -1,0 +1,63 @@
+<!<!doctype html>
+<html xmls:th="http://wwww.thymeleaf.org">
+    <head>
+        <title>Quản lý ngành</title>
+    <th:block th:replace="/base/base :: bootstrap" ></th:block>
+</head>
+<body>
+    <div th:replace="/base/base :: header"></div> 
+    <main>
+        <div class="container">
+            <h1>Quản lý ngành</h1>
+            <a th:href="@{/majors/add}" class="btn btn-info mt-2">Thêm ngành</a>
+            <hr/>
+            <form th:action="@{/majors}">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="mb-3 mt-3">
+                            <input type="text" class="form-control" name="name" placeholder="name" />
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="mb-3 mt-3">
+                            <select class="form-select" name="isActive">
+                                <option value="" disabled selected>-- Chọn trạng thái --</option>
+                                <option value="True">True</option>
+                                <option value="False">False</option>
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="mb-3 mt-3">
+                    <button class="btn btn-info" type="submit">Tìm kiếm</button>
+                </div>
+            </form>
+            <hr  />   
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>name</th>
+                        <th>isActive</th>
+                        <th></th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="m: ${majors}">
+                        <td th:text="${m.id}"></td>
+                        <td th:text="${m.name}"></td>
+                        <td th:text="${m.isActive}"></td>
+                        <td>
+                            <button class="btn btn-danger">&times;</button>
+                            <a class="btn btn-success">&#128296;️</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <div th:replace="/base/base :: footer"></div>
+</body>
+</html>

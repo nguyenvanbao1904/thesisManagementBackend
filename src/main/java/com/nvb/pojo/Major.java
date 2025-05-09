@@ -48,7 +48,7 @@ public class Major implements Serializable {
     @Basic(optional = false)
     @NotNull
     @Column(name = "is_active")
-    private boolean isActive;
+    private boolean isActive = true;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "majorId")
     private Set<Student> students;
 
