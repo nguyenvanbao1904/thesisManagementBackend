@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -23,6 +24,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.core.env.Environment;
 
 /**
  *
@@ -36,7 +38,11 @@ import org.springframework.security.web.SecurityFilterChain;
     "com.nvb.repositories",
     "com.nvb.services"
 })
+@PropertySource("classpath:application.properties")
 public class SpringSercurityConfigs {
+    
+    @Autowired
+    private Environment env;
     
     @Autowired
     private UserDetailsService userDetailsService;
@@ -78,9 +84,9 @@ public class SpringSercurityConfigs {
     public Cloudinary cloudinary() {
         Cloudinary cloudinary
                 = new Cloudinary(ObjectUtils.asMap(
-                        "cloud_name", "dxcux00kk",
-                        "api_key", "251671149248596",
-                        "api_secret", "DnT4qIXRKdXBh5qtbh4Sh6qMVoo",
+                        "cloud_name", env.getProperty("cloudinary.cloud_name"),
+                        "api_key", env.getProperty("cloudinary.api_key"),
+                        "api_secret", env.getProperty("cloudinary.api_secret"),
                         "secure", true));
         return cloudinary;
     }
