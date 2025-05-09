@@ -1,0 +1,70 @@
+<!<!doctype html>
+<html xmls:th="http://wwww.thymeleaf.org">
+    <head>
+        <title>Quản lý người dùng</title>
+    <th:block th:replace="/base/base :: bootstrap" ></th:block>
+</head>
+<body>
+    <div th:replace="/base/base :: header"></div> <main>
+        <div class="container mt-5 mb-5">
+            <h1 class="text-center mb-4">Thêm người dùng</h1>
+            <form method="post" th:action="@{/users/add}" th:object="${user}" enctype="multipart/form-data" class="border p-4 rounded shadow">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username:</label>
+                    <input type="text" class="form-control" id="username" placeholder="Username" th:field="*{username}" required />
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password:</label>
+                    <input type="password" class="form-control" id="password" placeholder="Password" th:field="*{password}" required />
+                </div>
+
+                <div class="mb-3">
+                    <label for="firstName" class="form-label">First Name:</label>
+                    <input type="text" class="form-control" id="firstName" placeholder="First name" th:field="*{firstName}" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="lastName" class="form-label">Last Name:</label>
+                    <input type="text" class="form-control" id="lastName" placeholder="Last name" th:field="*{lastName}" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email:</label>
+                    <input type="email" class="form-control" id="email" placeholder="Email" th:field="*{email}" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="role" class="form-label">Vai trò:</label>
+                    <select class="form-select" th:field="*{role}" id="role" required>
+                        <option value="" disabled selected>-- Chọn vai trò --</option>
+                        <option value="ROLE_ACADEMICSTAFF">Giáo vụ</option>
+                        <option value="ROLE_LECTURER">Giảng viên</option>
+                        <option value="ROLE_STUDENT">Sinh viên</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="avatar" class="form-label">Ảnh đại diện:</label>
+                    <input type="file" class="form-control" th:field="*{file}" id="avatar" />
+                    <div class="mt-2">
+                        <img th:if="${user.avatarUrl != null}" th:src="@{${user.avatarUrl}}" class="img-thumbnail" style="max-width: 100px;" />
+                    </div>
+                </div>
+
+                <input type="hidden" th:field="*{id}" />
+                <input type="hidden" th:field="*{avatarUrl}" />
+
+                <div class="text-center">
+                    <button class="btn btn-success mt-3" type="submit">
+                        <span th:if="${user.id == null}">Thêm người dùng</span>
+                        <span th:unless="${user.id == null}">Cập nhật người dùng</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <div th:replace="/base/base :: footer"></div>
+</body>
+</html>

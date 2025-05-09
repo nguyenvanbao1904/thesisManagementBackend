@@ -11,6 +11,7 @@ import com.nvb.repositories.UserRepository;
 import com.nvb.services.UserService;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ public class UserServiceImpl implements UserService{
         u.setPhone(params.get("phone"));
         u.setUsername(params.get("username"));
         u.setPassword(this.passwordEncoder.encode(params.get("password")));
-        u.setRole("ROLE_USER");
+        u.setRole(params.get("role"));
         
         if (!avatar.isEmpty()) {
             try {
@@ -81,6 +82,11 @@ public class UserServiceImpl implements UserService{
         
         return new org.springframework.security.core.userdetails.User(
                 u.getUsername(), u.getPassword(), authorities);
+    }
+
+    @Override
+    public List<User> getUsers(Map<String, String> params) {
+        return this.userRepository.getUsers(params);
     }
     
 }

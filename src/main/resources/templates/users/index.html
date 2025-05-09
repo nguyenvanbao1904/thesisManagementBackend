@@ -1,0 +1,86 @@
+<!<!doctype html>
+<html xmls:th="http://wwww.thymeleaf.org">
+    <head>
+        <title>Quản lý người dùng</title>
+    <th:block th:replace="/base/base :: bootstrap" ></th:block>
+</head>
+<body>
+    <div th:replace="/base/base :: header"></div> 
+    <main>
+        <div class="container">
+            <h1>Quản lý người dùng</h1>
+            <a th:href="@{/users/add}" class="btn btn-info mt-2">Thêm người dùng</a>
+            <hr/>
+            <form th:action="@{/users}">
+            <div class="mb-3 mt-3">
+                <input type="text" class="form-control" name="username" placeholder="UserName=" />
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <div class="mb-3 mt-3">
+                        <select class="form-select" name="role">
+                            <option value="" disabled selected>-- Chọn vai trò --</option>
+                            <option value="ROLE_ACADEMICSTAFF">Giáo vụ</option>
+                            <option value="ROLE_LECTURER">Giảng viên</option>
+                            <option value="ROLE_STUDENT">Sinh viên</option>
+                            <option value="ROLE_ADMIN">Quản trị viên</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="mb-3 mt-3">
+                        <select class="form-select" name="isActive">
+                            <option value="" disabled selected>-- Chọn trạng thái --</option>
+                            <option value="True">True</option>
+                            <option value="False">False</option>
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+            <div class="mb-3 mt-3">
+                <button class="btn btn-info" type="submit">Tìm kiếm</button>
+            </div>
+        </form>
+        <hr  />   
+            <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Id</th>
+                    <th>Username</th>
+                    <th>first name</th>
+                    <th>last name</th>
+                    <th>email</th>
+                    <th>phone</th>
+                    <th>role</th>
+                    <th>isActive</th>
+                    <th></th>
+                        
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="u: ${users}">
+                    <td>
+                        <img th:src="${u.avatarUrl}" width="75" />
+                    </td>
+                    <td th:text="${u.id}"></td>
+                    <td th:text="${u.username}"></td>
+                    <td th:text="${u.firstName}"></td>
+                    <td th:text="${u.lastName}"></td>
+                    <td th:text="${u.email}"></td>
+                    <td th:text="${u.phone}"></td>
+                    <td th:text="${u.role}"></td>
+                    <td th:text="${u.isActive}"></td>
+                    <td>
+                        <button class="btn btn-danger">&times;</button>
+                        <a class="btn btn-success">&#128296;️</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+    </main>
+    <div th:replace="/base/base :: footer"></div>
+</body>
+</html>

@@ -19,25 +19,12 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarContent">
+            <div class="collapse navbar-collapse" id="navbarContent" sec:authorize="isAuthenticated()">
                 <!-- Menu trái -->
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" th:href="@{/about}">Giới thiệu</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/products}">Sản phẩm</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/contact}">Liên hệ</a>
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">">
+                        <a class="nav-link" th:href="@{/users}">Quản lý người dùng</a>
                     </li>
                 </ul>
-
-                <!-- Form tìm kiếm -->
-                <form class="d-flex me-3 mb-0" role="search" th:action="@{/search}" method="get">
-                    <input class="form-control me-2" type="search" name="q" placeholder="Tìm kiếm" aria-label="Tìm kiếm">
-                    <button class="btn btn-outline-light" type="submit">Tìm</button>
-                </form>
 
                 <!-- Nút đăng xuất (nếu đã đăng nhập) -->
                 <ul class="navbar-nav mb-2 mb-lg-0">

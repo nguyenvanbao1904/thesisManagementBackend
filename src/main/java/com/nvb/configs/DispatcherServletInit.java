@@ -4,6 +4,8 @@
  */
 package com.nvb.configs;
 
+import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.ServletRegistration;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 /**
@@ -33,4 +35,13 @@ public class DispatcherServletInit extends AbstractAnnotationConfigDispatcherSer
         return new String[]{"/"};
     }
     
+    @Override
+    protected void customizeRegistration(ServletRegistration.Dynamic registration) {
+        String location = "/tmp";
+        long maxFileSize = 5242880; // 5MB
+        long maxRequestSize = 20971520; // 20MB
+        int fileSizeThreshold = 0;
+
+        registration.setMultipartConfig(new MultipartConfigElement(location, maxFileSize, maxRequestSize, fileSizeThreshold));
+    }
 }

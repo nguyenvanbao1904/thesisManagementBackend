@@ -7,6 +7,13 @@ package com.nvb.repositories.impl;
 import com.nvb.pojo.User;
 import com.nvb.repositories.UserRepository;
 import jakarta.persistence.Query;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
@@ -24,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class UserRepositoryImpl implements UserRepository{
     
+    private static final int PAGE_SIZE = 6;
     @Autowired
     private LocalSessionFactoryBean factory;
     @Autowired
@@ -52,6 +60,55 @@ public class UserRepositoryImpl implements UserRepository{
         User u = this.getUserByUsername(username);
 
         return this.passwordEncoder.matches(password, u.getPassword());
+    }
+
+    @Override
+    public List<User> getUsers(Map<String, String> params) {
+        
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder buider = s.getCriteriaBuilder();
+        CriteriaQuery<User> query = buider.createQuery(User.class);
+        Root root = query.from(User.class);
+        query.select(root);
+        
+        if (params != null) {
+            
+            List<Predicate> predicates = new ArrayList<>();
+
+            String kw = params.get("username");
+            if (kw != null && !kw.isEmpty()) {
+                predicates.add(buider.like(root.get("username"), String.format("%%%s%%", kw)));
+            }
+            
+            String role = params.get("role");
+            if (role != null && !role.isEmpty()) {
+                predicates.add(buider.equal(root.get("role"), role));
+            }
+            
+            String isActive = params.get("isActive");
+            if (isActive != null && !isActive.isEmpty()) {
+                Boolean isActiveBool = Boolean.valueOf(isActive);
+                predicates.add(buider.equal(root.get("isActive"), isActiveBool));
+            }
+            
+            String page = params.get("page");
+            if(page == null){
+                params.put("page", "1");
+            }
+            query.where(predicates.toArray(Predicate[]::new));
+           
+        }
+        Query q = s.createQuery(query);
+
+        
+        if (params != null && params.containsKey("page")) {
+            int page = Integer.parseInt(params.get("page"));
+            int start = (page - 1) * PAGE_SIZE;
+
+            q.setMaxResults(PAGE_SIZE);
+            q.setFirstResult(start);
+        }
+        return q.getResultList();
     }
     
 }
