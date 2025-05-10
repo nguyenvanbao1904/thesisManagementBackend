@@ -126,6 +126,14 @@
                     <div th:if="${#fields.hasErrors('email')}" class="error-message"
                          th:errors="*{email}">Lỗi email</div>
                 </div>
+                
+                 <div class="mb-3">
+                    <label for="phone" class="form-label">Số điện thoại:</label>
+                    <input type="text" th:class="${#fields.hasErrors('phone')} ? 'form-control field-error' : 'form-control'"
+                           id="phone" placeholder="Số điện thoại" th:field="*{phone}" required/>
+                    <div th:if="${#fields.hasErrors('phone')}" class="error-message"
+                         th:errors="*{phone}">Lỗi phone</div>
+                </div>
 
                 <div class="mb-3">
                     <label for="role" class="form-label">Vai trò:</label>

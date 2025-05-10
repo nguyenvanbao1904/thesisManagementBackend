@@ -35,7 +35,7 @@ public class StudentServiceImpl implements StudentService{
         Student student = new Student();
         student.setMajor(majorService.getMajorById(Integer.parseInt(params.get("majorId"))));
         student.setStudentId(params.get("studentId"));
-        student.setUser(userDetailsService.getUserByUsername(params.get("username")));
+        student.setUser(userDetailsService.getUser(Map.of("username", params.get("username"))));
         return studentRepository.addStudent(student);
     }
     

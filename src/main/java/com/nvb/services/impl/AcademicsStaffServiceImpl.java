@@ -30,7 +30,7 @@ public class AcademicsStaffServiceImpl implements AcademicsStaffService{
     @Override
     public AcademicStaff addAcademicStaff(Map<String, String> params) {
         AcademicStaff academicStaff = new AcademicStaff();
-        academicStaff.setUser(userDetailsService.getUserByUsername(params.get("username")));
+        academicStaff.setUser(userDetailsService.getUser(Map.of("username", params.get("username"))));
         return academicsStaffRepository.addAcademicStaff(academicStaff);
     }
     

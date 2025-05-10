@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @author nguyenvanbao
  */
 public interface UserService extends UserDetailsService{
-    User getUserByUsername(String userName);
+    User getUser(Map<String, String> params);
     User addUser(Map<String, String> params, MultipartFile avatar);
     boolean authenticate(String userName, String password);
     List<User> getUsers(Map<String, String> params);

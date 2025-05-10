@@ -30,7 +30,7 @@ public class AdminServiceImpl implements AdminService{
     @Override
     public Admin addAdmin(Map<String, String> params) {
         Admin admin = new Admin();
-        admin.setUser(userDetailsService.getUserByUsername(params.get("username")));
+        admin.setUser(userDetailsService.getUser(Map.of("username", params.get("username"))));
         return adminRepository.addAdmin(admin);
         
     }

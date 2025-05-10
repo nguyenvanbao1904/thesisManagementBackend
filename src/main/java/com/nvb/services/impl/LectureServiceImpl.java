@@ -34,7 +34,7 @@ public class LectureServiceImpl implements LecturerService{
 
         lecturer.setAcademicDegree(params.get("academicDegree"));
         lecturer.setAcademicTitle(academicTitle == null || academicTitle.trim().isEmpty() ? null : academicTitle);
-        lecturer.setUser(userDetailsService.getUserByUsername(params.get("username")));
+        lecturer.setUser(userDetailsService.getUser(Map.of("username", params.get("username"))));
         return lecturerRepository.addLecturer(lecturer);
     }
     

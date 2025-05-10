@@ -93,13 +93,11 @@ public class User implements Serializable {
     @Column(name = "role")
     private String role;
     @Basic(optional = false)
-    @NotNull
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
     private Date createdAt;
     @Basic(optional = false)
-    @NotNull
     @Column(name = "updated_at")
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)

@@ -6,6 +6,7 @@ package com.nvb.repositories.impl;
 
 import com.nvb.pojo.User;
 import com.nvb.repositories.UserRepository;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -21,16 +22,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-
-
 /**
  *
  * @author nguyenvanbao
  */
 @Repository
 @Transactional
-public class UserRepositoryImpl implements UserRepository{
-    
+public class UserRepositoryImpl implements UserRepository {
+
     private static final int PAGE_SIZE = 6;
     @Autowired
     private LocalSessionFactoryBean factory;
@@ -38,12 +37,38 @@ public class UserRepositoryImpl implements UserRepository{
     private BCryptPasswordEncoder passwordEncoder;
 
     @Override
-    public User getUserByUsername(String username) {
+    public User getUser(Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
-        Query q = s.createNamedQuery("User.findByUserName", User.class);
-        q.setParameter("username", username);
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<User> query = builder.createQuery(User.class);
+        Root root = query.from(User.class);
+        query.select(root);
 
-        return (User) q.getSingleResult();
+        if (params != null) {
+
+            List<Predicate> predicates = new ArrayList<>();
+
+            String kw = params.get("username");
+            if (kw != null && !kw.isEmpty()) {
+                predicates.add(builder.equal(root.get("username"), kw));
+            }
+            String phone = params.get("phone");
+            if (phone != null && !phone.isEmpty()) {
+                predicates.add(builder.equal(root.get("phone"), phone));
+            }
+            String email = params.get("email");
+            if (email != null && !email.isEmpty()) {
+                predicates.add(builder.equal(root.get("email"), email));
+            }
+            query.where(predicates.toArray(Predicate[]::new));
+
+        }
+        Query q = s.createQuery(query);
+        try {
+            return (User) q.getSingleResult();
+        } catch (NoResultException ex) {
+            return null; // hoặc Optional.empty() nếu bạn dùng Optional
+        }
 
     }
 
@@ -56,22 +81,22 @@ public class UserRepositoryImpl implements UserRepository{
 
     @Override
     public boolean authenticate(String username, String password) {
-        User u = this.getUserByUsername(username);
+        User u = this.getUser(Map.of("username", username));
 
         return this.passwordEncoder.matches(password, u.getPassword());
     }
 
     @Override
     public List<User> getUsers(Map<String, String> params) {
-        
+
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder buider = s.getCriteriaBuilder();
         CriteriaQuery<User> query = buider.createQuery(User.class);
         Root root = query.from(User.class);
         query.select(root);
-        
+
         if (params != null) {
-            
+
             List<Predicate> predicates = new ArrayList<>();
 
             String kw = params.get("username");
@@ -79,27 +104,27 @@ public class UserRepositoryImpl implements UserRepository{
                 predicates.add(buider.like(root.get("username"), String.format("%%%s%%", kw)));
             }
             
+
             String role = params.get("role");
             if (role != null && !role.isEmpty()) {
                 predicates.add(buider.equal(root.get("role"), role));
             }
-            
+
             String isActive = params.get("isActive");
             if (isActive != null && !isActive.isEmpty()) {
                 Boolean isActiveBool = Boolean.valueOf(isActive);
                 predicates.add(buider.equal(root.get("isActive"), isActiveBool));
             }
-            
+
             String page = params.get("page");
-            if(page == null){
+            if (page == null) {
                 params.put("page", "1");
             }
             query.where(predicates.toArray(Predicate[]::new));
-           
+
         }
         Query q = s.createQuery(query);
 
-        
         if (params != null && params.containsKey("page")) {
             int page = Integer.parseInt(params.get("page"));
             int start = (page - 1) * PAGE_SIZE;
@@ -108,5 +133,6 @@ public class UserRepositoryImpl implements UserRepository{
             q.setFirstResult(start);
         }
         return q.getResultList();
-    };
+    }
+;
 }

@@ -6,13 +6,13 @@ package com.nvb.thesismanagementbackend;
 
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
-import org.springframework.stereotype.Component;
+import jakarta.servlet.annotation.WebListener;
 
 /**
  *
  * @author nguyenvanbao
  */
-@Component
+@WebListener
 public class MySQLCleanupListener implements ServletContextListener{
     @Override
     public void contextDestroyed(ServletContextEvent sce) {

@@ -13,7 +13,7 @@ import java.util.Map;
  * @author nguyenvanbao
  */
 public interface UserRepository {
-    User getUserByUsername(String username);
+    User getUser(Map<String,String> params);
     User addUser(User u);
     boolean authenticate(String username, String password);
     List<User> getUsers(Map<String,String> params);

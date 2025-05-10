@@ -26,7 +26,6 @@ public class UserDTO {
     private String lastName;
     @NotBlank(message = "{user.email.notnullMsg}")
     private String email;
-    @NotBlank(message = "{user.phone.invalidMsg}")
     private String phone;
     private String avatarUrl;
     @NotNull(message = "{user.role.notnullMsg}")
@@ -53,7 +52,6 @@ public class UserDTO {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.phone = phone;
         this.avatarUrl = avatarUrl;
         this.role = role;
         this.file = file;

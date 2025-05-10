@@ -50,8 +50,8 @@ public class UserServiceImpl implements UserService{
     private StudentService studentService;
 
     @Override
-    public User getUserByUsername(String username) {
-        return userRepository.getUserByUsername(username);
+    public User getUser(Map<String, String> params) {
+        return userRepository.getUser(params);
     }
 
     @Override
@@ -103,7 +103,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User u = this.getUserByUsername(username);
+        User u = this.getUser(Map.of("username", username));
         if (u == null) {
             throw new UsernameNotFoundException("Invalid username!");
         }
