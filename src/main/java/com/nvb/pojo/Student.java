@@ -9,6 +9,7 @@ import com.nvb.pojo.User;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -59,7 +60,7 @@ public class Student implements Serializable {
     @ManyToOne(optional = false)
     private Major major;
     @JoinColumn(name = "id")
-    @OneToOne(optional = false)
+    @OneToOne(optional = false, fetch = FetchType.LAZY)
     @MapsId
     private User user;
 

@@ -4,6 +4,8 @@
  */
 package com.nvb.configs;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.ViewResolver;
@@ -18,6 +20,8 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
  */
 @Configuration
 public class ThymeleafConfigs {
+    @Autowired
+    private MessageSource messageSource;
     @Bean
     public ClassLoaderTemplateResolver templateResolver() {
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
@@ -33,6 +37,7 @@ public class ThymeleafConfigs {
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
         templateEngine.setTemplateResolver(templateResolver());
         templateEngine.addDialect(new SpringSecurityDialect());
+        templateEngine.setMessageSource(messageSource);
         return templateEngine;
     }
 

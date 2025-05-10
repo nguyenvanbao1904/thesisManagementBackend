@@ -51,7 +51,6 @@ public class UserRepositoryImpl implements UserRepository{
     public User addUser(User u) {
         Session s = this.factory.getObject().getCurrentSession();
         s.persist(u);
-        
         return u;
     }
 
@@ -109,6 +108,5 @@ public class UserRepositoryImpl implements UserRepository{
             q.setFirstResult(start);
         }
         return q.getResultList();
-    }
-    
+    };
 }

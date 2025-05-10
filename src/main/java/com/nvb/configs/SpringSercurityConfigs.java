@@ -34,7 +34,6 @@ import org.springframework.core.env.Environment;
 @EnableTransactionManagement
 @EnableWebSecurity
 @ComponentScan(basePackages = {
-    "com.nvb.controllers",
     "com.nvb.repositories",
     "com.nvb.services"
 })
@@ -97,7 +96,7 @@ public class SpringSercurityConfigs {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(c -> c.disable())
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/", "/home").authenticated()
+                        .requestMatchers("/").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(form -> form.loginPage("/login")
                 .loginProcessingUrl("/login")

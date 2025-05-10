@@ -5,19 +5,26 @@
 package com.nvb.controllers;
 
 import com.nvb.dto.UserDTO;
-import com.nvb.pojo.User;
 import com.nvb.services.MajorService;
 import com.nvb.services.UserService;
+import com.nvb.validators.WebAppValidator;
+
+import jakarta.validation.Valid;
+
 import java.util.HashMap;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
@@ -31,6 +38,16 @@ public class UserController {
     
     @Autowired
     private MajorService majorService;
+    
+    @Autowired
+    @Qualifier("userWebAppValidator")
+    private WebAppValidator userWebAppValidator;
+    
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.setValidator(userWebAppValidator);
+    }
+    
     @GetMapping("/login")
     public String login(Model model, @RequestParam Map<String, String> params) {
         String error = params.get("error");
@@ -54,9 +71,16 @@ public class UserController {
     }
 
     @PostMapping("/users/add")
-    public String addUser(@ModelAttribute("user") UserDTO user,
-            @RequestParam("file") MultipartFile avatar,
+    public String addUser(@ModelAttribute("user") @Valid UserDTO user,
+            BindingResult bindingResult,
             Model model) {
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("user", user);
+            model.addAttribute("majors", majorService.getMajors(null));
+            return "users/add";
+        }
+
         Map<String, String> params = new HashMap<>();
         params.put("username", user.getUsername());
         params.put("password", user.getPassword());
@@ -66,12 +90,14 @@ public class UserController {
         params.put("phone", user.getPhone());
         params.put("role", user.getRole());
         params.put("studentId", user.getStudentId());
-        params.put("majorId", user.getMajorId().toString());
+        if (user.getMajorId() != null) {
+            params.put("majorId", user.getMajorId().toString());
+        }
         params.put("academicTitle", user.getAcademicTitle());
         params.put("academicDegree", user.getAcademicDegree());
 
 
-        userDetailsService.addUser(params, avatar);
+        userDetailsService.addUser(params, user.getFile());
 
         return "redirect:/users";
     }

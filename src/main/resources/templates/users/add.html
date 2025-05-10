@@ -5,111 +5,197 @@
     <th:block th:replace="/base/base :: bootstrap" ></th:block>
     <script>
         function toggleRoleFields() {
-            // Ẩn tất cả các phần của vai trò trước
-            document.getElementById('studentFields').style.display = 'none';
-            document.getElementById('lecturerFields').style.display = 'none';
-
-            // Hiển thị phần tương ứng với vai trò được chọn
+            const studentFields = document.getElementById('studentFields');
+            const lecturerFields = document.getElementById('lecturerFields');
             const selectedRole = document.getElementById('role').value;
-            console.log("Selected role:", selectedRole); // Debug log
+
+            // Đặt lại style cơ bản trước
+            if (studentFields) {
+                studentFields.style.display = 'none';
+                studentFields.style.border = 'none'; // Xóa border cũ nếu có
+            }
+            if (lecturerFields) {
+                lecturerFields.style.display = 'none';
+            }
+
             if (selectedRole === 'ROLE_STUDENT') {
-                document.getElementById('studentFields').style.display = 'block';
+                if (studentFields) {
+                    studentFields.style.display = 'block';
+                } else {
+                    console.error("studentFields element not found!");
+                }
+                if (lecturerFields)
+                    lecturerFields.style.display = 'none';
             } else if (selectedRole === 'ROLE_LECTURER') {
-                document.getElementById('lecturerFields').style.display = 'block';
+                if (studentFields)
+                    studentFields.style.display = 'none';
+                if (lecturerFields) {
+                    lecturerFields.style.display = 'block';
+                } else {
+                    console.error("lecturerFields element not found!");
+                }
+            } else {
+                // No specific role selected or role not student/lecturer, hiding both.
             }
         }
 
-        // Kích hoạt khi trang được tải
+// Kích hoạt khi trang được tải (window.onload giữ nguyên như cũ)
         window.onload = function () {
-            // Gọi hàm lần đầu khi trang tải
             toggleRoleFields();
 
-            // Đảm bảo gắn sự kiện onchange cho dropdown role
             const roleSelect = document.getElementById('role');
             if (roleSelect) {
                 roleSelect.addEventListener('change', toggleRoleFields);
+            } else {
+                console.error("Role select element not found!");
             }
         };
     </script>
+    <style>
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .field-error {
+            border-color: #dc3545;
+        }
+        .field-error:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+        }
+        .alert-validation {
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
 </head>
 <body>
     <div th:replace="/base/base :: header"></div> <main>
         <div class="container mt-5 mb-5">
-            <h1 class="text-center mb-4">Thêm người dùng</h1>
+            <h1 class="text-center mb-4">Thêm hoặc cập nhật người dùng</h1>
+
             <form method="post" th:action="@{/users/add}" th:object="${user}" enctype="multipart/form-data" class="border p-4 rounded shadow">
+
+                <!-- Hiển thị thông báo lỗi tổng quan nếu có -->
+                <!-- ĐÃ DI CHUYỂN VÀO TRONG FORM -->
+                <div th:if="${#fields.hasAnyErrors()}" class="alert-validation">
+                    <i class="fas fa-exclamation-circle"></i> Vui lòng kiểm tra lại thông tin đã nhập
+                </div>
+
                 <div class="mb-3">
                     <label for="username" class="form-label">Username:</label>
-                    <input type="text" class="form-control" id="username" placeholder="Username" th:field="*{username}" required />
+                    <input type="text" th:class="${#fields.hasErrors('username')} ? 'form-control field-error' : 'form-control'"
+                           id="username" placeholder="Username" th:field="*{username}" required />
+                    <div th:if="${#fields.hasErrors('username')}" class="error-message"
+                         th:errors="*{username}">Lỗi username</div>
                 </div>
 
                 <div class="mb-3">
                     <label for="password" class="form-label">Password:</label>
-                    <input type="password" class="form-control" id="password" placeholder="Password" th:field="*{password}" required />
+                    <input type="password" th:class="${#fields.hasErrors('password')} ? 'form-control field-error' : 'form-control'"
+                           id="password" placeholder="Password" th:field="*{password}" required />
+                    <div th:if="${#fields.hasErrors('password')}" class="error-message"
+                         th:errors="*{password}">Lỗi password</div>
                 </div>
 
                 <div class="mb-3">
                     <label for="firstName" class="form-label">First Name:</label>
-                    <input type="text" class="form-control" id="firstName" placeholder="First name" th:field="*{firstName}" />
+                    <input type="text" th:class="${#fields.hasErrors('firstName')} ? 'form-control field-error' : 'form-control'"
+                           id="firstName" placeholder="First name" th:field="*{firstName}" required/>
+                    <div th:if="${#fields.hasErrors('firstName')}" class="error-message"
+                         th:errors="*{firstName}">Lỗi firstName</div>
                 </div>
 
                 <div class="mb-3">
                     <label for="lastName" class="form-label">Last Name:</label>
-                    <input type="text" class="form-control" id="lastName" placeholder="Last name" th:field="*{lastName}" />
+                    <input type="text" th:class="${#fields.hasErrors('lastName')} ? 'form-control field-error' : 'form-control'"
+                           id="lastName" placeholder="Last name" th:field="*{lastName}" required/>
+                    <div th:if="${#fields.hasErrors('lastName')}" class="error-message"
+                         th:errors="*{lastName}">Lỗi lastName</div>
                 </div>
 
                 <div class="mb-3">
                     <label for="email" class="form-label">Email:</label>
-                    <input type="email" class="form-control" id="email" placeholder="Email" th:field="*{email}" />
+                    <input type="email" th:class="${#fields.hasErrors('email')} ? 'form-control field-error' : 'form-control'"
+                           id="email" placeholder="Email" th:field="*{email}" required/>
+                    <div th:if="${#fields.hasErrors('email')}" class="error-message"
+                         th:errors="*{email}">Lỗi email</div>
                 </div>
 
                 <div class="mb-3">
                     <label for="role" class="form-label">Vai trò:</label>
-                    <select class="form-select" th:field="*{role}" id="role" required>
+                    <select th:class="${#fields.hasErrors('role')} ? 'form-select field-error' : 'form-select'"
+                            th:field="*{role}" id="role" required>
                         <option value="" disabled selected>-- Chọn vai trò --</option>
                         <option value="ROLE_ACADEMICSTAFF">Giáo vụ</option>
                         <option value="ROLE_LECTURER">Giảng viên</option>
                         <option value="ROLE_STUDENT">Sinh viên</option>
                     </select>
+                    <div th:if="${#fields.hasErrors('role')}" class="error-message"
+                         th:errors="*{role}">Lỗi vai trò</div>
                 </div>
+
                 <!-- Phần thông tin dành cho sinh viên -->
                 <div id="studentFields" class="border p-3 mb-3 rounded bg-light" style="display: none;">
                     <h4 class="mb-3">Thông tin sinh viên</h4>
                     <div class="mb-3">
                         <label for="studentId" class="form-label">Mã sinh viên:</label>
-                        <input type="text" class="form-control" id="studentId" placeholder="Mã sinh viên" th:field="*{studentId}" />
+                        <input type="text" th:class="${#fields.hasErrors('studentId')} ? 'form-control field-error' : 'form-control'"
+                               id="studentId" placeholder="Mã sinh viên" th:field="*{studentId}"/>
+                        <div th:if="${#fields.hasErrors('studentId')}" class="error-message"
+                             th:errors="*{studentId}">Lỗi mã sinh viên</div>
                     </div>
                     <div class="mb-3">
                         <label for="major" class="form-label">Ngành học:</label>
-                        <select class="form-select" id="major" th:field="*{majorId}">
+                        <select th:class="${#fields.hasErrors('majorId')} ? 'form-select field-error' : 'form-select'"
+                                id="major" th:field="*{majorId}">
                             <option value="" disabled selected>-- Chọn ngành --</option>
                             <option th:each="major : ${majors}" th:value="${major.id}" th:text="${major.name}"></option>
                         </select>
+                        <div th:if="${#fields.hasErrors('majorId')}" class="error-message"
+                             th:errors="*{majorId}">Lỗi ngành học</div>
                     </div>
                 </div>
+
                 <!-- Phần thông tin dành cho giảng viên -->
                 <div id="lecturerFields" class="border p-3 mb-3 rounded bg-light" style="display: none;">
                     <h4 class="mb-3">Thông tin giảng viên</h4>
                     <div class="mb-3">
                         <label for="academicTitle" class="form-label">Học hàm:</label>
-                        <select class="form-select" id="academicTitle" th:field="*{academicTitle}">
+                        <select th:class="${#fields.hasErrors('academicTitle')} ? 'form-select field-error' : 'form-select'"
+                                id="academicTitle" th:field="*{academicTitle}">
                             <option value="">-- Không có --</option>
                             <option value="ASSOCIATE_PROFESSOR">Phó giáo sư</option>
                             <option value="PROFESSOR">Giáo sư</option>
                         </select>
+                        <div th:if="${#fields.hasErrors('academicTitle')}" class="error-message"
+                             th:errors="*{academicTitle}">Lỗi học hàm</div>
                     </div>
 
                     <div class="mb-3">
                         <label for="academicDegree" class="form-label">Học vị:</label>
-                        <select class="form-select" id="academicDegree" th:field="*{academicDegree}" required>
+                        <select th:class="${#fields.hasErrors('academicDegree')} ? 'form-select field-error' : 'form-select'"
+                                id="academicDegree" th:field="*{academicDegree}">
                             <option value="" disabled selected>-- Chọn học vị --</option>
                             <option value="MASTER">Thạc sĩ</option>
                             <option value="DOCTOR">Tiến sĩ</option>
                         </select>
+                        <div th:if="${#fields.hasErrors('academicDegree')}" class="error-message"
+                             th:errors="*{academicDegree}">Lỗi học vị</div>
                     </div>
                 </div>
+
                 <div class="mb-3">
                     <label for="avatar" class="form-label">Ảnh đại diện:</label>
-                    <input type="file" class="form-control" th:field="*{file}" id="avatar" />
+                    <input type="file" th:class="${#fields.hasErrors('file')} ? 'form-control field-error' : 'form-control'"
+                           th:field="*{file}" id="avatar"/>
+                    <div th:if="${#fields.hasErrors('file')}" class="error-message"
+                         th:errors="*{file}">Lỗi ảnh đại diện</div>
                     <div class="mt-2">
                         <img th:if="${user.avatarUrl != null}" th:src="@{${user.avatarUrl}}" class="img-thumbnail" style="max-width: 100px;" />
                     </div>

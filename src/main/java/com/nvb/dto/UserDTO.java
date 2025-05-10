@@ -4,6 +4,9 @@
  */
 package com.nvb.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -12,15 +15,24 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public class UserDTO {
     private Integer id;
+    @NotBlank(message = "{user.username.notnullMsg}")
     private String username;
+    @NotBlank(message = "{user.password.notnullMsg}")
+    @Size(min = 6, message = "{user.password.tooshortMsg}")
     private String password;
+    @NotBlank(message = "{user.firstname.notnullMsg}")
     private String firstName;
+    @NotBlank(message = "{user.lastname.notnullMsg}")
     private String lastName;
+    @NotBlank(message = "{user.email.notnullMsg}")
     private String email;
+    @NotBlank(message = "{user.phone.invalidMsg}")
     private String phone;
     private String avatarUrl;
+    @NotNull(message = "{user.role.notnullMsg}")
     private String role;
     private Boolean isActive = true;
+    @NotNull(message = "{user.avatar.notnullMsg}")
     private MultipartFile file;
     
     // Thông tin cho sinh viên
@@ -175,7 +187,4 @@ public class UserDTO {
     public String toString() {
         return "UserDTO{" + "username=" + username + ", role=" + role + '}';
     }
-    
-    
-    
 }

@@ -8,7 +8,4 @@
             30
         </session-timeout>
     </session-config>
-    <listener>
-        <listener-class>com.nvb.thesismanagementbackend.MySQLCleanupListener</listener-class>
-    </listener>
 </web-app>

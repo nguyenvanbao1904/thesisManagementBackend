@@ -10,6 +10,7 @@ import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -60,7 +61,7 @@ public class Lecturer implements Serializable {
     @ManyToMany
     private Set<Thesis> thesesSupervisors;
     @JoinColumn(name = "id")
-    @OneToOne(optional = false)
+    @OneToOne(optional = false, fetch = FetchType.LAZY)
     @MapsId
     private User user;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lecturer")
