@@ -5,6 +5,7 @@
 package com.nvb.controllers;
 
 import com.nvb.dto.UserDTO;
+import com.nvb.pojo.User;
 import com.nvb.services.MajorService;
 import com.nvb.services.UserService;
 import com.nvb.validators.WebAppValidator;
@@ -12,6 +13,7 @@ import com.nvb.validators.WebAppValidator;
 import jakarta.validation.Valid;
 
 import java.util.HashMap;
+import java.util.List;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 
@@ -35,19 +37,19 @@ public class UserController {
 
     @Autowired
     private UserService userDetailsService;
-    
+
     @Autowired
     private MajorService majorService;
-    
+
     @Autowired
     @Qualifier("userWebAppValidator")
     private WebAppValidator userWebAppValidator;
-    
+
     @InitBinder
     public void initBinder(WebDataBinder binder) {
         binder.setValidator(userWebAppValidator);
     }
-    
+
     @GetMapping("/login")
     public String login(Model model, @RequestParam Map<String, String> params) {
         String error = params.get("error");
@@ -59,7 +61,22 @@ public class UserController {
 
     @GetMapping("/users")
     public String showAll(Model model, @RequestParam(required = false) Map<String, String> params) {
-        model.addAttribute("users", userDetailsService.getUsers(params));
+        List<User> users = userDetailsService.getUsers(params);
+        model.addAttribute("users", users);
+        int page = 1;
+        if (params.get("page") != null) {
+            try {
+                if (users.isEmpty()) {
+                    page = 0;
+                } else {
+                    page = Integer.parseInt(params.get("page"));
+
+                }
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        model.addAttribute("page", page);
         return "users/index";
     }
 
@@ -95,7 +112,6 @@ public class UserController {
         }
         params.put("academicTitle", user.getAcademicTitle());
         params.put("academicDegree", user.getAcademicDegree());
-
 
         userDetailsService.addUser(params, user.getFile());
 
