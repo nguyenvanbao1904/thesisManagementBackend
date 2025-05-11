@@ -23,11 +23,4 @@ public class AdminRepositoryImpl implements AdminRepository{
     @Autowired
     private LocalSessionFactoryBean factory;
     
-    @Override
-    public Admin addAdmin(Admin admin) {
-        Session s = factory.getObject().getCurrentSession();
-        s.persist(admin);
-        return admin;
-    }
-    
 }

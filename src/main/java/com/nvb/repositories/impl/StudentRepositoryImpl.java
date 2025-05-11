@@ -21,11 +21,4 @@ import org.springframework.transaction.annotation.Transactional;
 public class StudentRepositoryImpl implements StudentRepository{
     @Autowired
     private LocalSessionFactoryBean factory;
-
-    @Override
-    public Student addStudent(Student student) {
-        Session s = factory.getObject().getCurrentSession();
-        s.persist(student);
-        return student;
-    }
 }

@@ -4,13 +4,14 @@
  */
 package com.nvb.services;
 
+import com.nvb.dto.UserDTO;
 import com.nvb.pojo.Student;
-import java.util.Map;
+import com.nvb.pojo.User;
 
 /**
  *
  * @author nguyenvanbao
  */
 public interface StudentService {
-    Student addStudent(Map<String, String> params);
+    Student prepareStudent(User user, UserDTO userDto);
 }

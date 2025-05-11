@@ -4,13 +4,13 @@
  */
 package com.nvb.services;
 
+import com.nvb.dto.UserDTO;
 import com.nvb.pojo.Admin;
-import java.util.Map;
-
+import com.nvb.pojo.User;
 /**
  *
  * @author nguyenvanbao
  */
 public interface AdminService {
-    Admin addAdmin(Map<String, String> params);
+    Admin prepareAdmin(User user, UserDTO userDto);
 }

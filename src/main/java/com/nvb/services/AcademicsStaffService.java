@@ -4,13 +4,13 @@
  */
 package com.nvb.services;
 
+import com.nvb.dto.UserDTO;
 import com.nvb.pojo.AcademicStaff;
-import java.util.Map;
-
+import com.nvb.pojo.User;
 /**
  *
  * @author nguyenvanbao
  */
 public interface AcademicsStaffService {
-    AcademicStaff addAcademicStaff(Map<String, String> params);
+    AcademicStaff prepareAcademicStaff(User user, UserDTO userDto);
 }

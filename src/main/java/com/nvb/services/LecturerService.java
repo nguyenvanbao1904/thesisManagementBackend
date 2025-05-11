@@ -4,13 +4,14 @@
  */
 package com.nvb.services;
 
+import com.nvb.dto.UserDTO;
 import com.nvb.pojo.Lecturer;
-import java.util.Map;
+import com.nvb.pojo.User;
 
 /**
  *
  * @author nguyenvanbao
  */
 public interface LecturerService {
-    Lecturer addLecturer(Map<String, String> params);
+    Lecturer prepareLecturer(User user, UserDTO userDto);
 }

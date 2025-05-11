@@ -4,12 +4,11 @@
  */
 package com.nvb.services.impl;
 
+import com.nvb.dto.UserDTO;
 import com.nvb.pojo.Student;
-import com.nvb.repositories.StudentRepository;
+import com.nvb.pojo.User;
 import com.nvb.services.MajorService;
 import com.nvb.services.StudentService;
-import com.nvb.services.UserService;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,22 +21,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class StudentServiceImpl implements StudentService{
     @Autowired
-    private UserService userDetailsService;
-    
-    @Autowired
     private MajorService majorService;
-    
-    @Autowired
-    private StudentRepository studentRepository;
 
-    @Override
-    public Student addStudent(Map<String, String> params) {
+    public Student prepareStudent(User user, UserDTO userDto) {
         Student student = new Student();
-        student.setMajor(majorService.getMajorById(Integer.parseInt(params.get("majorId"))));
-        student.setStudentId(params.get("studentId"));
-        student.setUser(userDetailsService.getUser(Map.of("username", params.get("username"))));
-        return studentRepository.addStudent(student);
+        if (userDto.getMajorId() != null) {
+            student.setMajor(majorService.getMajorById(userDto.getMajorId()));
+        }
+        student.setStudentId(userDto.getStudentId());
+        student.setUser(user);
+        return student;
     }
-    
     
 }

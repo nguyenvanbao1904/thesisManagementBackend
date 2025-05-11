@@ -22,10 +22,4 @@ public class LecturerRepositoryImpl implements LecturerRepository{
     @Autowired
     private LocalSessionFactoryBean factory;
 
-    @Override
-    public Lecturer addLecturer(Lecturer lecturer) {
-        Session s = factory.getObject().getCurrentSession();
-        s.persist(lecturer);
-        return lecturer;
-    }
 }

@@ -4,7 +4,9 @@
  */
 package com.nvb.services.impl;
 
+import com.nvb.dto.UserDTO;
 import com.nvb.pojo.AcademicStaff;
+import com.nvb.pojo.User;
 import com.nvb.repositories.AcademicsStaffRepository;
 import com.nvb.services.AcademicsStaffService;
 import com.nvb.services.UserService;
@@ -22,16 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class AcademicsStaffServiceImpl implements AcademicsStaffService{
     
     @Autowired
-    private UserService userDetailsService;
-    
-    @Autowired
     private AcademicsStaffRepository academicsStaffRepository;
-
-    @Override
-    public AcademicStaff addAcademicStaff(Map<String, String> params) {
-        AcademicStaff academicStaff = new AcademicStaff();
-        academicStaff.setUser(userDetailsService.getUser(Map.of("username", params.get("username"))));
-        return academicsStaffRepository.addAcademicStaff(academicStaff);
-    }
     
+    @Override
+    public AcademicStaff prepareAcademicStaff(User user, UserDTO userDto) {
+        AcademicStaff staff = new AcademicStaff();
+        staff.setUser(user);
+        return staff;
+    }
 }

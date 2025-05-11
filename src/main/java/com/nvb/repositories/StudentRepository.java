@@ -11,5 +11,4 @@ import com.nvb.pojo.Student;
  * @author nguyenvanbao
  */
 public interface StudentRepository {
-    Student addStudent(Student student);
 }

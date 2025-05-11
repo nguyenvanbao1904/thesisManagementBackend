@@ -11,5 +11,4 @@ import com.nvb.pojo.AcademicStaff;
  * @author nguyenvanbao
  */
 public interface AcademicsStaffRepository {
-    AcademicStaff addAcademicStaff(AcademicStaff academicStaff);
 }

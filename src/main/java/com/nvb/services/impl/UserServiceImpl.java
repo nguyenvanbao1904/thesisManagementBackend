@@ -6,7 +6,10 @@ package com.nvb.services.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.nvb.dto.UserDTO;
 import com.nvb.pojo.User;
+import com.nvb.pojo.AcademicStaff;
+import com.nvb.pojo.Admin;
 import com.nvb.repositories.UserRepository;
 import com.nvb.services.AcademicsStaffService;
 import com.nvb.services.AdminService;
@@ -25,6 +28,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -40,7 +44,7 @@ public class UserServiceImpl implements UserService{
     private BCryptPasswordEncoder passwordEncoder;
     @Autowired
     private Cloudinary cloudinary;
-    @Autowired 
+    @Autowired
     private AdminService adminService;
     @Autowired
     private AcademicsStaffService academicsStaffService;
@@ -55,45 +59,44 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public User addUser(Map<String, String> params, MultipartFile avatar) {
+    @Transactional
+    public User addUser(UserDTO userDto, MultipartFile avatar) {
         User u = new User();
-        u.setFirstName(params.get("firstName"));
-        u.setLastName(params.get("lastName"));
-        u.setEmail(params.get("email"));
-        u.setPhone(params.get("phone"));
-        u.setUsername(params.get("username"));
-        u.setPassword(this.passwordEncoder.encode(params.get("password")));
-        u.setRole(params.get("role"));
+        u.setFirstName(userDto.getFirstName());
+        u.setLastName(userDto.getLastName());
+        u.setEmail(userDto.getEmail());
+        u.setPhone(userDto.getPhone());
+        u.setUsername(userDto.getUsername());
+        u.setPassword(this.passwordEncoder.encode(userDto.getPassword()));
+        u.setRole(userDto.getRole());
         
-        if (!avatar.isEmpty()) {
+        if (avatar != null && !avatar.isEmpty()) {
             try {
                 Map res = cloudinary.uploader().upload(avatar.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
                 u.setAvatarUrl(res.get("secure_url").toString());
             } catch (IOException ex) {
-                System.out.println(ex.getMessage());
+                System.err.println("Error uploading avatar: " + ex.getMessage());
             }
         }
         
-        this.userRepository.addUser(u);
-        
-        switch (params.get("role")) {
+        switch (userDto.getRole()) {
             case "ROLE_ADMIN":
-                adminService.addAdmin(params);
+                u.setAdmin(adminService.prepareAdmin(u, userDto));
                 break;
             case "ROLE_ACADEMICSTAFF":
-                academicsStaffService.addAcademicStaff(params);
+                u.setAcademicStaff(academicsStaffService.prepareAcademicStaff(u, userDto));
                 break;
             case "ROLE_LECTURER":
-                lecturerService.addLecturer(params);
+                u.setLecturer(lecturerService.prepareLecturer(u, userDto));
                 break;
             case "ROLE_STUDENT":
-                studentService.addStudent(params);
+                u.setStudent(studentService.prepareStudent(u, userDto));
                 break;
             default:
-                throw new AssertionError();
+                break;
         }
         
-        return u;
+        return this.userRepository.addUser(u);
     }
 
     @Override
@@ -118,6 +121,16 @@ public class UserServiceImpl implements UserService{
     @Override
     public List<User> getUsers(Map<String, String> params) {
         return this.userRepository.getUsers(params);
+    }
+
+    @Override
+    public void deleteUser(int id){
+        User u = this.getUser(Map.of("id", String.valueOf(id)));
+        if (u == null) {
+            throw new IllegalArgumentException("Invalid user");
+        }
+        
+        userRepository.deleteUser(u);
     }
     
 }

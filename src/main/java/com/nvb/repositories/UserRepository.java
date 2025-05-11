@@ -17,4 +17,5 @@ public interface UserRepository {
     User addUser(User u);
     boolean authenticate(String username, String password);
     List<User> getUsers(Map<String,String> params);
+    void deleteUser(User u);
 }

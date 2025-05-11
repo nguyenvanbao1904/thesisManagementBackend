@@ -11,5 +11,4 @@ import com.nvb.pojo.Admin;
  * @author nguyenvanbao
  */
 public interface AdminRepository {
-    Admin addAdmin(Admin admin);
 }

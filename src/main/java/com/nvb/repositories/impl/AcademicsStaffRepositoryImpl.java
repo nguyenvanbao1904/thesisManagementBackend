@@ -23,11 +23,4 @@ public class AcademicsStaffRepositoryImpl implements AcademicsStaffRepository{
     @Autowired
     private LocalSessionFactoryBean factory;
 
-    @Override
-    public AcademicStaff addAcademicStaff(AcademicStaff academicStaff) {
-        Session s = factory.getObject().getCurrentSession();
-        s.persist(academicStaff);
-        return academicStaff;
-    }
-    
 }

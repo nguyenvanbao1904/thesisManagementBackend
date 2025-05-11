@@ -4,7 +4,9 @@
  */
 package com.nvb.services.impl;
 
+import com.nvb.dto.UserDTO;
 import com.nvb.pojo.Admin;
+import com.nvb.pojo.User;
 import com.nvb.repositories.AdminRepository;
 import com.nvb.services.AdminService;
 import com.nvb.services.UserService;
@@ -22,17 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminServiceImpl implements AdminService{
     
     @Autowired
-    private UserService userDetailsService;
-    
-    @Autowired
     private AdminRepository adminRepository;
-
-    @Override
-    public Admin addAdmin(Map<String, String> params) {
-        Admin admin = new Admin();
-        admin.setUser(userDetailsService.getUser(Map.of("username", params.get("username"))));
-        return adminRepository.addAdmin(admin);
-        
-    }
     
+    @Override
+    public Admin prepareAdmin(User user, UserDTO userDto) {
+        Admin admin = new Admin();
+        admin.setUser(user);
+        return admin;
+    }
 }

@@ -4,11 +4,11 @@
  */
 package com.nvb.services.impl;
 
+import com.nvb.dto.UserDTO;
 import com.nvb.pojo.Lecturer;
+import com.nvb.pojo.User;
 import com.nvb.repositories.LecturerRepository;
 import com.nvb.services.LecturerService;
-import com.nvb.services.UserService;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,23 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional
-public class LectureServiceImpl implements LecturerService{
+public class LecturerServiceImpl implements LecturerService{
     
     @Autowired
-    private UserService userDetailsService;
+    private LecturerRepository lecturerRepository;
     
-    @Autowired
-    private LecturerRepository lecturerRepository; 
-
     @Override
-    public Lecturer addLecturer(Map<String, String> params) {
+    public Lecturer prepareLecturer(User user, UserDTO userDto) {
         Lecturer lecturer = new Lecturer();
-        String academicTitle = params.get("academicTitle");
-
-        lecturer.setAcademicDegree(params.get("academicDegree"));
+        lecturer.setAcademicDegree(userDto.getAcademicDegree());
+        String academicTitle = userDto.getAcademicTitle();
         lecturer.setAcademicTitle(academicTitle == null || academicTitle.trim().isEmpty() ? null : academicTitle);
-        lecturer.setUser(userDetailsService.getUser(Map.of("username", params.get("username"))));
-        return lecturerRepository.addLecturer(lecturer);
+        lecturer.setUser(user);
+        return lecturer;
     }
     
 }

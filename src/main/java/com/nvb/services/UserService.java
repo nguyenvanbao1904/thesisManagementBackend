@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.multipart.MultipartFile;
+import com.nvb.dto.UserDTO;
 
 /**
  *
@@ -16,7 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface UserService extends UserDetailsService{
     User getUser(Map<String, String> params);
-    User addUser(Map<String, String> params, MultipartFile avatar);
+    User addUser(UserDTO userDto, MultipartFile avatar);
     boolean authenticate(String userName, String password);
     List<User> getUsers(Map<String, String> params);
+    void deleteUser(int id);
 }

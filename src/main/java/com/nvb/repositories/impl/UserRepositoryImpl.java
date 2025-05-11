@@ -137,6 +137,11 @@ public class UserRepositoryImpl implements UserRepository {
             q.setFirstResult(start);
         }
         return q.getResultList();
+    };
+
+    @Override
+    public void deleteUser(User u) {
+        Session s = this.factory.getObject().getCurrentSession();
+        s.remove(u);
     }
-;
 }

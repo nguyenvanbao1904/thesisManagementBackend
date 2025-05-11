@@ -12,7 +12,6 @@ import com.nvb.validators.WebAppValidator;
 
 import jakarta.validation.Valid;
 
-import java.util.HashMap;
 import java.util.List;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -98,22 +97,7 @@ public class UserController {
             return "users/add";
         }
 
-        Map<String, String> params = new HashMap<>();
-        params.put("username", user.getUsername());
-        params.put("password", user.getPassword());
-        params.put("firstName", user.getFirstName());
-        params.put("lastName", user.getLastName());
-        params.put("email", user.getEmail());
-        params.put("phone", user.getPhone());
-        params.put("role", user.getRole());
-        params.put("studentId", user.getStudentId());
-        if (user.getMajorId() != null) {
-            params.put("majorId", user.getMajorId().toString());
-        }
-        params.put("academicTitle", user.getAcademicTitle());
-        params.put("academicDegree", user.getAcademicDegree());
-
-        userDetailsService.addUser(params, user.getFile());
+        userDetailsService.addUser(user, user.getFile());
 
         return "redirect:/users";
     }

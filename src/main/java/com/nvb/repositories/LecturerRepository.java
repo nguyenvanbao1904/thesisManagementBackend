@@ -11,5 +11,4 @@ import com.nvb.pojo.Lecturer;
  * @author nguyenvanbao
  */
 public interface LecturerRepository {
-    Lecturer addLecturer(Lecturer lecturer);
 }
