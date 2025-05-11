@@ -4,8 +4,6 @@
  */
 package com.nvb.pojo;
 
-import com.nvb.pojo.Thesis;
-import com.nvb.pojo.User;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -57,7 +55,7 @@ public class Student implements Serializable {
     @ManyToMany
     private Set<Thesis> theses;
     @JoinColumn(name = "major_id", referencedColumnName = "id")
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Major major;
     @JoinColumn(name = "id")
     @OneToOne(optional = false, fetch = FetchType.LAZY)

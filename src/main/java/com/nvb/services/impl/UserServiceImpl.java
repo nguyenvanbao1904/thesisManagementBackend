@@ -7,6 +7,7 @@ package com.nvb.services.impl;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.nvb.dto.UserDTO;
+import com.nvb.dto.UserDisplayDTO;
 import com.nvb.pojo.User;
 import com.nvb.repositories.UserRepository;
 import com.nvb.services.AcademicsStaffService;
@@ -163,7 +164,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public List<User> getUsers(Map<String, String> params) {
+    public List<UserDisplayDTO> getUsers(Map<String, String> params) {
         return this.userRepository.getUsers(params);
     }
 

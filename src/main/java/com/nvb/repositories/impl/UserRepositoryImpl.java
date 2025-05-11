@@ -4,6 +4,7 @@
  */
 package com.nvb.repositories.impl;
 
+import com.nvb.dto.UserDisplayDTO;
 import com.nvb.pojo.User;
 import com.nvb.repositories.UserRepository;
 import jakarta.persistence.NoResultException;
@@ -55,15 +56,11 @@ public class UserRepositoryImpl implements UserRepository {
             if (userId != null && !userId.isEmpty()) {
                 predicates.add(builder.equal(root.get("id"), Integer.parseInt(userId)));
             }
-            
+
             if (username != null && !username.isEmpty()) {
                 predicates.add(builder.equal(root.get("username"), username));
             }
-            
-            if (username != null && !username.isEmpty()) {
-                predicates.add(builder.equal(root.get("username"), username));
-            }
-            
+
             if (phone != null && !phone.isEmpty()) {
                 predicates.add(builder.equal(root.get("phone"), phone));
             }
@@ -104,13 +101,23 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<User> getUsers(Map<String, String> params) {
+    public List<UserDisplayDTO> getUsers(Map<String, String> params) {
 
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder buider = s.getCriteriaBuilder();
-        CriteriaQuery<User> query = buider.createQuery(User.class);
+        CriteriaQuery<UserDisplayDTO> query = buider.createQuery(UserDisplayDTO.class);
         Root root = query.from(User.class);
-        query.select(root);
+        query.select(buider.construct(UserDisplayDTO.class,
+                root.get("id"),
+                root.get("username"),
+                root.get("firstName"),
+                root.get("lastName"),
+                root.get("email"),
+                root.get("phone"),
+                root.get("role"),
+                root.get("isActive"),
+                root.get("avatarUrl")
+        ));
 
         if (params != null) {
 

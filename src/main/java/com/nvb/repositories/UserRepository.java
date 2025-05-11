@@ -4,6 +4,7 @@
  */
 package com.nvb.repositories;
 
+import com.nvb.dto.UserDisplayDTO;
 import com.nvb.pojo.User;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,6 @@ public interface UserRepository {
     User getUser(Map<String,String> params);
     User addOrUpdateUser(User u);
     boolean authenticate(String username, String password);
-    List<User> getUsers(Map<String,String> params);
+    List<UserDisplayDTO> getUsers(Map<String,String> params);
     void deleteUser(User u);
 }
