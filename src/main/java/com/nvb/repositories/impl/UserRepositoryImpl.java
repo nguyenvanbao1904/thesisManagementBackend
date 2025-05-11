@@ -41,45 +41,58 @@ public class UserRepositoryImpl implements UserRepository {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<User> query = builder.createQuery(User.class);
-        Root root = query.from(User.class);
+        Root<User> root = query.from(User.class);
         query.select(root);
 
+        List<Predicate> predicates = new ArrayList<>();
+
         if (params != null) {
-
-            List<Predicate> predicates = new ArrayList<>();
-
             String userId = params.get("id");
-            if (userId != null && !userId.isEmpty()) {
-                predicates.add(builder.equal(root.get("id"), userId));
-            }
-            String kw = params.get("username");
-            if (kw != null && !kw.isEmpty()) {
-                predicates.add(builder.equal(root.get("username"), kw));
-            }
+            String username = params.get("username");
             String phone = params.get("phone");
+            String email = params.get("email");
+
+            if (userId != null && !userId.isEmpty()) {
+                predicates.add(builder.equal(root.get("id"), Integer.parseInt(userId)));
+            }
+            
+            if (username != null && !username.isEmpty()) {
+                predicates.add(builder.equal(root.get("username"), username));
+            }
+            
+            if (username != null && !username.isEmpty()) {
+                predicates.add(builder.equal(root.get("username"), username));
+            }
+            
             if (phone != null && !phone.isEmpty()) {
                 predicates.add(builder.equal(root.get("phone"), phone));
             }
-            String email = params.get("email");
+
             if (email != null && !email.isEmpty()) {
                 predicates.add(builder.equal(root.get("email"), email));
             }
-            query.where(predicates.toArray(Predicate[]::new));
-
         }
+
+        query.where(predicates.toArray(new Predicate[0]));
+
         Query q = s.createQuery(query);
         try {
             return (User) q.getSingleResult();
         } catch (NoResultException ex) {
-            return null; // hoặc Optional.empty() nếu bạn dùng Optional
+            return null;
+        } catch (org.hibernate.NonUniqueResultException ex) {
+            return null;
         }
-
     }
 
     @Override
-    public User addUser(User u) {
+    public User addOrUpdateUser(User u) {
         Session s = this.factory.getObject().getCurrentSession();
-        s.persist(u);
+        if (u.getId() == null) {
+            s.persist(u);
+        } else {
+            s.merge(u);
+        }
         return u;
     }
 
@@ -107,7 +120,6 @@ public class UserRepositoryImpl implements UserRepository {
             if (kw != null && !kw.isEmpty()) {
                 predicates.add(buider.like(root.get("username"), String.format("%%%s%%", kw)));
             }
-            
 
             String role = params.get("role");
             if (role != null && !role.isEmpty()) {
@@ -131,9 +143,9 @@ public class UserRepositoryImpl implements UserRepository {
 
         if (params != null && params.containsKey("page")) {
             int page = 1;
-            try{
+            try {
                 page = Integer.parseInt(params.get("page"));
-            }catch(NumberFormatException ex){
+            } catch (NumberFormatException ex) {
                 page = 1;
             }
             int start = (page - 1) * PAGE_SIZE;

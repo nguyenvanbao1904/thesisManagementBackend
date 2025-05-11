@@ -5,10 +5,12 @@
 package com.nvb.configs;
 
 import com.nvb.dto.UserDTO;
+import com.nvb.pojo.User;
 import com.nvb.validators.UserValidator;
 import com.nvb.validators.WebAppValidator;
 import java.util.HashSet;
 import java.util.Set;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -36,20 +38,20 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
     "com.nvb.thesismanagementbackend"
 })
 public class WebAppContextConfigs implements WebMvcConfigurer {
-    
+
     @Autowired
     private UserValidator userValidator;
-    
+
     @Autowired
     private MessageSource messageSource;
-    
+
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
         configurer.enable();
     }
-    
+
     @Bean
-    public WebAppValidator userWebAppValidator(){
+    public WebAppValidator userWebAppValidator() {
         Set<Validator> springValidators = new HashSet<>();
         springValidators.add(userValidator);
         WebAppValidator webAppValidator = new WebAppValidator();
@@ -57,17 +59,25 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
         webAppValidator.setSpringValidators(springValidators);
         return webAppValidator;
     }
-    
-    
+
     @Bean
     public LocalValidatorFactoryBean localValidatorFactoryBean() {
         LocalValidatorFactoryBean validatorFactoryBean = new LocalValidatorFactoryBean();
         validatorFactoryBean.setValidationMessageSource(messageSource); // Kết nối với MessageSource
         return validatorFactoryBean;
     }
-    
+
     @Override
     public LocalValidatorFactoryBean getValidator() {
         return localValidatorFactoryBean(); // Cung cấp validator này cho Spring MVC
+    }
+
+    @Bean
+    public ModelMapper modelMapper() {
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.typeMap(User.class, UserDTO.class).addMappings(mapper -> {
+            mapper.skip(UserDTO::setPassword);
+        });
+        return modelMapper;
     }
 }

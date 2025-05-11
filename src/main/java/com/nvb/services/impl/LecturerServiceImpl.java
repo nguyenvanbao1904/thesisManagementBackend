@@ -26,12 +26,15 @@ public class LecturerServiceImpl implements LecturerService{
     
     @Override
     public Lecturer prepareLecturer(User user, UserDTO userDto) {
-        Lecturer lecturer = new Lecturer();
+        Lecturer lecturer;
+        if (user.getLecturer() != null) { 
+            lecturer = user.getLecturer();
+        } else {
+            lecturer = new Lecturer();
+            lecturer.setUser(user); 
+        }
+        lecturer.setAcademicTitle(userDto.getAcademicTitle().isBlank() ? null : userDto.getAcademicTitle());
         lecturer.setAcademicDegree(userDto.getAcademicDegree());
-        String academicTitle = userDto.getAcademicTitle();
-        lecturer.setAcademicTitle(academicTitle == null || academicTitle.trim().isEmpty() ? null : academicTitle);
-        lecturer.setUser(user);
         return lecturer;
     }
-    
 }

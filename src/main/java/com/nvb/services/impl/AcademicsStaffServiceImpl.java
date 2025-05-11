@@ -9,8 +9,6 @@ import com.nvb.pojo.AcademicStaff;
 import com.nvb.pojo.User;
 import com.nvb.repositories.AcademicsStaffRepository;
 import com.nvb.services.AcademicsStaffService;
-import com.nvb.services.UserService;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +26,13 @@ public class AcademicsStaffServiceImpl implements AcademicsStaffService{
     
     @Override
     public AcademicStaff prepareAcademicStaff(User user, UserDTO userDto) {
-        AcademicStaff staff = new AcademicStaff();
-        staff.setUser(user);
-        return staff;
+            AcademicStaff academicStaff;
+        if(user.getAcademicStaff()!= null){
+            academicStaff = user.getAcademicStaff();
+        }else{
+            academicStaff = new AcademicStaff();
+            academicStaff.setUser(user);
+        }
+        return academicStaff;
     }
 }

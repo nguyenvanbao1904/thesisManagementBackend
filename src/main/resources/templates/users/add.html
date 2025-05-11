@@ -98,7 +98,7 @@
                 <div class="mb-3">
                     <label for="password" class="form-label">Password:</label>
                     <input type="password" th:class="${#fields.hasErrors('password')} ? 'form-control field-error' : 'form-control'"
-                           id="password" placeholder="Password" th:field="*{password}" required />
+                           id="password" placeholder="Password" th:field="*{password}" />
                     <div th:if="${#fields.hasErrors('password')}" class="error-message"
                          th:errors="*{password}">Lỗi password</div>
                 </div>
@@ -130,7 +130,7 @@
                  <div class="mb-3">
                     <label for="phone" class="form-label">Số điện thoại:</label>
                     <input type="text" th:class="${#fields.hasErrors('phone')} ? 'form-control field-error' : 'form-control'"
-                           id="phone" placeholder="Số điện thoại" th:field="*{phone}" required/>
+                           id="phone" placeholder="Số điện thoại" th:field="*{phone}"/>
                     <div th:if="${#fields.hasErrors('phone')}" class="error-message"
                          th:errors="*{phone}">Lỗi phone</div>
                 </div>

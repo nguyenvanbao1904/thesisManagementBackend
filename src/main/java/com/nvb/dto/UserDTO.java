@@ -17,8 +17,6 @@ public class UserDTO {
     private Integer id;
     @NotBlank(message = "{user.username.notnullMsg}")
     private String username;
-    @NotBlank(message = "{user.password.notnullMsg}")
-    @Size(min = 6, message = "{user.password.tooshortMsg}")
     private String password;
     @NotBlank(message = "{user.firstname.notnullMsg}")
     private String firstName;

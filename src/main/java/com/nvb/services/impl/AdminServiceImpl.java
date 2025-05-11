@@ -9,8 +9,6 @@ import com.nvb.pojo.Admin;
 import com.nvb.pojo.User;
 import com.nvb.repositories.AdminRepository;
 import com.nvb.services.AdminService;
-import com.nvb.services.UserService;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +26,13 @@ public class AdminServiceImpl implements AdminService{
     
     @Override
     public Admin prepareAdmin(User user, UserDTO userDto) {
-        Admin admin = new Admin();
-        admin.setUser(user);
+        Admin admin;
+        if(user.getAdmin() != null){
+            admin = user.getAdmin();
+        }else{
+            admin = new Admin();
+            admin.setUser(user);
+        }
         return admin;
     }
 }

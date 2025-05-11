@@ -74,7 +74,7 @@
                         <td th:text="${u.isActive}"></td>
                         <td>
                             <a class="btn btn-danger" th:onclick="'deleteProduct(\''+@{/api/users/}+'\','+${u.id}+')'">Xóa</a>
-                            <a class="btn btn-success">Cập nhật️</a>
+                            <a class="btn btn-success" th:href="@{'/users/' + ${u.id}}">Cập nhật️</a>
                         </td>
                     </tr>
                 </tbody>
@@ -90,7 +90,6 @@
     <script>
         function deleteProduct(endpoint, id) {
             if (confirm("Bạn chắc chắn xóa không?") === true) {
-                console.log(endpoint + id)
                 fetch(endpoint + id, {
                     method: "delete"
                 }).then(res => {

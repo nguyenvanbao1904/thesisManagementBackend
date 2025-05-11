@@ -8,8 +8,6 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.nvb.dto.UserDTO;
 import com.nvb.pojo.User;
-import com.nvb.pojo.AcademicStaff;
-import com.nvb.pojo.Admin;
 import com.nvb.repositories.UserRepository;
 import com.nvb.services.AcademicsStaffService;
 import com.nvb.services.AdminService;
@@ -60,26 +58,67 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional
-    public User addUser(UserDTO userDto, MultipartFile avatar) {
-        User u = new User();
-        u.setFirstName(userDto.getFirstName());
-        u.setLastName(userDto.getLastName());
-        u.setEmail(userDto.getEmail());
-        u.setPhone(userDto.getPhone());
-        u.setUsername(userDto.getUsername());
-        u.setPassword(this.passwordEncoder.encode(userDto.getPassword()));
-        u.setRole(userDto.getRole());
-        
-        if (avatar != null && !avatar.isEmpty()) {
-            try {
-                Map res = cloudinary.uploader().upload(avatar.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
-                u.setAvatarUrl(res.get("secure_url").toString());
-            } catch (IOException ex) {
-                System.err.println("Error uploading avatar: " + ex.getMessage());
+    public User addOrUpdateUser(UserDTO userDto, MultipartFile avatar) {
+        User u;
+        if(userDto.getId() != null){
+            u = userRepository.getUser(Map.of("id", String.valueOf(userDto.getId())));
+            u.setFirstName(userDto.getFirstName());
+            u.setLastName(userDto.getLastName());
+            u.setEmail(userDto.getEmail());
+            u.setPhone(userDto.getPhone().isBlank() ? null : userDto.getPhone());
+            u.setUsername(userDto.getUsername());
+            if (userDto.getPassword() != null && !userDto.getPassword().isBlank()) {
+                u.setPassword(this.passwordEncoder.encode(userDto.getPassword()));
+            }
+            if (avatar != null && !avatar.isEmpty()) {
+                try {
+                    Map res = cloudinary.uploader().upload(avatar.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+                        u.setAvatarUrl(res.get("secure_url").toString());
+                } catch (IOException ex) {
+                    System.err.println(ex.getMessage());
+                }
+            } else if (userDto.getAvatarUrl() != null && !userDto.getAvatarUrl().isBlank()) {
+                
+                u.setAvatarUrl(userDto.getAvatarUrl());
+            }
+        }else { 
+            u = new User();
+            u.setFirstName(userDto.getFirstName());
+            u.setLastName(userDto.getLastName());
+            u.setEmail(userDto.getEmail());
+            u.setPhone(userDto.getPhone().isBlank() ? null : userDto.getPhone());
+            u.setUsername(userDto.getUsername());
+            u.setPassword(this.passwordEncoder.encode(userDto.getPassword())); 
+
+            if (avatar != null && !avatar.isEmpty()) {
+                try {
+                    Map res = cloudinary.uploader().upload(avatar.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+                        u.setAvatarUrl(res.get("secure_url").toString());
+                } catch (IOException ex) {
+                    System.err.println(ex.getMessage());
+                }
             }
         }
         
-        switch (userDto.getRole()) {
+        String newRole = userDto.getRole();
+        String oldRole = (userDto.getId() != null) ? u.getRole() : null; // Lấy vai trò cũ nếu là update
+
+        // Nếu vai trò thay đổi, hoặc nếu đây là tạo mới, cần xử lý các entity con
+        if (oldRole == null || !oldRole.equals(newRole)) {
+            // Xóa thông tin vai trò cũ nếu có và vai trò thay đổi
+            if (oldRole != null) {
+                switch (oldRole) {
+                    case "ROLE_ADMIN": u.setAdmin(null); break; // Hoặc xóa admin record nếu cần
+                    case "ROLE_ACADEMICSTAFF": u.setAcademicStaff(null); break;
+                    case "ROLE_LECTURER": u.setLecturer(null); break;
+                    case "ROLE_STUDENT": u.setStudent(null); break;
+                }
+            }
+        }
+        
+        // Thiết lập vai trò mới và chuẩn bị entity con tương ứng
+        u.setRole(newRole);
+        switch (newRole) {
             case "ROLE_ADMIN":
                 u.setAdmin(adminService.prepareAdmin(u, userDto));
                 break;
@@ -93,10 +132,15 @@ public class UserServiceImpl implements UserService{
                 u.setStudent(studentService.prepareStudent(u, userDto));
                 break;
             default:
-                break;
+                // Nếu vai trò không hợp lệ, có thể bạn muốn xóa tất cả các liên kết vai trò
+                u.setAdmin(null);
+                u.setAcademicStaff(null);
+                u.setLecturer(null);
+                u.setStudent(null);
+            break;
         }
         
-        return this.userRepository.addUser(u);
+        return this.userRepository.addOrUpdateUser(u);
     }
 
     @Override

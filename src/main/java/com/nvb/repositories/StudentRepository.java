@@ -5,10 +5,12 @@
 package com.nvb.repositories;
 
 import com.nvb.pojo.Student;
+import java.util.Map;
 
 /**
  *
  * @author nguyenvanbao
  */
 public interface StudentRepository {
+    Student getStudent(Map<String, String> params);
 }

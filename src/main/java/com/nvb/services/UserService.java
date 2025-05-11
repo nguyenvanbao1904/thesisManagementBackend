@@ -17,7 +17,7 @@ import com.nvb.dto.UserDTO;
  */
 public interface UserService extends UserDetailsService{
     User getUser(Map<String, String> params);
-    User addUser(UserDTO userDto, MultipartFile avatar);
+    User addOrUpdateUser(UserDTO userDto, MultipartFile avatar);
     boolean authenticate(String userName, String password);
     List<User> getUsers(Map<String, String> params);
     void deleteUser(int id);

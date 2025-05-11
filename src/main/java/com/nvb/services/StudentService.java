@@ -7,6 +7,7 @@ package com.nvb.services;
 import com.nvb.dto.UserDTO;
 import com.nvb.pojo.Student;
 import com.nvb.pojo.User;
+import java.util.Map;
 
 /**
  *
@@ -14,4 +15,5 @@ import com.nvb.pojo.User;
  */
 public interface StudentService {
     Student prepareStudent(User user, UserDTO userDto);
+    Student getStudent(Map<String, String> params);
 }
