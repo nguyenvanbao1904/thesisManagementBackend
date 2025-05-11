@@ -48,6 +48,10 @@ public class UserRepositoryImpl implements UserRepository {
 
             List<Predicate> predicates = new ArrayList<>();
 
+            String userId = params.get("id");
+            if (userId != null && !userId.isEmpty()) {
+                predicates.add(builder.equal(root.get("id"), userId));
+            }
             String kw = params.get("username");
             if (kw != null && !kw.isEmpty()) {
                 predicates.add(builder.equal(root.get("username"), kw));
