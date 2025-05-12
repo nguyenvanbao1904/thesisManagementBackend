@@ -6,6 +6,7 @@ package com.nvb.configs;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.nvb.filters.JwtFilter;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.core.env.Environment;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  *
@@ -35,16 +37,15 @@ import org.springframework.core.env.Environment;
 @EnableWebSecurity
 @ComponentScan(basePackages = {
     "com.nvb.repositories",
-    "com.nvb.services"
+    "com.nvb.services",
+    "com.nvb.utils",      
+    "com.nvb.filters"   
 })
 @PropertySource("classpath:application.properties")
 public class SpringSercurityConfigs {
     
     @Autowired
     private Environment env;
-    
-    @Autowired
-    private UserDetailsService userDetailsService;
     
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -90,6 +91,9 @@ public class SpringSercurityConfigs {
         return cloudinary;
     }
     
+    @Autowired
+    private JwtFilter jwtFilter;
+    
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws
             Exception {
@@ -99,11 +103,12 @@ public class SpringSercurityConfigs {
                         .requestMatchers("/").hasRole("ADMIN")
                         .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated())
+                        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.loginPage("/login")
                 .loginProcessingUrl("/login")
                 .defaultSuccessUrl("/", true)
                 .failureUrl("/login?error=true").permitAll())
-                .logout(logout -> logout.logoutSuccessUrl("/login").permitAll());//.addFilterBefore(new JwtFilter(), UsernamePasswordAuthenticationFilter.class);
+                .logout(logout -> logout.logoutSuccessUrl("/login").permitAll());
         return http.build();
     }
 }

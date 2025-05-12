@@ -7,7 +7,6 @@ package com.nvb.services.impl;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.nvb.dto.UserDTO;
-import com.nvb.dto.UserDisplayDTO;
 import com.nvb.pojo.User;
 import com.nvb.pojo.UserRole;
 import com.nvb.repositories.UserRepository;
@@ -36,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @author nguyenvanbao
  */
 @Service("userDetailsService")
+@Transactional
 public class UserServiceImpl implements UserService{
     
     @Autowired
@@ -158,7 +158,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public List<UserDisplayDTO> getUsers(Map<String, String> params) {
+    public List<User> getUsers(Map<String, String> params) {
         return this.userRepository.getUsers(params);
     }
 

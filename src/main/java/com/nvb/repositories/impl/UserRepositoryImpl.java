@@ -4,7 +4,7 @@
  */
 package com.nvb.repositories.impl;
 
-import com.nvb.dto.UserDisplayDTO;
+import com.nvb.dto.UserDTO;
 import com.nvb.pojo.User;
 import com.nvb.repositories.UserRepository;
 import jakarta.persistence.NoResultException;
@@ -43,7 +43,6 @@ public class UserRepositoryImpl implements UserRepository {
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<User> query = builder.createQuery(User.class);
         Root<User> root = query.from(User.class);
-        query.select(root);
 
         List<Predicate> predicates = new ArrayList<>();
 
@@ -71,6 +70,8 @@ public class UserRepositoryImpl implements UserRepository {
         }
 
         query.where(predicates.toArray(new Predicate[0]));
+        
+        query.select(root);
 
         Query q = s.createQuery(query);
         try {
@@ -99,23 +100,25 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<UserDisplayDTO> getUsers(Map<String, String> params) {
+    public List<User> getUsers(Map<String, String> params) {
 
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder buider = s.getCriteriaBuilder();
-        CriteriaQuery<UserDisplayDTO> query = buider.createQuery(UserDisplayDTO.class);
+        CriteriaQuery<User> query = buider.createQuery(User.class);
         Root root = query.from(User.class);
-        query.select(buider.construct(UserDisplayDTO.class,
+        
+        query.select(buider.construct(User.class,
                 root.get("id"),
                 root.get("username"),
                 root.get("firstName"),
                 root.get("lastName"),
                 root.get("email"),
                 root.get("phone"),
+                root.get("avatarUrl"),
                 root.get("role"),
-                root.get("isActive"),
-                root.get("avatarUrl")
+                root.get("isActive")
         ));
+        
 
         if (params != null) {
 
@@ -158,7 +161,7 @@ public class UserRepositoryImpl implements UserRepository {
             q.setFirstResult(start);
         }
         return q.getResultList();
-    };
+    }
 
     @Override
     public void deleteUser(User u) {

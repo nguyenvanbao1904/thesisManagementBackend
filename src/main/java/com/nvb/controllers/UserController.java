@@ -5,7 +5,7 @@
 package com.nvb.controllers;
 
 import com.nvb.dto.UserDTO;
-import com.nvb.dto.UserDisplayDTO;
+import com.nvb.pojo.User;
 import com.nvb.services.MajorService;
 import com.nvb.services.UserService;
 import com.nvb.validators.WebAppValidator;
@@ -65,7 +65,7 @@ public class UserController {
 
     @GetMapping("/users")
     public String showAll(Model model, @RequestParam(required = false) Map<String, String> params) {
-        List<UserDisplayDTO> users = userDetailsService.getUsers(params);
+        List<User> users = userDetailsService.getUsers(params);
         model.addAttribute("users", users);
         int page = 1;
         if (params.get("page") != null) {

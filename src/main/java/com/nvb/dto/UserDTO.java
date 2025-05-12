@@ -59,6 +59,24 @@ public class UserDTO {
         this.academicDegree = academicDegree;
     }
 
+    public UserDTO(Integer id, String username, String firstName, String lastName, String email, String phone, String avatarUrl, String role, MultipartFile file, String studentId, Integer majorId, String academicTitle, String academicDegree) {
+        this.id = id;
+        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phone = phone;
+        this.avatarUrl = avatarUrl;
+        this.role = role;
+        this.file = file;
+        this.studentId = studentId;
+        this.majorId = majorId;
+        this.academicTitle = academicTitle;
+        this.academicDegree = academicDegree;
+    }
+
+    
+    
     public Integer getId() {
         return id;
     }

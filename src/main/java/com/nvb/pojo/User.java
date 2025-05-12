@@ -4,6 +4,7 @@
  */
 package com.nvb.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -106,12 +107,16 @@ public class User implements Serializable {
     @Column(name = "is_active")
     private boolean isActive = true;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Student student;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Admin admin;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Lecturer lecturer;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private AcademicStaff academicStaff;
     @Transient
     private MultipartFile file;
@@ -123,15 +128,28 @@ public class User implements Serializable {
         this.id = id;
     }
 
-    public User(Integer id, String password, String firstName, String lastName, String avatarUrl, String role, Date createdAt, Date updatedAt, boolean isActive) {
+    public User(Integer id, String username, String password, String firstName, String lastName, String email, String phone, String avatarUrl, String role, boolean isActive) {
         this.id = id;
+        this.username = username;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.email = email;
+        this.phone = phone;
         this.avatarUrl = avatarUrl;
         this.role = role;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.isActive = isActive;
+    }
+    
+    public User(Integer id, String username, String firstName, String lastName, String email, String phone, String avatarUrl, String role, boolean isActive) {
+        this.id = id;
+        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phone = phone;
+        this.avatarUrl = avatarUrl;
+        this.role = role;
         this.isActive = isActive;
     }
 

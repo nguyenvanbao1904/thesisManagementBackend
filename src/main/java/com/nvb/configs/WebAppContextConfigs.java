@@ -37,7 +37,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
     "com.nvb.services",
     "com.nvb.validators",
     "com.nvb.exceptions",
-    "com.nvb.thesismanagementbackend"
+    "com.nvb.thesismanagementbackend",
+    "com.nvb.utils",
+    "com.nvb.filters"
 })
 public class WebAppContextConfigs implements WebMvcConfigurer {
 
