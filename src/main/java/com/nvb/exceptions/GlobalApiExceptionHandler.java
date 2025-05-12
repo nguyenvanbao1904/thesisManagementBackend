@@ -17,11 +17,6 @@ public class GlobalApiExceptionHandler {
     public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(Exception ex) {
         Map<String, String> errorResponse = new HashMap<>();
         String specificMessage = "Không thể thực hiện thao tác do ràng buộc dữ liệu. Vui lòng kiểm tra lại.";
-        if (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("foreign key constraint fails")) {
-            if (ex.getMessage().contains("student") && ex.getMessage().contains("major")) {
-                 specificMessage = "Không thể xóa ngành này vì đang được sử dụng bởi sinh viên!";
-            } 
-        }
         errorResponse.put("error", specificMessage);
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }

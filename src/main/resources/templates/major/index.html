@@ -51,7 +51,7 @@
                         <td th:text="${m.isActive}"></td>
                         <td>
                             <a class="btn btn-danger" th:onclick="'deleteProduct(\''+@{/api/majors/}+'\','+${m.id}+')'">Xóa</a>
-                            <a class="btn btn-success">Cập nhật️</a>
+                            <a class="btn btn-success" th:href="@{'/majors/' + ${m.id}}">Cập nhật️</a>
                         </td>
                     </tr>
                 </tbody>

@@ -77,8 +77,6 @@ public class UserRepositoryImpl implements UserRepository {
             return (User) q.getSingleResult();
         } catch (NoResultException ex) {
             return null;
-        } catch (org.hibernate.NonUniqueResultException ex) {
-            return null;
         }
     }
 

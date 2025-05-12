@@ -33,9 +33,13 @@ public class MajorRepositoryImpl implements MajorRepository{
     private LocalSessionFactoryBean factory;
     
     @Override
-    public Major addMajor(Major major) {
+    public Major addOrUpdateMajor(Major major) {
         Session s = factory.getObject().getCurrentSession();
-        s.persist(major);
+        if (major.getId() == null) {
+            s.persist(major);
+        } else {
+            s.merge(major);
+        }
         return major;
     }
 

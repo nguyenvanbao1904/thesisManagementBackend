@@ -25,8 +25,8 @@ public class MajorServiceImpl implements MajorService{
     private MajorRepository majorRepository;
     
     @Override
-    public Major addMajor(Major major) {
-        return majorRepository.addMajor(major);
+    public Major addOrUpdateMajor(Major major) {
+        return majorRepository.addOrUpdateMajor(major);
     }
 
     @Override

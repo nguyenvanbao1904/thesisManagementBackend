@@ -20,10 +20,10 @@
                         <span th:unless="${major.id == null}">Cập nhật ngành</span>
                     </button>
                 </div>
+                <input type="hidden" th:field="*{id}" />
             </form>
         </div>
     </main>
-
     <div th:replace="/base/base :: footer"></div>
 </body>
 </html>
