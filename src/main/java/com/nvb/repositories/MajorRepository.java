@@ -16,4 +16,5 @@ public interface MajorRepository {
     Major addMajor(Major major);
     List<Major> getMajors(Map<String, String> params);
     Major getMajorById(int majorId);
+    void deleteMajor(int id);
 }

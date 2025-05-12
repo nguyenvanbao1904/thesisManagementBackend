@@ -38,5 +38,10 @@ public class MajorServiceImpl implements MajorService{
     public Major getMajorById(int majorId) {
         return majorRepository.getMajorById(majorId);
     }
+
+    @Override
+    public void deleteMajor(int id) {
+        majorRepository.deleteMajor(id);
+    }
     
 }

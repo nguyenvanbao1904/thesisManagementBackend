@@ -21,6 +21,7 @@ import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -35,6 +36,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
     "com.nvb.repositories",
     "com.nvb.services",
     "com.nvb.validators",
+    "com.nvb.exceptions",
     "com.nvb.thesismanagementbackend"
 })
 public class WebAppContextConfigs implements WebMvcConfigurer {
@@ -79,5 +81,12 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
             mapper.skip(UserDTO::setPassword);
         });
         return modelMapper;
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/js/**").addResourceLocations("classpath:/static/js/");
+        registry.addResourceHandler("/css/**").addResourceLocations("classpath:/static/css/");
+
     }
 }

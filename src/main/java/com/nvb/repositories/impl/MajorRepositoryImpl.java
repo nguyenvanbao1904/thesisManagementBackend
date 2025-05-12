@@ -88,5 +88,11 @@ public class MajorRepositoryImpl implements MajorRepository{
         Session s = this.factory.getObject().getCurrentSession();
         return s.get(Major.class, majorId);
     }
+
+    @Override
+    public void deleteMajor(int id){
+        Session s = this.factory.getObject().getCurrentSession();
+        s.remove(this.getMajorById(id));
+    }
     
 }

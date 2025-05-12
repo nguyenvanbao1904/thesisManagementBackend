@@ -1,0 +1,35 @@
+package com.nvb.exceptions;
+
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.hibernate.exception.ConstraintViolationException;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+public class GlobalApiExceptionHandler {
+
+
+    @ExceptionHandler({DataIntegrityViolationException.class, ConstraintViolationException.class})
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(Exception ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        String specificMessage = "Không thể thực hiện thao tác do ràng buộc dữ liệu. Vui lòng kiểm tra lại.";
+        if (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("foreign key constraint fails")) {
+            if (ex.getMessage().contains("student") && ex.getMessage().contains("major")) {
+                 specificMessage = "Không thể xóa ngành này vì đang được sử dụng bởi sinh viên!";
+            } 
+        }
+        errorResponse.put("error", specificMessage);
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau.");
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
