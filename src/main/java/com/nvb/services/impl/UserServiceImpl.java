@@ -9,6 +9,7 @@ import com.cloudinary.utils.ObjectUtils;
 import com.nvb.dto.UserDTO;
 import com.nvb.dto.UserDisplayDTO;
 import com.nvb.pojo.User;
+import com.nvb.pojo.UserRole;
 import com.nvb.repositories.UserRepository;
 import com.nvb.services.AcademicsStaffService;
 import com.nvb.services.AdminService;
@@ -79,10 +80,9 @@ public class UserServiceImpl implements UserService{
                     System.err.println(ex.getMessage());
                 }
             } else if (userDto.getAvatarUrl() != null && !userDto.getAvatarUrl().isBlank()) {
-                
                 u.setAvatarUrl(userDto.getAvatarUrl());
             }
-        }else { 
+        }else{
             u = new User();
             u.setFirstName(userDto.getFirstName());
             u.setLastName(userDto.getLastName());
@@ -101,44 +101,38 @@ public class UserServiceImpl implements UserService{
             }
         }
         
-        String newRole = userDto.getRole();
-        String oldRole = (userDto.getId() != null) ? u.getRole() : null; // Lấy vai trò cũ nếu là update
+        // Chuyển đổi role từ string sang enum để xử lý logic
+        UserRole newRole = UserRole.valueOf(userDto.getRole());
+        UserRole oldRole = (userDto.getId() != null) ? UserRole.valueOf(u.getRole()) : null;
 
         // Nếu vai trò thay đổi, hoặc nếu đây là tạo mới, cần xử lý các entity con
-        if (oldRole == null || !oldRole.equals(newRole)) {
+        if (oldRole == null || oldRole != newRole) {
             // Xóa thông tin vai trò cũ nếu có và vai trò thay đổi
             if (oldRole != null) {
                 switch (oldRole) {
-                    case "ROLE_ADMIN": u.setAdmin(null); break; // Hoặc xóa admin record nếu cần
-                    case "ROLE_ACADEMICSTAFF": u.setAcademicStaff(null); break;
-                    case "ROLE_LECTURER": u.setLecturer(null); break;
-                    case "ROLE_STUDENT": u.setStudent(null); break;
+                    case ROLE_ADMIN: u.setAdmin(null); break;
+                    case ROLE_ACADEMICSTAFF: u.setAcademicStaff(null); break;
+                    case ROLE_LECTURER: u.setLecturer(null); break;
+                    case ROLE_STUDENT: u.setStudent(null); break;
                 }
             }
         }
         
         // Thiết lập vai trò mới và chuẩn bị entity con tương ứng
-        u.setRole(newRole);
+        u.setRole(newRole.name()); // Chuyển enum thành string trước khi lưu vào DB
         switch (newRole) {
-            case "ROLE_ADMIN":
+            case ROLE_ADMIN:
                 u.setAdmin(adminService.prepareAdmin(u, userDto));
                 break;
-            case "ROLE_ACADEMICSTAFF":
+            case ROLE_ACADEMICSTAFF:
                 u.setAcademicStaff(academicsStaffService.prepareAcademicStaff(u, userDto));
                 break;
-            case "ROLE_LECTURER":
+            case ROLE_LECTURER:
                 u.setLecturer(lecturerService.prepareLecturer(u, userDto));
                 break;
-            case "ROLE_STUDENT":
+            case ROLE_STUDENT:
                 u.setStudent(studentService.prepareStudent(u, userDto));
                 break;
-            default:
-                // Nếu vai trò không hợp lệ, có thể bạn muốn xóa tất cả các liên kết vai trò
-                u.setAdmin(null);
-                u.setAcademicStaff(null);
-                u.setLecturer(null);
-                u.setStudent(null);
-            break;
         }
         
         return this.userRepository.addOrUpdateUser(u);
