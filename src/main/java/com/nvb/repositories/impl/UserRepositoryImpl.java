@@ -93,10 +93,12 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public boolean authenticate(String username, String password) {
+    public User authenticate(String username, String password) {
         User u = this.getUser(Map.of("username", username));
-
-        return this.passwordEncoder.matches(password, u.getPassword());
+        if(this.passwordEncoder.matches(password, u.getPassword())){
+            return u;
+        }
+        return null;
     }
 
     @Override

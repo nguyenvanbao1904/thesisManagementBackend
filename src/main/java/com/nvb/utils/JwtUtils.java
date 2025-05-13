@@ -24,25 +24,25 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class JwtUtils {
-    
+
     @Autowired
     private Environment env;
-    
+
     private String SECRET;
     private long EXPIRATION_MS;
-    
+
     @PostConstruct
     public void init() {
         SECRET = env.getProperty("jwt.secret");
         EXPIRATION_MS = Long.parseLong(env.getProperty("jwt.expiration_ms"));
     }
 
-
-    public String generateToken(String username) throws Exception {
+    public String generateToken(String username, String role) throws Exception {
         JWSSigner signer = new MACSigner(SECRET);
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .subject(username)
+                .claim("role", role)
                 .expirationTime(new Date(System.currentTimeMillis() + EXPIRATION_MS))
                 .issueTime(new Date())
                 .build();
@@ -65,6 +65,19 @@ public class JwtUtils {
             Date expiration = signedJWT.getJWTClaimsSet().getExpirationTime();
             if (expiration.after(new Date())) {
                 return signedJWT.getJWTClaimsSet().getSubject();
+            }
+        }
+        return null;
+    }
+
+    public String getRole(String token) throws Exception {
+        SignedJWT signedJWT = SignedJWT.parse(token);
+        JWSVerifier verifier = new MACVerifier(SECRET);
+
+        if (signedJWT.verify(verifier)) {
+            Date expiration = signedJWT.getJWTClaimsSet().getExpirationTime();
+            if (expiration.after(new Date())) {
+                return (String) signedJWT.getJWTClaimsSet().getClaim("role");
             }
         }
         return null;

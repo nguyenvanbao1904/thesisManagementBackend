@@ -139,7 +139,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public boolean authenticate(String username, String password) {
+    public User authenticate(String username, String password) {
         return userRepository.authenticate(username, password);
     }
 

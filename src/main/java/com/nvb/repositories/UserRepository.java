@@ -15,7 +15,7 @@ import java.util.Map;
 public interface UserRepository {
     User getUser(Map<String,String> params);
     User addOrUpdateUser(User u);
-    boolean authenticate(String username, String password);
+    User authenticate(String username, String password);
     List<User> getUsers(Map<String,String> params);
     void deleteUser(User u);
 }
