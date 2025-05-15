@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Quản lý tiêu chí chấm điểm khóa luận</title>
+    <th:block th:replace="/base/base :: bootstrap" ></th:block>
+    <link th:href="@{/css/addUser.css}" rel="stylesheet">
+</head>
+<body>
+    <div th:replace="/base/base :: header"></div> <main>
+        <div class="container mt-5 mb-5">
+            <h1 class="text-center mb-4">Thêm hoặc cập nhật tiêu chí chấm điểm khóa luận</h1>
+
+            <form method="post" th:action="@{/theses/evaluation_criterias/add}" th:object="${evaluationCriteria}" class="border p-4 rounded shadow">
+
+                <!-- Hiển thị thông báo lỗi tổng quan nếu có -->
+                <!-- ĐÃ DI CHUYỂN VÀO TRONG FORM -->
+                <div th:if="${#fields.hasAnyErrors()}" class="alert-validation">
+                    <i class="fas fa-exclamation-circle"></i> Vui lòng kiểm tra lại thông tin đã nhập
+                </div>
+
+                <div class="mb-3">
+                    <label for="name" class="form-label">Tên tiêu chí</label>
+                    <input type="text" th:class="${#fields.hasErrors('name')} ? 'form-control field-error' : 'form-control'"
+                           id="name" placeholder="Tên tiêu chí" th:field="*{name}" required />
+                    <div th:if="${#fields.hasErrors('name')}" class="error-message"
+                         th:errors="*{name}">Lỗi name</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Mô tả</label>
+                    <input type="text" th:class="${#fields.hasErrors('description')} ? 'form-control field-error' : 'form-control'"
+                           id="description" placeholder="Mô tả" th:field="*{description}" />
+                    <div th:if="${#fields.hasErrors('description')}" class="error-message"
+                         th:errors="*{description}">Lỗi description</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="maxPoint" class="form-label">Điểm tối đa</label>
+
+                    <input type="text" th:class="${#fields.hasErrors('maxPoint')} ? 'form-control field-error' : 'form-control'"
+                           id="maxPoint" placeholder="Điểm tối đa" th:field="*{maxPoint}" />
+                    <div th:if="${#fields.hasErrors('maxPoint')}" class="error-message"
+                         th:errors="*{maxPoint}">Lỗi maxPoint</div>
+                </div>
+
+
+
+                <input type="hidden" th:field="*{id}" />
+
+                <div class="text-center">
+                    <button class="btn btn-success mt-3" type="submit">
+                        <span th:if="${evaluationCriteria.id == null}">Thêm bộ tiêu chí</span>
+                        <span th:unless="${evaluationCriteria.id == null}">Cập nhật bộ tiêu chí</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <div th:replace="/base/base :: footer"></div>
+</body>
+</html>

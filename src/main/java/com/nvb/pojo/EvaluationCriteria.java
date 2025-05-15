@@ -58,9 +58,9 @@ public class EvaluationCriteria implements Serializable {
     @NotNull
     @Column(name = "max_point")
     private float maxPoint;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluationCriteria")
+    @OneToMany(mappedBy = "evaluationCriteria")
     private Set<EvaluationCriteriaCollectionDetail> evaluationCriteriaCollectionDetails;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluationCriteria")
+    @OneToMany(mappedBy = "evaluationCriteria")
     private Set<EvaluationScore> evaluationScores;
 
     public EvaluationCriteria() {

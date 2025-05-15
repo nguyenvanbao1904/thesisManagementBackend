@@ -5,10 +5,12 @@
 package com.nvb.repositories;
 
 import com.nvb.pojo.AcademicStaff;
+import java.util.Map;
 
 /**
  *
  * @author nguyenvanbao
  */
 public interface AcademicsStaffRepository {
+    AcademicStaff getAcademicStaff(Map<String, String> params);
 }

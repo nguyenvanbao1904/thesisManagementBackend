@@ -1,0 +1,55 @@
+<!<!doctype html>
+<html xmlns:th="http://wwww.thymeleaf.org">
+    <head>
+        <title>Quản lý các bộ tiêu chí chấm điểm khóa luận</title>
+    <th:block th:replace="/base/base :: bootstrap" ></th:block>
+</head>
+<body>
+    <div th:replace="/base/base :: header"></div> 
+    <main>
+        <div class="container">
+            <h1>Quản lý bộ tiêu chí chấm điểm khóa luận</h1>
+            <a th:href="@{/theses/evaluation_criteria_collection/add}" class="btn btn-info mt-2">Thêm bộ tiêu chí chấm điểm khóa luận</a>
+            
+            <form th:action="@{/theses/evaluation_criteria_collection}">
+                <div class="mb-3 mt-3">
+                    <input type="text" class="form-control" name="name" placeholder="Name" />
+                </div>
+                <div class="mb-3 mt-3">
+                    <button class="btn btn-info" type="submit">Tìm kiếm</button>
+                </div>
+            </form>
+            <hr  />   
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Tên bộ tiêu chí</th> 
+                        <th>Mô tả</th>
+                        <th></th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="e : ${evaluationCriteriaCollections}">
+                        <td th:text="${e.id}"></td>
+                        <td th:text="${e.name}"></td>
+                        <td th:text="${e.description}"></td>
+                        <td>
+                            <a class="btn btn-danger" th:onclick="'deleteProduct(\''+@{/api/users/}+'\','+${e.id}+')'">Xóa</a>
+                            <a class="btn btn-success" th:href="@{'/users/' + ${e.id}}">Cập nhật️</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="text-center mb-2">
+            <a th:if="${page > 0}" th:href="@{/theses/evaluation_criteria_collection(page=${page + 1})}" class="btn btn-info btn-lg mt-3">Xem thêm</a>
+        </div>
+
+
+    </main>
+    <div th:replace="/base/base :: footer"></div>
+    <script th:src="@{/js/deleteItem.js}"></script>
+</body>
+</html>

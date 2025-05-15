@@ -8,6 +8,7 @@ import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,6 +30,8 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  *
@@ -69,20 +72,20 @@ public class Thesis implements Serializable {
     @Column(name = "status")
     private String status;
     @Basic(optional = false)
-    @NotNull
     @Column(name = "created_at")
+    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
     @Basic(optional = false)
-    @NotNull
     @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
+    @UpdateTimestamp
     private Date updatedAt;
-    @ManyToMany(mappedBy = "thesesSupervisors")
+    @ManyToMany(mappedBy = "thesesSupervisors", fetch = FetchType.LAZY)
     private Set<Lecturer> lecturers;
-    @ManyToMany(mappedBy = "theses")
+    @ManyToMany(mappedBy = "theses", fetch = FetchType.LAZY)
     private Set<Student> students;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "thesis")
+    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "thesis", fetch = FetchType.LAZY)
     private Set<EvaluationScore> evaluationScores;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "thesis")
     private EvaluationFinalScore evaluationFinalScore;

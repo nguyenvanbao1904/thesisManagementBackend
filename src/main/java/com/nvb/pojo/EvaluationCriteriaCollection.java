@@ -46,7 +46,7 @@ public class EvaluationCriteriaCollection implements Serializable {
     private Integer id;
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 30)
+    @Size(min = 1, max = 100)
     @Column(name = "name")
     private String name;
     @Basic(optional = false)
@@ -55,12 +55,12 @@ public class EvaluationCriteriaCollection implements Serializable {
     @Size(min = 1, max = 65535)
     @Column(name = "description")
     private String description;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluationCriteriaCollection")
+    @OneToMany(mappedBy = "evaluationCriteriaCollection", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EvaluationCriteriaCollectionDetail> evaluationCriteriaCollectionDetails;
     @JoinColumn(name = "created_by", referencedColumnName = "id")
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = true)
     private AcademicStaff createdBy;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluationCriteriaCollectionId")
+    @OneToMany(mappedBy = "evaluationCriteriaCollectionId")
     private Set<Thesis> theses;
 
     public EvaluationCriteriaCollection() {
@@ -101,11 +101,11 @@ public class EvaluationCriteriaCollection implements Serializable {
     }
 
     @XmlTransient
-    public Set<EvaluationCriteriaCollectionDetail> getevaluationCriteriaCollectionDetails() {
+    public Set<EvaluationCriteriaCollectionDetail> getEvaluationCriteriaCollectionDetails() {
         return evaluationCriteriaCollectionDetails;
     }
 
-    public void setevaluationCriteriaCollectionDetails(Set<EvaluationCriteriaCollectionDetail> evaluationCriteriaCollectionDetails) {
+    public void setEvaluationCriteriaCollectionDetails(Set<EvaluationCriteriaCollectionDetail> evaluationCriteriaCollectionDetails) {
         this.evaluationCriteriaCollectionDetails = evaluationCriteriaCollectionDetails;
     }
 

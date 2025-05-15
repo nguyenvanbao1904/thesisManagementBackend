@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
-public class GlobalApiExceptionHandler {
+public class GlobalExceptionHandler {
 
 
     @ExceptionHandler({DataIntegrityViolationException.class, ConstraintViolationException.class})
@@ -18,6 +18,7 @@ public class GlobalApiExceptionHandler {
         Map<String, String> errorResponse = new HashMap<>();
         String specificMessage = "Không thể thực hiện thao tác do ràng buộc dữ liệu. Vui lòng kiểm tra lại.";
         errorResponse.put("error", specificMessage);
+        System.out.println(ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
@@ -25,6 +26,7 @@ public class GlobalApiExceptionHandler {
     public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
         Map<String, String> errorResponse = new HashMap<>();
         errorResponse.put("error", "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau.");
+        System.out.println(ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -1,0 +1,64 @@
+<!<!doctype html>
+<html xmlns:th="http://wwww.thymeleaf.org">
+    <head>
+        <title>Quản lý khóa luận</title>
+    <th:block th:replace="/base/base :: bootstrap" ></th:block>
+</head>
+<body>
+    <div th:replace="/base/base :: header"></div> 
+    <main>
+        <div class="container">
+            <h1>Quản lý khóa luận</h1>
+            <a th:href="@{/theses/add}" class="btn btn-info mt-2">Thêm khóa luận</a>
+            <a th:href="@{/theses/evaluation_criteria_collection}" class="btn btn-info mt-2">Quản lý các bộ tiêu chí chấm điểm khóa luận</a> 
+            <a th:href="@{/theses/evaluation_criterias}" class="btn btn-info mt-2">Quản lý các tiêu chí</a>
+            <hr/>
+            <form th:action="@{/theses}">
+                <div class="mb-3 mt-3">
+                    <input type="text" class="form-control" name="title" placeholder="Titile" />
+                </div>
+                <div class="mb-3 mt-3">
+                    <button class="btn btn-info" type="submit">Tìm kiếm</button>
+                </div>
+            </form>
+            <hr  />   
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Tiêu đề</th>
+                        <th>Mô tả</th>
+                        <th>Trạng thái</th>
+                        <th>Giảng viên Phản biện</th>
+                        <th>Bộ tiêu chí chấm điểm</th>
+                        <th>Hội đồng chấm điểm</th>
+                        <th>Ngày bảo vệ</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="thesis: ${theses}">
+                        <td th:text="${thesis.title}"></td>
+                        <td th:text="${thesis.description}"></td>
+                        <td th:text="${thesis.status}"></td>
+                        <td th:text="${thesis.reviewer}"></td>
+                        <td th:text="${thesis.evaluationCriteriaCollection}"></td>
+                        <td th:text="${thesis.committee}"></td>
+                        <td th:text="${thesis.defenseDate}"></td>
+                        <td>
+                            <a class="btn btn-danger" th:onclick="'deleteProduct(\''+@{/api/users/}+'\','+${u.id}+')'">Xóa</a>
+                            <a class="btn btn-success" th:href="@{'/users/' + ${u.id}}">Cập nhật️</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="text-center mb-2">
+            <a th:if="${page > 0}" th:href="@{/theses(page=${page + 1})}" class="btn btn-info btn-lg mt-3">Xem thêm</a>
+        </div>
+
+
+    </main>
+    <div th:replace="/base/base :: footer"></div>
+    <script th:src="@{/js/deleteItem.js}"></script>
+</body>
+</html>

@@ -4,8 +4,11 @@
  */
 package com.nvb.configs;
 
+import com.nvb.dto.EvaluationCriteriaCollectionDTO;
 import com.nvb.dto.UserDTO;
+import com.nvb.formatter.EvaluationCriteriaDTOFormatter;
 import com.nvb.pojo.User;
+import com.nvb.validators.EvaluationCriteriaCollectionValidator;
 import com.nvb.validators.UserValidator;
 import com.nvb.validators.WebAppValidator;
 import java.util.HashSet;
@@ -16,6 +19,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
@@ -39,7 +43,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
     "com.nvb.exceptions",
     "com.nvb.thesismanagementbackend",
     "com.nvb.utils",
-    "com.nvb.filters"
+    "com.nvb.filters",
+    "com.nvb.formatter"
 })
 public class WebAppContextConfigs implements WebMvcConfigurer {
 
@@ -48,6 +53,12 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
 
     @Autowired
     private MessageSource messageSource;
+    
+    @Autowired
+    private EvaluationCriteriaDTOFormatter evaluationCriteriaDTOFormatter;
+    
+    @Autowired
+    private EvaluationCriteriaCollectionValidator evaluationCriteriaCollectionValidator;
 
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
@@ -60,6 +71,16 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
         springValidators.add(userValidator);
         WebAppValidator webAppValidator = new WebAppValidator();
         webAppValidator.setSupportedClass(UserDTO.class);
+        webAppValidator.setSpringValidators(springValidators);
+        return webAppValidator;
+    }
+    
+    @Bean
+    public WebAppValidator evaluationCriteriaCollectionWebAppValidator() {
+        Set<Validator> springValidators = new HashSet<>();
+        springValidators.add(evaluationCriteriaCollectionValidator);
+        WebAppValidator webAppValidator = new WebAppValidator();
+        webAppValidator.setSupportedClass(EvaluationCriteriaCollectionDTO.class);
         webAppValidator.setSpringValidators(springValidators);
         return webAppValidator;
     }
@@ -90,5 +111,10 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
         registry.addResourceHandler("/js/**").addResourceLocations("classpath:/static/js/");
         registry.addResourceHandler("/css/**").addResourceLocations("classpath:/static/css/");
 
+    }
+
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addFormatter(evaluationCriteriaDTOFormatter);
     }
 }
