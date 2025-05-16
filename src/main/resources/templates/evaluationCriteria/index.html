@@ -9,9 +9,9 @@
     <main>
         <div class="container">
             <h1>Quản lý các tiêu chí chấm điểm khóa luận</h1>
-            <a th:href="@{/theses/evaluation_criterias/add}" class="btn btn-info mt-2">Thêm tiêu chí chấm điểm khóa luận</a>
+            <a th:href="@{/evaluation_criterias/add}" class="btn btn-info mt-2">Thêm tiêu chí chấm điểm khóa luận</a>
             
-            <form th:action="@{/theses/evaluation_criterias}">
+            <form th:action="@{/evaluation_criterias}">
                 <div class="mb-3 mt-3">
                     <input type="text" class="form-control" name="name" placeholder="Name" />
                 </div>
@@ -39,8 +39,8 @@
                         <td th:text="${e.maxPoint}"></td>
 
                         <td>
-                            <a class="btn btn-danger" th:onclick="'deleteItem(\''+@{/api/theses/evaluation_criterias/}+'\','+${e.id}+')'">Xóa</a>
-                            <a class="btn btn-success" th:href="@{'/theses/evaluation_criterias/' + ${e.id}}">Cập nhật️</a>
+                            <a class="btn btn-danger" th:onclick="'deleteItem(\''+@{/api/evaluation_criterias/}+'\','+${e.id}+')'">Xóa</a>
+                            <a class="btn btn-success" th:href="@{'/evaluation_criterias/' + ${e.id}}">Cập nhật️</a>
                         </td>
                     </tr>
                 </tbody>

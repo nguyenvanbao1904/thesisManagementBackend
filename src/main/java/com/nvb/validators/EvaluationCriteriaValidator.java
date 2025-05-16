@@ -4,9 +4,9 @@
  */
 package com.nvb.validators;
 
-import com.nvb.dto.EvaluationCriteriaCollectionDTO;
 import com.nvb.dto.EvaluationCriteriaDTO;
-import com.nvb.services.ThesesService;
+import com.nvb.pojo.EvaluationCriteria;
+import com.nvb.services.EvaluationCriteriaService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +23,7 @@ import org.springframework.validation.Validator;
 public class EvaluationCriteriaValidator implements Validator{
     
     @Autowired
-    private ThesesService thesesService; 
+    private EvaluationCriteriaService evaluationCriteriaService; 
 
 
     @Override
@@ -37,7 +37,7 @@ public class EvaluationCriteriaValidator implements Validator{
         
         // Kiểm tra trùng lặp name
         if (ecd.getName() != null && !ecd.getName().isBlank()) {
-            List<EvaluationCriteriaDTO> listExisting = thesesService.getEvaluationCriterias(new HashMap<>(Map.of("name", ecd.getName())));
+            List<EvaluationCriteria> listExisting = evaluationCriteriaService.getEvaluationCriterias(new HashMap<>(Map.of("name", ecd.getName())));
             if (ecd.getId() == null) {
                 if (!listExisting.isEmpty()) {
                     errors.rejectValue("name", "evaluationCriteria.name.duplicateMsg");

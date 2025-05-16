@@ -4,7 +4,7 @@
  */
 package com.nvb.controllers;
 
-import com.nvb.services.ThesesService;
+import com.nvb.services.EvaluationCriteriaCollectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -23,12 +23,12 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin
 public class ApiEvaluationCriteriaCollectionController {
     @Autowired
-    private ThesesService thesesService;
+    private EvaluationCriteriaCollectionService evaluationCriteriaCollectionService;
 
 
-    @DeleteMapping(value = "/theses/evaluation_criteria_collection/{id}")
+    @DeleteMapping(value = "/evaluation_criteria_collections/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void destroy(@PathVariable(value = "id") int id) {
-        thesesService.deleteEvaluationCriteriaCollection(id);
+        evaluationCriteriaCollectionService.deleteEvaluationCriteriaCollection(id);
     }
 }

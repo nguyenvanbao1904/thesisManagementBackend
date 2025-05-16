@@ -4,9 +4,6 @@
  */
 package com.nvb.repositories;
 
-import com.nvb.dto.EvaluationCriteriaDTO;
-import com.nvb.pojo.EvaluationCriteria;
-import com.nvb.pojo.EvaluationCriteriaCollection;
 import com.nvb.pojo.Thesis;
 import java.util.List;
 import java.util.Map;
@@ -17,14 +14,4 @@ import java.util.Map;
  */
 public interface ThesesRepository {
     List<Thesis> getTheses(Map<String, String> params);
-    List<EvaluationCriteriaCollection> getEvaluationCriteriaCollections(Map<String, String> params);
-    List<EvaluationCriteriaDTO> getEvaluationCriteriasDTO(Map<String, String> params);
-    List<EvaluationCriteria> getEvaluationCriterias(Map<String, String> params);
-    EvaluationCriteria addOrUpdateEvaluationCriteria(EvaluationCriteria evaluationCriteria);
-    EvaluationCriteriaCollection addOrUpdateEvaluationCriteriaCollection(EvaluationCriteriaCollection evaluationCriteriaCollection);
-    EvaluationCriteria findEvaluationCriteriaEntityById(Integer id);
-    void deleteEvaluationCriteria(int id);
-    void deleteEvaluationCriteriaCollection(int id);
-    List<EvaluationCriteriaCollection> getEvaluationCriteriaCollectionsWithDetails(Map<String, String> params);
-
 }

@@ -9,9 +9,9 @@
     <main>
         <div class="container">
             <h1>Quản lý bộ tiêu chí chấm điểm khóa luận</h1>
-            <a th:href="@{/theses/evaluation_criteria_collection/add}" class="btn btn-info mt-2">Thêm bộ tiêu chí chấm điểm khóa luận</a>
+            <a th:href="@{/evaluation_criteria_collections/add}" class="btn btn-info mt-2">Thêm bộ tiêu chí chấm điểm khóa luận</a>
             
-            <form th:action="@{/theses/evaluation_criteria_collection}">
+            <form th:action="@{/evaluation_criteria_collection}">
                 <div class="mb-3 mt-3">
                     <input type="text" class="form-control" name="name" placeholder="Name" />
                 </div>
@@ -36,15 +36,15 @@
                         <td th:text="${e.name}"></td>
                         <td th:text="${e.description}"></td>
                         <td>
-                            <a class="btn btn-danger" th:onclick="'deleteItem(\''+@{/api/theses/evaluation_criteria_collection/}+'\','+${e.id}+')'">Xóa</a>
-                            <a class="btn btn-success" th:href="@{'/theses/evaluation_criteria_collection/' + ${e.id}}">Cập nhật️</a>
+                            <a class="btn btn-danger" th:onclick="'deleteItem(\''+@{/api/evaluation_criteria_collections/}+'\','+${e.id}+')'">Xóa</a>
+                            <a class="btn btn-success" th:href="@{'/evaluation_criteria_collections/' + ${e.id}}">Cập nhật️</a>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
         <div class="text-center mb-2">
-            <a th:if="${page > 0}" th:href="@{/theses/evaluation_criteria_collection(page=${page + 1})}" class="btn btn-info btn-lg mt-3">Xem thêm</a>
+            <a th:if="${page > 0}" th:href="@{/evaluation_criteria_collections(page=${page + 1})}" class="btn btn-info btn-lg mt-3">Xem thêm</a>
         </div>
 
 

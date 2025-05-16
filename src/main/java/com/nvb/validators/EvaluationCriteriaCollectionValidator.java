@@ -7,6 +7,7 @@ package com.nvb.validators;
 import com.nvb.dto.EvaluationCriteriaCollectionDTO;
 import com.nvb.dto.EvaluationCriteriaDTO;
 import com.nvb.pojo.EvaluationCriteriaCollection;
+import com.nvb.services.EvaluationCriteriaCollectionService;
 import com.nvb.services.ThesesService;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +25,7 @@ import org.springframework.validation.Validator;
 public class EvaluationCriteriaCollectionValidator implements Validator {
 
     @Autowired
-    private ThesesService thesesService; 
+    private EvaluationCriteriaCollectionService evaluationCriteriaCollectionService; 
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -37,7 +38,7 @@ public class EvaluationCriteriaCollectionValidator implements Validator {
 
         // Kiểm tra trùng lặp name
         if (collectionDto.getName() != null && !collectionDto.getName().isBlank()) {
-            List<EvaluationCriteriaCollection> listexisting = thesesService.getEvaluationCriteriaCollections(new HashMap<>(Map.of("name", collectionDto.getName())));
+            List<EvaluationCriteriaCollection> listexisting = evaluationCriteriaCollectionService.getEvaluationCriteriaCollections(new HashMap<>(Map.of("name", collectionDto.getName())));
             if (collectionDto.getId() == null) {
                 if (!listexisting.isEmpty()) {
                     errors.rejectValue("name", "evaluationCriteriaCollection.name.duplicateMsg");

@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.nvb.controllers;
+import com.nvb.services.EvaluationCriteriaService;
 import com.nvb.services.ThesesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,12 +23,12 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin
 public class ApiEvaluationCriteriaController {
     @Autowired
-    private ThesesService thesesService;
+    private EvaluationCriteriaService evaluationCriteriaService;
 
 
-    @DeleteMapping(value = "/theses/evaluation_criterias/{id}")
+    @DeleteMapping(value = "/evaluation_criterias/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void destroy(@PathVariable(value = "id") int id) {
-        thesesService.deleteEvaluationCriteria(id);
+        evaluationCriteriaService.deleteEvaluationCriteria(id);
     }
 }
