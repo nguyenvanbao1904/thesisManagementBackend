@@ -21,6 +21,9 @@ public interface ThesesService {
     List<Thesis> getTheses(Map<String, String> params);
     List<EvaluationCriteriaCollection> getEvaluationCriteriaCollections(Map<String, String> params);
     List<EvaluationCriteriaDTO> getEvaluationCriterias(Map<String, String> params);
-    EvaluationCriteria addEvaluationCriteria (EvaluationCriteriaDTO evaluationCriteriaDTO);
+    EvaluationCriteria addOrUpdateEvaluationCriteria (EvaluationCriteriaDTO evaluationCriteriaDTO);
     EvaluationCriteriaCollection addEvaluationCriteriaCollection(EvaluationCriteriaCollectionDTO evaluationCriteriaCollectionDTO);
+    void deleteEvaluationCriteria(int id);
+    void deleteEvaluationCriteriaCollection(int id);
+    List<EvaluationCriteriaCollection> getEvaluationCriteriaCollectionsWithDetails(Map<String, String> params);
 }

@@ -73,7 +73,7 @@
                         <td th:text="${u.role}"></td>
                         <td th:text="${u.isActive}"></td>
                         <td>
-                            <a class="btn btn-danger" th:onclick="'deleteProduct(\''+@{/api/users/}+'\','+${u.id}+')'">Xóa</a>
+                            <a class="btn btn-danger" th:onclick="'deleteItem(\''+@{/api/users/}+'\','+${u.id}+')'">Xóa</a>
                             <a class="btn btn-success" th:href="@{'/users/' + ${u.id}}">Cập nhật️</a>
                         </td>
                     </tr>

@@ -12,6 +12,7 @@ import com.nvb.repositories.ThesesRepository;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class ThesesRepositoryImpl implements ThesesRepository {
             if (title != null && !title.isEmpty()) {
                 predicates.add(builder.equal(root.get("title"), title));
             }
-            
+
             String page = params.get("page");
             if (page == null) {
                 params.put("page", "1");
@@ -89,9 +90,14 @@ public class ThesesRepositoryImpl implements ThesesRepository {
             if (name != null && !name.isEmpty()) {
                 predicates.add(builder.equal(root.get("name"), name));
             }
-            
+
+            String id = params.get("id");
+            if (id != null && !id.isEmpty()) {
+                predicates.add(builder.equal(root.get("id"), id));
+            }
+
             String page = params.get("page");
-            if(page == null){
+            if (page == null) {
                 params.put("page", "1");
             }
         }
@@ -128,9 +134,14 @@ public class ThesesRepositoryImpl implements ThesesRepository {
             if (name != null && !name.isEmpty()) {
                 predicates.add(builder.equal(root.get("name"), name));
             }
-            
+
+            String id = params.get("id");
+            if (id != null && !id.isEmpty()) {
+                predicates.add(builder.equal(root.get("id"), id));
+            }
+
             String page = params.get("page");
-            if(page == null){
+            if (page == null) {
                 params.put("page", "1");
             }
         }
@@ -160,19 +171,24 @@ public class ThesesRepositoryImpl implements ThesesRepository {
     }
 
     @Override
-    public EvaluationCriteria addEvaluationCriteria(EvaluationCriteria evaluationCriteria) {
+    public EvaluationCriteria addOrUpdateEvaluationCriteria(EvaluationCriteria evaluationCriteria) {
         Session s = factory.getObject().getCurrentSession();
-        s.persist(evaluationCriteria);
+        if (evaluationCriteria.getId() != null) {
+            s.merge(evaluationCriteria);
+        } else {
+
+            s.persist(evaluationCriteria);
+        }
         return evaluationCriteria;
     }
 
     @Override
     public EvaluationCriteriaCollection addOrUpdateEvaluationCriteriaCollection(EvaluationCriteriaCollection evaluationCriteriaCollection) {
         Session s = factory.getObject().getCurrentSession();
-        if(evaluationCriteriaCollection.getId() != null){
-            s.merge(evaluationCriteriaCollection);  
-        }else{
-            
+        if (evaluationCriteriaCollection.getId() != null) {
+            s.merge(evaluationCriteriaCollection);
+        } else {
+
             s.persist(evaluationCriteriaCollection);
         }
         return evaluationCriteriaCollection;
@@ -213,12 +229,72 @@ public class ThesesRepositoryImpl implements ThesesRepository {
             q.setMaxResults(PAGE_SIZE);
             q.setFirstResult(start);
         }
-        return q.getResultList();}
+        return q.getResultList();
+    }
 
     @Override
     public EvaluationCriteria findEvaluationCriteriaEntityById(Integer id) {
         Session s = factory.getObject().getCurrentSession();
         return s.get(EvaluationCriteria.class, id);
     }
-}
 
+    @Override
+    public void deleteEvaluationCriteria(int id) {
+        Session s = factory.getObject().getCurrentSession();
+        s.remove(s.get(EvaluationCriteria.class, id));
+    }
+
+    @Override
+    public void deleteEvaluationCriteriaCollection(int id) {
+        Session s = factory.getObject().getCurrentSession();
+        s.remove(s.get(EvaluationCriteriaCollection.class, id));
+    }
+
+    @Override
+    public List<EvaluationCriteriaCollection> getEvaluationCriteriaCollectionsWithDetails(Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<EvaluationCriteriaCollection> query = builder.createQuery(EvaluationCriteriaCollection.class);
+        Root<EvaluationCriteriaCollection> root = query.from(EvaluationCriteriaCollection.class);
+
+        // JOIN FETCH details
+        root.fetch("evaluationCriteriaCollectionDetails", JoinType.LEFT);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (params != null) {
+            String name = params.get("name");
+            if (name != null && !name.isEmpty()) {
+                predicates.add(builder.equal(root.get("name"), name));
+            }
+
+            String id = params.get("id");
+            if (id != null && !id.isEmpty()) {
+                predicates.add(builder.equal(root.get("id"), id));
+            }
+
+            String page = params.get("page");
+            if (page == null) {
+                params.put("page", "1");
+            }
+        }
+
+        query.select(root).distinct(true); // DISTINCT để tránh trùng kết quả do JOIN
+        query.where(predicates.toArray(new Predicate[0]));
+        Query q = s.createQuery(query);
+
+        if (params != null && params.containsKey("page")) {
+            int page = 1;
+            try {
+                page = Integer.parseInt(params.get("page"));
+            } catch (NumberFormatException ex) {
+                page = 1;
+            }
+            int start = (page - 1) * PAGE_SIZE;
+            q.setMaxResults(PAGE_SIZE);
+            q.setFirstResult(start);
+        }
+
+        return q.getResultList();
+    }
+}

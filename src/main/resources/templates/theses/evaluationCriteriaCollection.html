@@ -36,8 +36,8 @@
                         <td th:text="${e.name}"></td>
                         <td th:text="${e.description}"></td>
                         <td>
-                            <a class="btn btn-danger" th:onclick="'deleteProduct(\''+@{/api/users/}+'\','+${e.id}+')'">Xóa</a>
-                            <a class="btn btn-success" th:href="@{'/users/' + ${e.id}}">Cập nhật️</a>
+                            <a class="btn btn-danger" th:onclick="'deleteItem(\''+@{/api/theses/evaluation_criteria_collection/}+'\','+${e.id}+')'">Xóa</a>
+                            <a class="btn btn-success" th:href="@{'/theses/evaluation_criteria_collection/' + ${e.id}}">Cập nhật️</a>
                         </td>
                     </tr>
                 </tbody>

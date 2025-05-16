@@ -20,7 +20,11 @@ public interface ThesesRepository {
     List<EvaluationCriteriaCollection> getEvaluationCriteriaCollections(Map<String, String> params);
     List<EvaluationCriteriaDTO> getEvaluationCriteriasDTO(Map<String, String> params);
     List<EvaluationCriteria> getEvaluationCriterias(Map<String, String> params);
-    EvaluationCriteria addEvaluationCriteria(EvaluationCriteria evaluationCriteria);
+    EvaluationCriteria addOrUpdateEvaluationCriteria(EvaluationCriteria evaluationCriteria);
     EvaluationCriteriaCollection addOrUpdateEvaluationCriteriaCollection(EvaluationCriteriaCollection evaluationCriteriaCollection);
     EvaluationCriteria findEvaluationCriteriaEntityById(Integer id);
+    void deleteEvaluationCriteria(int id);
+    void deleteEvaluationCriteriaCollection(int id);
+    List<EvaluationCriteriaCollection> getEvaluationCriteriaCollectionsWithDetails(Map<String, String> params);
+
 }

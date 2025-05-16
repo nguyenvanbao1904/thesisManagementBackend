@@ -48,12 +48,11 @@
                 <div th:each="criteria, stat : *{evaluationCriterias}">
                     <div class="form-check mb-3 p-3 border rounded">
                         <input type="hidden" th:field="*{evaluationCriterias[__${stat.index}__].id}" />
-
                         <input class="form-check-input" type="checkbox"
                                th:id="'criteriaSelected' + ${stat.index}"
                                th:name="selectedCriteriaIds"
                                th:value="*{evaluationCriterias[__${stat.index}__].id}"
-                               th:checked="${selectedCriteriaIds != null} ? ${selectedCriteriaIds.contains(evaluationCriterias[__${stat.index}__].id)} : false" />
+                               th:checked="${evaluationCriteriaCollection.selectedCriteriaIds != null and #lists.contains(evaluationCriteriaCollection.selectedCriteriaIds, evaluationCriteriaCollection.evaluationCriterias[__${stat.index}__].id)}"/>
 
                         <label class="form-check-label" th:for="'criteriaSelected' + ${stat.index}">
                             <strong th:text="*{evaluationCriterias[__${stat.index}__].name}"></strong>

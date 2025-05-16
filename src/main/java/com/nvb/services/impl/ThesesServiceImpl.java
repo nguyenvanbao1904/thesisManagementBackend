@@ -59,12 +59,13 @@ public class ThesesServiceImpl implements ThesesService {
     }
 
     @Override
-    public EvaluationCriteria addEvaluationCriteria(EvaluationCriteriaDTO evaluationCriteriaDTO) {
+    public EvaluationCriteria addOrUpdateEvaluationCriteria(EvaluationCriteriaDTO evaluationCriteriaDTO) {
         EvaluationCriteria evaluationCriteria = new EvaluationCriteria();
         evaluationCriteria.setName(evaluationCriteriaDTO.getName());
         evaluationCriteria.setDescription(evaluationCriteriaDTO.getDescription());
         evaluationCriteria.setMaxPoint(evaluationCriteriaDTO.getMaxPoint());
-        return thesesRepository.addEvaluationCriteria(evaluationCriteria);
+        evaluationCriteria.setId(evaluationCriteriaDTO.getId());
+        return thesesRepository.addOrUpdateEvaluationCriteria(evaluationCriteria);
     }
 
     @Override
@@ -73,6 +74,7 @@ public class ThesesServiceImpl implements ThesesService {
         evaluationCriteriaCollection.setName(evaluationCriteriaCollectionDTO.getName());
         evaluationCriteriaCollection.setDescription(evaluationCriteriaCollectionDTO.getDescription());
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        evaluationCriteriaCollection.setId(evaluationCriteriaCollectionDTO.getId());
 
         if (authentication != null && authentication.isAuthenticated()) {
             AcademicStaff academicStaff = academicsStaffService.getAcademicStaff(Map.of("username", authentication.getName()));
@@ -114,6 +116,21 @@ public class ThesesServiceImpl implements ThesesService {
             savedEvaluationCriteriaCollection.setEvaluationCriteriaCollectionDetails(new HashSet<>());
         }
         return thesesRepository.addOrUpdateEvaluationCriteriaCollection(savedEvaluationCriteriaCollection);
+    }
+
+    @Override
+    public void deleteEvaluationCriteria(int id) {
+        thesesRepository.deleteEvaluationCriteria(id);
+    }
+
+    @Override
+    public void deleteEvaluationCriteriaCollection(int id) {
+        thesesRepository.deleteEvaluationCriteriaCollection(id);
+    }
+
+    @Override
+    public List<EvaluationCriteriaCollection> getEvaluationCriteriaCollectionsWithDetails(Map<String, String> params) {
+        return thesesRepository.getEvaluationCriteriaCollectionsWithDetails(params);
     }
 
 }

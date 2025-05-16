@@ -40,11 +40,11 @@ public class EvaluationCriteriaCollectionValidator implements Validator {
             List<EvaluationCriteriaCollection> listexisting = thesesService.getEvaluationCriteriaCollections(new HashMap<>(Map.of("name", collectionDto.getName())));
             if (collectionDto.getId() == null) {
                 if (!listexisting.isEmpty()) {
-                    errors.rejectValue("name", "evaluationCriteria.name.duplicateMsg");
+                    errors.rejectValue("name", "evaluationCriteriaCollection.name.duplicateMsg");
                 }
             } else {
                 if (!listexisting.isEmpty() && !listexisting.get(0).getId().equals(collectionDto.getId())) {
-                    errors.rejectValue("name", "evaluationCriteria.name.duplicateMsg");
+                    errors.rejectValue("name", "evaluationCriteriaCollection.name.duplicateMsg");
                 }
             }
         }

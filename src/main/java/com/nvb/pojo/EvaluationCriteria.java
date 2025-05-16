@@ -45,7 +45,7 @@ public class EvaluationCriteria implements Serializable {
     private Integer id;
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 30)
+    @Size(min = 1, max = 100)
     @Column(name = "name")
     private String name;
     @Basic(optional = false)
