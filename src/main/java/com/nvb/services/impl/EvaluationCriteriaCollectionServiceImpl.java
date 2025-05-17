@@ -15,6 +15,7 @@ import com.nvb.repositories.EvaluationCriteriaCollectionRepository;
 import com.nvb.services.AcademicsStaffService;
 import com.nvb.services.EvaluationCriteriaCollectionService;
 import com.nvb.services.EvaluationCriteriaService;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -77,13 +78,13 @@ public class EvaluationCriteriaCollectionServiceImpl implements EvaluationCriter
             params.put("id", evaluationCriteriaCollectionDTO.getId().toString());
             List<EvaluationCriteriaCollection> existingCollections = evaluationCriteriaCollectionRepository.getEvaluationCriteriaCollectionsWithDetails(params, false);
             if (existingCollections.isEmpty()) {
-                 throw new RuntimeException("EvaluationCriteriaCollection with ID " + evaluationCriteriaCollectionDTO.getId() + " not found for update.");
+                throw new RuntimeException("EvaluationCriteriaCollection with ID " + evaluationCriteriaCollectionDTO.getId() + " not found for update.");
             }
-            evaluationCriteriaCollection = existingCollections.get(0); 
-            
+            evaluationCriteriaCollection = existingCollections.get(0);
+
             evaluationCriteriaCollection.setName(evaluationCriteriaCollectionDTO.getName());
             evaluationCriteriaCollection.setDescription(evaluationCriteriaCollectionDTO.getDescription());
-            evaluationCriteriaCollection.setCreatedBy(academicStaff); 
+            evaluationCriteriaCollection.setCreatedBy(academicStaff);
 
             if (evaluationCriteriaCollection.getEvaluationCriteriaCollectionDetails() == null) {
                 evaluationCriteriaCollection.setEvaluationCriteriaCollectionDetails(new HashSet<>());
@@ -93,37 +94,34 @@ public class EvaluationCriteriaCollectionServiceImpl implements EvaluationCriter
         Set<EvaluationCriteriaCollectionDetail> currentDetails = evaluationCriteriaCollection.getEvaluationCriteriaCollectionDetails();
         Map<Integer, EvaluationCriteriaCollectionDetail> existingDetailsMap = new HashMap<>();
         for (EvaluationCriteriaCollectionDetail detail : currentDetails) {
-            if (detail.getEvaluationCriteria() != null) { 
-                 existingDetailsMap.put(detail.getEvaluationCriteria().getId(), detail);
+            if (detail.getEvaluationCriteria() != null) {
+                existingDetailsMap.put(detail.getEvaluationCriteria().getId(), detail);
             }
         }
 
-        Set<Integer> dtoCriteriaIds = evaluationCriteriaCollectionDTO.getSelectedCriteriaIds() != null ? 
-                                      new HashSet<>(evaluationCriteriaCollectionDTO.getSelectedCriteriaIds()) :
-                                      new HashSet<>();
+        List<EvaluationCriteria> criterias = evaluationCriteriaCollectionDTO.getSelectedCriterias() != null
+                ? new ArrayList<>(evaluationCriteriaCollectionDTO.getSelectedCriterias())
+                : new ArrayList<>();
 
-        currentDetails.removeIf(detail -> detail.getEvaluationCriteria() != null && 
-                                        !dtoCriteriaIds.contains(detail.getEvaluationCriteria().getId()));
+        currentDetails.removeIf(detail -> detail.getEvaluationCriteria() != null
+                && !criterias.contains(detail.getEvaluationCriteria()));
 
         if (evaluationCriteriaCollectionDTO.getEvaluationCriterias() != null) {
             for (EvaluationCriteriaDTO criteriaDTO : evaluationCriteriaCollectionDTO.getEvaluationCriterias()) {
-                if (dtoCriteriaIds.contains(criteriaDTO.getId())) {
-                    EvaluationCriteria evaluationCriteriaEntity = evaluationCriteriaService.getEvaluationCriteria(new HashMap<>(Map.of("id", criteriaDTO.getId().toString())));
-                    if (evaluationCriteriaEntity == null) {
-                        System.err.println("EvaluationCriteria entity not found for ID: " + criteriaDTO.getId());
-                        continue; 
-                    }
 
+                EvaluationCriteria criteria = criterias.stream().filter(c -> c.getId().equals(criteriaDTO.getId())).findFirst().orElse(null);
+                if (criteria != null) {
                     EvaluationCriteriaCollectionDetail detail = existingDetailsMap.get(criteriaDTO.getId());
                     if (detail == null) {
-                        EvaluationCriteriaCollectionDetailPK pk = new EvaluationCriteriaCollectionDetailPK(evaluationCriteriaCollection.getId(), evaluationCriteriaEntity.getId());
+                        EvaluationCriteriaCollectionDetailPK pk = new EvaluationCriteriaCollectionDetailPK(evaluationCriteriaCollection.getId(), criteria.getId());
                         detail = new EvaluationCriteriaCollectionDetail(pk);
-                        detail.setEvaluationCriteriaCollection(evaluationCriteriaCollection); 
-                        detail.setEvaluationCriteria(evaluationCriteriaEntity);
-                        currentDetails.add(detail); 
+                        detail.setEvaluationCriteriaCollection(evaluationCriteriaCollection);
+                        detail.setEvaluationCriteria(criteria);
+                        currentDetails.add(detail);
                     }
                     detail.setWeight(criteriaDTO.getWeight() != null ? criteriaDTO.getWeight() : 0f);
                 }
+
             }
         }
 
@@ -143,6 +141,11 @@ public class EvaluationCriteriaCollectionServiceImpl implements EvaluationCriter
     @Override
     public void deleteEvaluationCriteriaCollection(int id) {
         evaluationCriteriaCollectionRepository.deleteEvaluationCriteriaCollection(id);
+    }
+
+    @Override
+    public EvaluationCriteriaCollection getEvaluationCriteriaCollection(Map<String, String> params) {
+        return evaluationCriteriaCollectionRepository.getEvaluationCriteriaCollection(params);
     }
 
 }

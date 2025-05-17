@@ -6,6 +6,7 @@ package com.nvb.repositories.impl;
 
 import com.nvb.pojo.EvaluationCriteria;
 import com.nvb.repositories.EvaluationCriteriaRepository;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -33,7 +34,6 @@ public class EvaluationCriteriaRepositoryImpl implements EvaluationCriteriaRepos
     @Autowired
     private LocalSessionFactoryBean factory;
 
-    
     @Override
     public List<EvaluationCriteria> getEvaluationCriterias(Map<String, String> params, boolean pagination) {
         Session s = this.factory.getObject().getCurrentSession();
@@ -89,24 +89,29 @@ public class EvaluationCriteriaRepositoryImpl implements EvaluationCriteriaRepos
                 predicates.add(builder.equal(root.get("name"), name));
             }
             String id = params.get("id");
-            if(id != null && !id.isEmpty()){
+            if (id != null && !id.isEmpty()) {
                 predicates.add(builder.equal(root.get("id"), id));
             }
-            
+
         }
 
         query.where(predicates.toArray(new Predicate[0]));
         query.select(root);
         Query q = s.createQuery(query);
-        return (EvaluationCriteria) q.getSingleResult();
+        try {
+            return (EvaluationCriteria) q.getSingleResult();
+
+        } catch (NoResultException ex) {
+            return null;
+        }
     }
 
     @Override
     public EvaluationCriteria addOrUpdateEvaluationCriteria(EvaluationCriteria evaluationCriteria) {
         Session s = factory.getObject().getCurrentSession();
-        if(evaluationCriteria.getId() == null){
+        if (evaluationCriteria.getId() == null) {
             s.persist(evaluationCriteria);
-        }else{
+        } else {
             s.merge(evaluationCriteria);
         }
         return evaluationCriteria;

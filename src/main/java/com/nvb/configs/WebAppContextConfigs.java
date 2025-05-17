@@ -8,6 +8,7 @@ import com.nvb.dto.EvaluationCriteriaCollectionDTO;
 import com.nvb.dto.EvaluationCriteriaDTO;
 import com.nvb.dto.UserDTO;
 import com.nvb.formatter.EvaluationCriteriaDTOFormatter;
+import com.nvb.formatter.EvaluationCriteriaFormatter;
 import com.nvb.pojo.User;
 import com.nvb.validators.EvaluationCriteriaCollectionValidator;
 import com.nvb.validators.EvaluationCriteriaValidator;
@@ -58,6 +59,9 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
     
     @Autowired
     private EvaluationCriteriaDTOFormatter evaluationCriteriaDTOFormatter;
+    
+    @Autowired
+    private EvaluationCriteriaFormatter evaluationCriteriaFormatter;
     
     @Autowired
     private EvaluationCriteriaCollectionValidator evaluationCriteriaCollectionValidator;
@@ -132,5 +136,6 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
     @Override
     public void addFormatters(FormatterRegistry registry) {
         registry.addFormatter(evaluationCriteriaDTOFormatter);
+        registry.addFormatter(evaluationCriteriaFormatter);
     }
 }

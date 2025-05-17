@@ -6,6 +6,7 @@ package com.nvb.repositories.impl;
 
 import com.nvb.pojo.EvaluationCriteriaCollection;
 import com.nvb.repositories.EvaluationCriteriaCollectionRepository;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -141,5 +142,37 @@ public class EvaluationCriteriaCollectionRepositoryImpl implements EvaluationCri
     public void deleteEvaluationCriteriaCollection(int id) {
         Session s = factory.getObject().getCurrentSession();
         s.remove(s.get(EvaluationCriteriaCollection.class, id));
+    }
+
+    @Override
+    public EvaluationCriteriaCollection getEvaluationCriteriaCollection(Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<EvaluationCriteriaCollection> query = builder.createQuery(EvaluationCriteriaCollection.class);
+        Root<EvaluationCriteriaCollection> root = query.from(EvaluationCriteriaCollection.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (params != null) {
+            String name = params.get("name");
+            if (name != null && !name.isEmpty()) {
+                predicates.add(builder.equal(root.get("name"), name));
+            }
+            
+            String id = params.get("id");
+            if (id != null && !id.isEmpty()) {
+                predicates.add(builder.equal(root.get("id"), id));
+            }
+        }
+
+        query.select(root);
+        query.where(predicates.toArray(new Predicate[0]));
+        Query q = s.createQuery(query);
+        
+        try{
+            return (EvaluationCriteriaCollection)q.getSingleResult();
+        }catch(NoResultException ex){
+            return null;
+        }
     }
 }

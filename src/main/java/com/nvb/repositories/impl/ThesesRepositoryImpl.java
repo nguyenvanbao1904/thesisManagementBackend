@@ -34,7 +34,7 @@ public class ThesesRepositoryImpl implements ThesesRepository {
     private LocalSessionFactoryBean factory;
 
     @Override
-    public List<Thesis> getTheses(Map<String, String> params) {
+    public List<Thesis> getTheses(Map<String, String> params, boolean pagination) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<Thesis> query = builder.createQuery(Thesis.class);
@@ -47,11 +47,13 @@ public class ThesesRepositoryImpl implements ThesesRepository {
             if (title != null && !title.isEmpty()) {
                 predicates.add(builder.equal(root.get("title"), title));
             }
-
-            String page = params.get("page");
-            if (page == null) {
-                params.put("page", "1");
+            if (pagination) {
+                String page = params.get("page");
+                if (page == null) {
+                    params.put("page", "1");
+                }
             }
+
         }
 
         query.select(root);

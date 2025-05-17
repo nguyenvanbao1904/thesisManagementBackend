@@ -37,13 +37,13 @@ public class EvaluationCriteriaValidator implements Validator{
         
         // Kiểm tra trùng lặp name
         if (ecd.getName() != null && !ecd.getName().isBlank()) {
-            List<EvaluationCriteria> listExisting = evaluationCriteriaService.getEvaluationCriterias(new HashMap<>(Map.of("name", ecd.getName())));
+            EvaluationCriteria existing = evaluationCriteriaService.getEvaluationCriteria(new HashMap<>(Map.of("name", ecd.getName())));
             if (ecd.getId() == null) {
-                if (!listExisting.isEmpty()) {
+                if (existing != null) {
                     errors.rejectValue("name", "evaluationCriteria.name.duplicateMsg");
                 }
             } else {
-                if (!listExisting.isEmpty() && !listExisting.get(0).getId().equals(ecd.getId())) {
+                if (existing != null && existing.getId().equals(ecd.getId())) {
                     errors.rejectValue("name", "evaluationCriteria.name.duplicateMsg");
                 }
             }

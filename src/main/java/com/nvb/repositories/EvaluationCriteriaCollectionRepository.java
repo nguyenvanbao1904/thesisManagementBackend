@@ -21,4 +21,6 @@ public interface EvaluationCriteriaCollectionRepository {
     List<EvaluationCriteriaCollection> getEvaluationCriteriaCollectionsWithDetails(Map<String, String> params, boolean pagination);
 
     void deleteEvaluationCriteriaCollection(int id);
+    
+    EvaluationCriteriaCollection getEvaluationCriteriaCollection(Map<String, String> params);
 }

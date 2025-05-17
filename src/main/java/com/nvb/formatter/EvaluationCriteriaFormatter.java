@@ -4,13 +4,12 @@
  */
 package com.nvb.formatter;
 
-import com.nvb.dto.EvaluationCriteriaDTO;
+import com.nvb.pojo.EvaluationCriteria;
 import com.nvb.services.EvaluationCriteriaService;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.Formatter;
 import org.springframework.stereotype.Component;
@@ -20,29 +19,26 @@ import org.springframework.stereotype.Component;
  * @author nguyenvanbao
  */
 @Component
-public class EvaluationCriteriaDTOFormatter implements Formatter<EvaluationCriteriaDTO>{
-    
+public class EvaluationCriteriaFormatter implements Formatter<EvaluationCriteria> {
+
     @Autowired
     private EvaluationCriteriaService evaluationCriteriaService;
-    
-    @Autowired
-    private ModelMapper modelMapper;
 
     @Override
-    public String print(EvaluationCriteriaDTO object, Locale locale) {
-         if (object == null) {
+    public String print(EvaluationCriteria object, Locale locale) {
+        if (object == null) {
             return "";
         }
         return String.valueOf(object.getId());
     }
 
     @Override
-    public EvaluationCriteriaDTO parse(String text, Locale locale) throws ParseException {
+    public EvaluationCriteria parse(String text, Locale locale) throws ParseException {
         if (text == null || text.trim().isEmpty()) {
-            return null; 
+            return null;
         }
-        
-        return modelMapper.map(evaluationCriteriaService.getEvaluationCriteria(new HashMap<>(Map.of("id", text))), EvaluationCriteriaDTO.class);
+
+        return evaluationCriteriaService.getEvaluationCriteria(new HashMap<>(Map.of("id", text)));
     }
-    
+
 }

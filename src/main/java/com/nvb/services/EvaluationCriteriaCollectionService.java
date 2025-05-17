@@ -18,6 +18,8 @@ public interface EvaluationCriteriaCollectionService {
     List<EvaluationCriteriaCollection> getEvaluationCriteriaCollections(Map<String, String> params);
 
     List<EvaluationCriteriaCollection> getEvaluationCriteriaCollections(Map<String, String> params, boolean pagination);
+    
+    EvaluationCriteriaCollection getEvaluationCriteriaCollection(Map<String, String> params);
 
     EvaluationCriteriaCollection addOrUpdateEvaluationCriteriaCollection(EvaluationCriteriaCollectionDTO evaluationCriteriaCollectionDTO);
 

@@ -4,25 +4,12 @@
  */
 package com.nvb.services.impl;
 
-import com.nvb.dto.EvaluationCriteriaCollectionDTO;
-import com.nvb.dto.EvaluationCriteriaDTO;
-import com.nvb.pojo.AcademicStaff;
-import com.nvb.pojo.EvaluationCriteria;
-import com.nvb.pojo.EvaluationCriteriaCollection;
-import com.nvb.pojo.EvaluationCriteriaCollectionDetail;
-import com.nvb.pojo.EvaluationCriteriaCollectionDetailPK;
 import com.nvb.pojo.Thesis;
 import com.nvb.repositories.ThesesRepository;
-import com.nvb.services.AcademicsStaffService;
 import com.nvb.services.ThesesService;
-import com.nvb.services.UserService;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +26,11 @@ public class ThesesServiceImpl implements ThesesService {
 
     @Override
     public List<Thesis> getTheses(Map<String, String> params) {
-        return thesesRepository.getTheses(params);
+        return this.getTheses(params, false);
+    }
+
+    @Override
+    public List<Thesis> getTheses(Map<String, String> params, boolean pagination) {
+        return thesesRepository.getTheses(params, pagination);
     }
 }

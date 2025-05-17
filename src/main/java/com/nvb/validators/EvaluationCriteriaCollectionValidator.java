@@ -8,7 +8,6 @@ import com.nvb.dto.EvaluationCriteriaCollectionDTO;
 import com.nvb.dto.EvaluationCriteriaDTO;
 import com.nvb.pojo.EvaluationCriteriaCollection;
 import com.nvb.services.EvaluationCriteriaCollectionService;
-import com.nvb.services.ThesesService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,13 +37,13 @@ public class EvaluationCriteriaCollectionValidator implements Validator {
 
         // Kiểm tra trùng lặp name
         if (collectionDto.getName() != null && !collectionDto.getName().isBlank()) {
-            List<EvaluationCriteriaCollection> listexisting = evaluationCriteriaCollectionService.getEvaluationCriteriaCollections(new HashMap<>(Map.of("name", collectionDto.getName().trim())));
+            EvaluationCriteriaCollection existing = evaluationCriteriaCollectionService.getEvaluationCriteriaCollection(new HashMap<>(Map.of("name", collectionDto.getName().trim())));
             if (collectionDto.getId() == null) {
-                if (!listexisting.isEmpty()) {
+                if (existing != null) {
                     errors.rejectValue("name", "evaluationCriteriaCollection.name.duplicateMsg");
                 }
             } else {
-                if (!listexisting.isEmpty() && !listexisting.get(0).getId().equals(collectionDto.getId())) {
+                if (existing != null && !existing.getId().equals(collectionDto.getId())) {
                     errors.rejectValue("name", "evaluationCriteriaCollection.name.duplicateMsg");
                 }
             }

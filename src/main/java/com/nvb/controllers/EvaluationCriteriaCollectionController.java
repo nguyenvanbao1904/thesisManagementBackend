@@ -129,24 +129,25 @@ public class EvaluationCriteriaCollectionController {
                 }.getType()
         );
 
-        List<Integer> selectedIds = new ArrayList<>();
+        List<EvaluationCriteria> selecteds = new ArrayList<>();
         Map<Integer, Float> weights = new HashMap<>();
 
         for (EvaluationCriteriaCollectionDetail detail : ecc.getEvaluationCriteriaCollectionDetails()) {
             EvaluationCriteria crit = detail.getEvaluationCriteria();
-            selectedIds.add(crit.getId());
+            selecteds.add(crit);
             weights.put(crit.getId(), detail.getWeight()); // map id với weight
         }
 
         for (EvaluationCriteriaDTO dtoItem : allCriterias) {
-            if (selectedIds.contains(dtoItem.getId())) {
+            EvaluationCriteria criteria = selecteds.stream().filter(s -> s.getId().equals(dtoItem.getId())).findFirst().orElse(null);
+            if (criteria != null) {
                 dtoItem.setWeight(weights.get(dtoItem.getId()));
             } else {
                 dtoItem.setWeight(null);
             }
         }
 
-        dto.setSelectedCriteriaIds(selectedIds);
+        dto.setSelectedCriterias(selecteds);
         dto.setEvaluationCriterias(allCriterias);
 
         model.addAttribute("evaluationCriteriaCollection", dto);

@@ -6,6 +6,7 @@ package com.nvb.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nvb.pojo.AcademicStaff;
+import com.nvb.pojo.EvaluationCriteria;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
  * @author nguyenvanbao
  */
 public class EvaluationCriteriaCollectionDTO {
+
     private Integer id;
     @NotBlank(message = "{evaluationCriteriaCollection.name.notnullMsg}")
     private String name;
@@ -23,9 +25,9 @@ public class EvaluationCriteriaCollectionDTO {
     private List<EvaluationCriteriaDTO> evaluationCriterias;
     @JsonIgnore
     private AcademicStaff createdBy;
-    
+
     @NotEmpty(message = "{evaluationCriteriaCollection.evaluationCriterias.notnullMsg}")
-    private List<Integer> selectedCriteriaIds;
+    private List<EvaluationCriteria> selectedCriterias;
 
     public EvaluationCriteriaCollectionDTO() {
     }
@@ -78,11 +80,11 @@ public class EvaluationCriteriaCollectionDTO {
         this.createdBy = createdBy;
     }
 
-    public List<Integer> getSelectedCriteriaIds() {
-        return selectedCriteriaIds;
+    public List<EvaluationCriteria> getSelectedCriterias() {
+        return selectedCriterias;
     }
 
-    public void setSelectedCriteriaIds(List<Integer> selectedCriteriaIds) {
-        this.selectedCriteriaIds = selectedCriteriaIds;
+    public void setSelectedCriterias(List<EvaluationCriteria> selectedCriterias) {
+        this.selectedCriterias = selectedCriterias;
     }
 }
