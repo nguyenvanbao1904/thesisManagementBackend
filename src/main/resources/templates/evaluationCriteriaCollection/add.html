@@ -37,10 +37,10 @@
                 <h4>Chọn Tiêu Chí và Nhập Trọng Số:</h4>
                 <div th:if="${#fields.hasErrors('evaluationCriterias')}" class="error-message"
                      th:errors="*{evaluationCriterias}"></div>
-                
-                 <div th:if="${#fields.hasErrors('selectedCriterias')}" class="error-message"
+
+                <div th:if="${#fields.hasErrors('selectedCriterias')}" class="error-message"
                      th:errors="*{selectedCriterias}"></div>
-                
+
                 <div th:if="${#fields.hasGlobalErrors()}" th:each="err : ${#fields.globalErrors()}" class="error-message">
                     <i class="fas fa-exclamation-circle"></i> <span th:text="${err}"></span>
                 </div>
@@ -52,7 +52,10 @@
                                th:id="'criteriaSelected' + ${stat.index}"
                                th:name="selectedCriterias"
                                th:value="*{evaluationCriterias[__${stat.index}__].id}"
-                               th:checked="${evaluationCriteriaCollection.selectedCriterias != null and #lists.contains(evaluationCriteriaCollection.selectedCriterias, evaluationCriteriaCollection.evaluationCriterias[__${stat.index}__].id)}"/>
+                               th:checked="${evaluationCriteriaCollection.selectedCriterias != null 
+                               and evaluationCriteriaCollection.selectedCriterias
+                               .![id].contains(evaluationCriteriaCollection.evaluationCriterias[__${stat.index}__].id)}"
+                               />
 
                         <label class="form-check-label" th:for="'criteriaSelected' + ${stat.index}">
                             <strong th:text="*{evaluationCriterias[__${stat.index}__].name}"></strong>
