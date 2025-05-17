@@ -25,6 +25,7 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
@@ -100,6 +101,7 @@ public class SpringSercurityConfigs {
                 .csrf(c -> c.disable())
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/").hasRole("ADMIN")
+                        .requestMatchers("/api/evaluation_criterias").hasAnyRole("ACADEMICSTAFF", "ADMIN")
                         .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated())
                         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

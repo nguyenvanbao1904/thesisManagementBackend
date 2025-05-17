@@ -22,11 +22,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
-        Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("error", "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau.");
-        System.out.println(ex.getMessage());
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
+//        Map<String, String> errorResponse = new HashMap<>();
+//        errorResponse.put("error", "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau.");
+//        System.out.println(ex.getMessage());
+//        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 }

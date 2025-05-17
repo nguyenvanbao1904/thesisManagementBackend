@@ -4,6 +4,7 @@
  */
 package com.nvb.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nvb.pojo.AcademicStaff;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -20,6 +21,7 @@ public class EvaluationCriteriaCollectionDTO {
     @NotBlank(message = "{evaluationCriteriaCollection.description.notnullMsg}")
     private String description;
     private List<EvaluationCriteriaDTO> evaluationCriterias;
+    @JsonIgnore
     private AcademicStaff createdBy;
     
     @NotEmpty(message = "{evaluationCriteriaCollection.evaluationCriterias.notnullMsg}")

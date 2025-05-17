@@ -93,8 +93,9 @@ public class EvaluationCriteriaCollectionRepositoryImpl implements EvaluationCri
         CriteriaQuery<EvaluationCriteriaCollection> query = builder.createQuery(EvaluationCriteriaCollection.class);
         Root<EvaluationCriteriaCollection> root = query.from(EvaluationCriteriaCollection.class);
 
-        // JOIN FETCH details
-        root.fetch("evaluationCriteriaCollectionDetails", JoinType.LEFT);
+        // JOIN FETCH both details and criteria to avoid N+1 queries
+        root.fetch("evaluationCriteriaCollectionDetails", JoinType.LEFT)
+            .fetch("evaluationCriteria", JoinType.LEFT);
 
         List<Predicate> predicates = new ArrayList<>();
 

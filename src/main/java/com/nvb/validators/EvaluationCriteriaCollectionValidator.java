@@ -38,7 +38,7 @@ public class EvaluationCriteriaCollectionValidator implements Validator {
 
         // Kiểm tra trùng lặp name
         if (collectionDto.getName() != null && !collectionDto.getName().isBlank()) {
-            List<EvaluationCriteriaCollection> listexisting = evaluationCriteriaCollectionService.getEvaluationCriteriaCollections(new HashMap<>(Map.of("name", collectionDto.getName())));
+            List<EvaluationCriteriaCollection> listexisting = evaluationCriteriaCollectionService.getEvaluationCriteriaCollections(new HashMap<>(Map.of("name", collectionDto.getName().trim())));
             if (collectionDto.getId() == null) {
                 if (!listexisting.isEmpty()) {
                     errors.rejectValue("name", "evaluationCriteriaCollection.name.duplicateMsg");

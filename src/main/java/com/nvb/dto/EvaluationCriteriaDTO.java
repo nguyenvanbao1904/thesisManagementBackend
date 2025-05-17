@@ -40,6 +40,13 @@ public class EvaluationCriteriaDTO {
         this.description = description;
         this.maxPoint = maxPoint;
     }
+
+    public EvaluationCriteriaDTO(Integer id, Float weight) {
+        this.id = id;
+        this.weight = weight;
+    }
+    
+    
     
     public EvaluationCriteriaDTO() {
     }

@@ -93,7 +93,7 @@ public class EvaluationCriteriaCollectionServiceImpl implements EvaluationCriter
         Set<EvaluationCriteriaCollectionDetail> currentDetails = evaluationCriteriaCollection.getEvaluationCriteriaCollectionDetails();
         Map<Integer, EvaluationCriteriaCollectionDetail> existingDetailsMap = new HashMap<>();
         for (EvaluationCriteriaCollectionDetail detail : currentDetails) {
-            if (detail.getEvaluationCriteria() != null) { // Defensive check
+            if (detail.getEvaluationCriteria() != null) { 
                  existingDetailsMap.put(detail.getEvaluationCriteria().getId(), detail);
             }
         }
