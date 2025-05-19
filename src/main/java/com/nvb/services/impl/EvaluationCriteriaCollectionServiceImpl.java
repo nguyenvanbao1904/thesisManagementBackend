@@ -14,7 +14,6 @@ import com.nvb.pojo.EvaluationCriteriaCollectionDetailPK;
 import com.nvb.repositories.EvaluationCriteriaCollectionRepository;
 import com.nvb.services.AcademicsStaffService;
 import com.nvb.services.EvaluationCriteriaCollectionService;
-import com.nvb.services.EvaluationCriteriaService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,9 +39,6 @@ public class EvaluationCriteriaCollectionServiceImpl implements EvaluationCriter
 
     @Autowired
     private AcademicsStaffService academicsStaffService;
-
-    @Autowired
-    private EvaluationCriteriaService evaluationCriteriaService;
 
     @Override
     public List<EvaluationCriteriaCollection> getEvaluationCriteriaCollections(Map<String, String> params) {

@@ -20,16 +20,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.hibernate.LazyInitializationException;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -50,6 +51,9 @@ public class ThesesController {
 
     @Autowired
     private EvaluationCriteriaCollectionService evaluationCriteriaCollectionService;
+    
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Autowired
     @Qualifier("thesesWebAppValidator")
@@ -137,5 +141,23 @@ public class ThesesController {
 
         }
         return "redirect:/theses";
+    }
+    
+    @GetMapping("/{id}")
+    public String update(Model model, @PathVariable(name = "id") int id){
+        Thesis thesis = thesesService.getThesis(new HashMap<>(Map.of("id", String.valueOf(id))));
+        ThesesDTO thesesDTO = modelMapper.map(thesis, ThesesDTO.class);
+        thesesDTO.setLecturers(thesis.getLecturers());
+        thesesDTO.setStudents(thesis.getStudents());
+        List<User> lecturersList = userDetailsService.getUsers(new HashMap<>(Map.of("role", UserRole.ROLE_LECTURER.toString())));
+        List<User> studentsList = userDetailsService.getUsers(new HashMap<>(Map.of("role", UserRole.ROLE_STUDENT.toString())));
+        List<EvaluationCriteriaCollection> evaluationCriteriaCollectionsList = evaluationCriteriaCollectionService.getEvaluationCriteriaCollections(new HashMap<>());
+
+        model.addAttribute("theses", thesesDTO);
+        model.addAttribute("lecturersList", lecturersList);
+        model.addAttribute("studentsList", studentsList);
+        model.addAttribute("evaluationCriteriaCollectionsList", evaluationCriteriaCollectionsList);
+        model.addAttribute("reviewersList", lecturersList);
+        return "theses/add";
     }
 }

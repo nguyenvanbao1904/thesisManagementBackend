@@ -14,6 +14,7 @@ import com.nvb.formatter.EvaluationCriteriaDTOFormatter;
 import com.nvb.formatter.EvaluationCriteriaFormatter;
 import com.nvb.formatter.LecturerFormatter;
 import com.nvb.formatter.StudentFormatter;
+import com.nvb.pojo.Thesis;
 import com.nvb.pojo.User;
 import com.nvb.validators.EvaluationCriteriaCollectionValidator;
 import com.nvb.validators.EvaluationCriteriaValidator;
@@ -62,31 +63,31 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
 
     @Autowired
     private MessageSource messageSource;
-    
+
     @Autowired
     private EvaluationCriteriaDTOFormatter evaluationCriteriaDTOFormatter;
-    
+
     @Autowired
     private EvaluationCriteriaFormatter evaluationCriteriaFormatter;
-    
+
     @Autowired
     private LecturerFormatter lecturerFormatter;
-    
+
     @Autowired
     private StudentFormatter studentFormatter;
-    
+
     @Autowired
     private CommitteeFormatter committeeFormatter;
-    
+
     @Autowired
     private EvaluationCriteriaCollectionFormatter evaluationCriteriaCollectionFormatter;
-    
+
     @Autowired
     private EvaluationCriteriaCollectionValidator evaluationCriteriaCollectionValidator;
-    
+
     @Autowired
     private EvaluationCriteriaValidator evaluationCriteriaValidator;
-    
+
     @Autowired
     private ThesesValidator thesesValidator;
 
@@ -104,7 +105,7 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
         webAppValidator.setSpringValidators(springValidators);
         return webAppValidator;
     }
-    
+
     @Bean
     public WebAppValidator evaluationCriteriaCollectionWebAppValidator() {
         Set<Validator> springValidators = new HashSet<>();
@@ -114,7 +115,7 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
         webAppValidator.setSpringValidators(springValidators);
         return webAppValidator;
     }
-    
+
     @Bean
     public WebAppValidator evaluationCriteriaWebAppValidator() {
         Set<Validator> springValidators = new HashSet<>();
@@ -124,7 +125,7 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
         webAppValidator.setSpringValidators(springValidators);
         return webAppValidator;
     }
-    
+
     @Bean
     public WebAppValidator thesesWebAppValidator() {
         Set<Validator> springValidators = new HashSet<>();
@@ -152,6 +153,11 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.typeMap(User.class, UserDTO.class).addMappings(mapper -> {
             mapper.skip(UserDTO::setPassword);
+        });
+        modelMapper.typeMap(Thesis.class, ThesesDTO.class).addMappings(mapper -> {
+            mapper.skip(ThesesDTO::setLecturers);
+            mapper.skip(ThesesDTO::setStudents);
+            mapper.skip(ThesesDTO::setEvaluationScores);
         });
         return modelMapper;
     }

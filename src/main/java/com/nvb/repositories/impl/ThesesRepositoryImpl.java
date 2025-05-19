@@ -16,6 +16,7 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -133,7 +134,7 @@ public class ThesesRepositoryImpl implements ThesesRepository {
             }
             thesis.setStudents(managedStudents);
         } else {
-            s.merge(thesis);
+            thesis = (Thesis) s.merge(thesis);
         }
         return thesis;
     }
@@ -159,6 +160,10 @@ public class ThesesRepositoryImpl implements ThesesRepository {
             if (title != null && !title.isEmpty()) {
                 predicates.add(builder.equal(root.get("title"), title));
             }
+            String id = params.get("id");
+            if(id != null && !id.isEmpty()){
+                predicates.add(builder.equal(root.get("id"), id));
+            }
         }
 
         query.select(root).distinct(true);
@@ -170,5 +175,51 @@ public class ThesesRepositoryImpl implements ThesesRepository {
         }catch(NoResultException ex){
             return null;
         }
+    }
+    
+    @Override
+    public Lecturer getLecturerWithTheses(Integer lecturerId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<Lecturer> query = builder.createQuery(Lecturer.class);
+        Root<Lecturer> root = query.from(Lecturer.class);
+        
+        // Eager fetch theses to ensure the relationship is loaded
+        root.fetch("thesesSupervisors", JoinType.LEFT);
+        
+        query.select(root);
+        query.where(builder.equal(root.get("id"), lecturerId));
+        
+        try {
+            return s.createQuery(query).getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
+        }
+    }
+    
+    @Override
+    public Student getStudentWithTheses(Integer studentId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<Student> query = builder.createQuery(Student.class);
+        Root<Student> root = query.from(Student.class);
+        
+        // Eager fetch theses to ensure the relationship is loaded
+        root.fetch("theses", JoinType.LEFT);
+        
+        query.select(root);
+        query.where(builder.equal(root.get("id"), studentId));
+        
+        try {
+            return s.createQuery(query).getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
+        }
+    }
+
+    @Override
+    public void deleteThesis(int id) {
+        Session s = factory.getObject().getCurrentSession();
+        s.remove(getThesis(new HashMap<>(Map.of("id", String.valueOf(id)))));
     }
 }

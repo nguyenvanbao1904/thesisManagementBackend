@@ -22,10 +22,10 @@ import org.springframework.validation.Validator;
  */
 @Component
 public class ThesesValidator implements Validator {
-    
+
     @Autowired
     private ThesesService thesesService;
-    
+
     @Autowired
     private StudentService studentService;
 
@@ -39,7 +39,7 @@ public class ThesesValidator implements Validator {
         ThesesDTO thesesDTO = (ThesesDTO) target;
 
         // Kiểm tra trùng lặp title
-        if (thesesDTO.getTitle()!= null && !thesesDTO.getTitle().isBlank()) {
+        if (thesesDTO.getTitle() != null && !thesesDTO.getTitle().isBlank()) {
             Thesis existingThesisByTitle = thesesService.getThesis(Map.of("title", thesesDTO.getTitle()));
             if (thesesDTO.getId() == null) {
                 if (existingThesisByTitle != null) {
@@ -52,24 +52,33 @@ public class ThesesValidator implements Validator {
             }
         }
         // tối đa 2 giảng viên hướng dẫn
-        if(thesesDTO.getLecturers() != null && thesesDTO.getLecturers().size() > 2){
+        if (thesesDTO.getLecturers() != null && thesesDTO.getLecturers().size() > 2) {
             errors.rejectValue("lecturers", "theses.lecturers.maxMsg");
         }
         // toi da 2 sinh vien tham gia
-        if(thesesDTO.getStudents()!= null && thesesDTO.getStudents().size() > 2){
+        if (thesesDTO.getStudents() != null && thesesDTO.getStudents().size() > 2) {
             errors.rejectValue("students", "theses.students.maxMsg");
         }
-        
+
         // 1 sinh vien chi duoc tham gia 1 khoa luan
-        for(Student student : thesesDTO.getStudents()){
+        for (Student student : thesesDTO.getStudents()) {
             Student s = studentService.getStudentWithDetails(new HashMap<>(Map.of("studentId", student.getStudentId())));
-            if(!s.gettheses().isEmpty()){
-                errors.rejectValue("students",
-                        null,
-                        String.format("Sinh viên %s %s đã được đăng ký khóa luận tốt nghiệp",
-                                s.getUser().getLastName(), s.getUser().getFirstName()));
+            if (thesesDTO.getId() == null) {
+                if (!s.gettheses().isEmpty()) {
+                    errors.rejectValue("students",
+                            null,
+                            String.format("Sinh viên %s %s đã được đăng ký khóa luận tốt nghiệp",
+                                    s.getUser().getLastName(), s.getUser().getFirstName()));
+                }
+            }else{
+                if (!s.gettheses().isEmpty() && !s.gettheses().iterator().next().getId().equals(thesesDTO.getId())) {
+                    errors.rejectValue("students",
+                            null,
+                            String.format("Sinh viên %s %s đã được đăng ký khóa luận tốt nghiệp",
+                                    s.getUser().getLastName(), s.getUser().getFirstName()));
+                }
             }
+
         }
     }
-
 }

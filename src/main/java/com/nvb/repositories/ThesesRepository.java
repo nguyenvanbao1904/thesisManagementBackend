@@ -18,4 +18,7 @@ public interface ThesesRepository {
     List<Thesis> getTheses(Map<String, String> params, boolean pagination);
     Thesis addOrUpdate(Thesis thesis);
     Thesis getThesis(Map<String, String> params);
+    Lecturer getLecturerWithTheses(Integer lecturerId);
+    Student getStudentWithTheses(Integer studentId);
+    void deleteThesis(int id);
 }

@@ -60,7 +60,7 @@
                             <a th:if="${thesis.fileUrl != null}" th:href="${thesis.fileUrl}" target="_blank" class="btn btn-sm btn-primary">Xem tài liệu</a>
                         </td>
                         <td>
-                            <a class="btn btn-danger btn-sm" th:onclick="'deleteThesis(\''+@{/api/theses/}+'\','+${thesis.id}+')'">Xóa</a>
+                            <a class="btn btn-danger btn-sm" th:onclick="'deleteItem(\''+@{/api/theses/}+'\','+${thesis.id}+')'">Xóa</a>
                             <a class="btn btn-success btn-sm" th:href="@{'/theses/' + ${thesis.id}}">Cập nhật️</a>
                         </td>
                     </tr>
