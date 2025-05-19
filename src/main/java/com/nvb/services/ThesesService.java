@@ -17,5 +17,6 @@ import java.util.Map;
 public interface ThesesService {
     List<Thesis> getTheses(Map<String, String> params);
     List<Thesis> getTheses(Map<String, String> params, boolean pagination);
+    Thesis getThesis(Map<String, String> params);
     Thesis addOrUpdate(ThesesDTO thesesDTO);
 }

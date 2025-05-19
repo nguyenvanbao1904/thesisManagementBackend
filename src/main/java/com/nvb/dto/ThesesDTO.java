@@ -11,6 +11,8 @@ import com.nvb.pojo.EvaluationFinalScore;
 import com.nvb.pojo.EvaluationScore;
 import com.nvb.pojo.Lecturer;
 import com.nvb.pojo.Student;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.Set;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,17 +21,24 @@ import org.springframework.web.multipart.MultipartFile;
  * @author nguyenvanbao
  */
 public class ThesesDTO {
+
     private Integer id;
+    @NotBlank(message = "{theses.title.notnullMsg}")
     private String title;
+    @NotBlank(message = "{theses.description.notnullMsg}")
     private String description;
     private String status;
-    private Set<Lecturer> lecturers;    
+    @NotNull(message = "{theses.lecturers.notnullMsg}")
+    private Set<Lecturer> lecturers;
+    @NotNull(message = "{theses.students.notnullMsg}")
     private Set<Student> students;
     private Set<EvaluationScore> evaluationScores;
     private EvaluationFinalScore evaluationFinalScore;
     private AcademicStaff createdBy;
     private Committee committeeId;
+    @NotNull(message = "{theses.evaluationCriteriaCollection.notnullMsg}")
     private EvaluationCriteriaCollection evaluationCriteriaCollectionId;
+    @NotNull(message = "{theses.reviewerId.notnullMsg}")
     private Lecturer reviewerId;
     private MultipartFile file;
 
@@ -44,10 +53,10 @@ public class ThesesDTO {
         this.reviewerId = reviewerId;
         this.file = file;
     }
-    
+
     public ThesesDTO() {
     }
-    
+
     public Integer getId() {
         return id;
     }
@@ -151,20 +160,20 @@ public class ThesesDTO {
     public void setFile(MultipartFile file) {
         this.file = file;
     }
-    
+
     @Override
     public String toString() {
-        return "ThesesDTO{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", status='" + status + '\'' +
-                ", lecturers=" + (lecturers != null ? lecturers.size() : "null") +
-                ", students=" + (students != null ? students.size() : "null") +
-                ", committeeId=" + (committeeId != null ? committeeId.getId() : "null") +
-                ", evaluationCriteriaCollectionId=" + (evaluationCriteriaCollectionId != null ? evaluationCriteriaCollectionId.getId() : "null") +
-                ", reviewerId=" + (reviewerId != null ? reviewerId.getId() : "null") +
-                ", file=" + (file != null ? file.getOriginalFilename() : "null") +
-                '}';
+        return "ThesesDTO{"
+                + "id=" + id
+                + ", title='" + title + '\''
+                + ", description='" + description + '\''
+                + ", status='" + status + '\''
+                + ", lecturers=" + (lecturers != null ? lecturers.size() : "null")
+                + ", students=" + (students != null ? students.size() : "null")
+                + ", committeeId=" + (committeeId != null ? committeeId.getId() : "null")
+                + ", evaluationCriteriaCollectionId=" + (evaluationCriteriaCollectionId != null ? evaluationCriteriaCollectionId.getId() : "null")
+                + ", reviewerId=" + (reviewerId != null ? reviewerId.getId() : "null")
+                + ", file=" + (file != null ? file.getOriginalFilename() : "null")
+                + '}';
     }
 }

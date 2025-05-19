@@ -6,6 +6,7 @@ package com.nvb.repositories.impl;
 
 import com.nvb.pojo.Thesis;
 import com.nvb.repositories.ThesesRepository;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -53,7 +54,7 @@ public class ThesesRepositoryImpl implements ThesesRepository {
         if (params != null) {
             String title = params.get("title");
             if (title != null && !title.isEmpty()) {
-                predicates.add(builder.equal(root.get("title"), title));
+                predicates.add(builder.like(root.get("title"), String.format("%%%s%%", title)));
             }
             if (pagination) {
                 String page = params.get("page");
@@ -90,6 +91,40 @@ public class ThesesRepositoryImpl implements ThesesRepository {
         } else {
             // For updates
             return (Thesis) s.merge(thesis);
+        }
+    }
+
+    @Override
+    public Thesis getThesis(Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<Thesis> query = builder.createQuery(Thesis.class);
+        Root<Thesis> root = query.from(Thesis.class);
+        
+        // Eager fetch related entities to avoid LazyInitializationException
+        root.fetch("reviewerId", JoinType.LEFT);
+        root.fetch("evaluationCriteriaCollectionId", JoinType.LEFT);
+        root.fetch("committeeId", JoinType.LEFT);
+        root.fetch("lecturers", JoinType.LEFT);
+        root.fetch("students", JoinType.LEFT);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (params != null) {
+            String title = params.get("title");
+            if (title != null && !title.isEmpty()) {
+                predicates.add(builder.equal(root.get("title"), title));
+            }
+        }
+
+        query.select(root).distinct(true);
+        query.where(predicates.toArray(new Predicate[0]));
+        Query q = s.createQuery(query);
+
+        try{
+            return (Thesis) q.getSingleResult();
+        }catch(NoResultException ex){
+            return null;
         }
     }
 }

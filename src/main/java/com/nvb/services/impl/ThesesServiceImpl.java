@@ -148,4 +148,9 @@ public class ThesesServiceImpl implements ThesesService {
 
         return thesis;
     }
+
+    @Override
+    public Thesis getThesis(Map<String, String> params) {
+        return thesesRepository.getThesis(params);
+    }
 }

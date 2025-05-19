@@ -6,6 +6,7 @@ package com.nvb.configs;
 
 import com.nvb.dto.EvaluationCriteriaCollectionDTO;
 import com.nvb.dto.EvaluationCriteriaDTO;
+import com.nvb.dto.ThesesDTO;
 import com.nvb.dto.UserDTO;
 import com.nvb.formatter.CommitteeFormatter;
 import com.nvb.formatter.EvaluationCriteriaCollectionFormatter;
@@ -16,6 +17,7 @@ import com.nvb.formatter.StudentFormatter;
 import com.nvb.pojo.User;
 import com.nvb.validators.EvaluationCriteriaCollectionValidator;
 import com.nvb.validators.EvaluationCriteriaValidator;
+import com.nvb.validators.ThesesValidator;
 import com.nvb.validators.UserValidator;
 import com.nvb.validators.WebAppValidator;
 import java.util.HashSet;
@@ -84,6 +86,9 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
     
     @Autowired
     private EvaluationCriteriaValidator evaluationCriteriaValidator;
+    
+    @Autowired
+    private ThesesValidator thesesValidator;
 
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
@@ -119,7 +124,16 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
         webAppValidator.setSpringValidators(springValidators);
         return webAppValidator;
     }
-
+    
+    @Bean
+    public WebAppValidator thesesWebAppValidator() {
+        Set<Validator> springValidators = new HashSet<>();
+        springValidators.add(thesesValidator);
+        WebAppValidator webAppValidator = new WebAppValidator();
+        webAppValidator.setSupportedClass(ThesesDTO.class);
+        webAppValidator.setSpringValidators(springValidators);
+        return webAppValidator;
+    }
 
     @Bean
     public LocalValidatorFactoryBean localValidatorFactoryBean() {
