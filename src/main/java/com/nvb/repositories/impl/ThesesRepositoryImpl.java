@@ -4,6 +4,8 @@
  */
 package com.nvb.repositories.impl;
 
+import com.nvb.pojo.Lecturer;
+import com.nvb.pojo.Student;
 import com.nvb.pojo.Thesis;
 import com.nvb.repositories.ThesesRepository;
 import jakarta.persistence.NoResultException;
@@ -14,8 +16,10 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
@@ -85,13 +89,53 @@ public class ThesesRepositoryImpl implements ThesesRepository {
     @Override
     public Thesis addOrUpdate(Thesis thesis) {
         Session s = factory.getObject().getCurrentSession();
-        if(thesis.getId() == null) {
-            // Use merge instead of persist to handle detached entities
-            return (Thesis) s.merge(thesis);
+        
+        if (thesis.getId() == null) {
+            // Lưu các ID của lecturer và student
+            Set<Integer> lecturerIds = new HashSet<>();
+            Set<Integer> studentIds = new HashSet<>();
+            
+            for (Lecturer lecturer : thesis.getLecturers()) {
+                lecturerIds.add(lecturer.getId());
+            }
+            
+            for (Student student : thesis.getStudents()) {
+                studentIds.add(student.getId());
+            }
+            
+            // Xóa tạm thời danh sách để tránh persist cascading
+            thesis.setLecturers(new HashSet<>());
+            thesis.setStudents(new HashSet<>());
+            
+            // Lưu thesis trước
+            s.persist(thesis);
+            
+            // Thiết lập lại mối quan hệ với lecturer và student
+            Set<Lecturer> managedLecturers = new HashSet<>();
+            for (Integer lecturerId : lecturerIds) {
+                Lecturer managedLecturer = s.get(Lecturer.class, lecturerId);
+                if (managedLecturer != null) {
+                    managedLecturers.add(managedLecturer);
+                    // Thêm thesis vào collection của lecturer
+                    managedLecturer.getThesesSupervisors().add(thesis);
+                }
+            }
+            thesis.setLecturers(managedLecturers);
+            
+            Set<Student> managedStudents = new HashSet<>();
+            for (Integer studentId : studentIds) {
+                Student managedStudent = s.get(Student.class, studentId);
+                if (managedStudent != null) {
+                    managedStudents.add(managedStudent);
+                    // Thêm thesis vào collection của student
+                    managedStudent.gettheses().add(thesis);
+                }
+            }
+            thesis.setStudents(managedStudents);
         } else {
-            // For updates
-            return (Thesis) s.merge(thesis);
+            s.merge(thesis);
         }
+        return thesis;
     }
 
     @Override

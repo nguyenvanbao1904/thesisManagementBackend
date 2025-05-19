@@ -4,6 +4,8 @@
  */
 package com.nvb.repositories;
 
+import com.nvb.pojo.Lecturer;
+import com.nvb.pojo.Student;
 import com.nvb.pojo.Thesis;
 import java.util.List;
 import java.util.Map;

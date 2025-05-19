@@ -9,10 +9,12 @@ import com.nvb.pojo.EvaluationCriteriaCollection;
 import com.nvb.pojo.Thesis;
 import com.nvb.pojo.User;
 import com.nvb.pojo.UserRole;
+import com.nvb.services.EmailService;
 import com.nvb.services.EvaluationCriteriaCollectionService;
 import com.nvb.services.ThesesService;
 import com.nvb.services.UserService;
 import com.nvb.validators.WebAppValidator;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
@@ -48,21 +50,23 @@ public class ThesesController {
 
     @Autowired
     private EvaluationCriteriaCollectionService evaluationCriteriaCollectionService;
-    
+
     @Autowired
     @Qualifier("thesesWebAppValidator")
     private WebAppValidator thesesWebAppValidator;
-    
+
+    @Autowired
+    private EmailService emailService;
+
     @InitBinder
-    public void initBinder(WebDataBinder binder){
+    public void initBinder(WebDataBinder binder) {
         binder.setValidator(thesesWebAppValidator);
     }
 
     @GetMapping("")
-    @Transactional(readOnly = true)
     public String showAll(Model model, @RequestParam(required = false) Map<String, String> params) {
         try {
-            List<Thesis> theses = thesesService.getTheses(params);
+            List<Thesis> theses = thesesService.getTheses(params, true);
             model.addAttribute("theses", theses);
             int page = 1;
             if (params.get("page") != null) {
@@ -102,7 +106,7 @@ public class ThesesController {
     }
 
     @PostMapping("/add")
-    public String addTheses(Model model, @ModelAttribute("theses")  @Valid ThesesDTO thesesDTO, 
+    public String addTheses(Model model, @ModelAttribute("theses") @Valid ThesesDTO thesesDTO,
             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             List<User> lecturersList = userDetailsService.getUsers(
@@ -119,6 +123,19 @@ public class ThesesController {
             return "theses/add";
         }
         thesesService.addOrUpdate(thesesDTO);
+        if (thesesDTO.getReviewerId() != null) {
+            try {
+                String subject = "Thông báo phản biện khóa luận";
+                String body = String.format(
+                        "<h3>Thân gửi giảng viên,</h3>"
+                        + "<p>Bạn vừa được phân công phản biện khóa luận <strong>%s</strong>.</p>",
+                        thesesDTO.getTitle()
+                );
+                emailService.sendEmail(thesesDTO.getReviewerId().getUser().getEmail(), subject, body);
+            } catch (MessagingException e) {
+            }
+
+        }
         return "redirect:/theses";
     }
 }
