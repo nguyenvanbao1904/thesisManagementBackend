@@ -6,17 +6,19 @@ package com.nvb.dto;
 
 import com.nvb.pojo.AcademicStaff;
 import com.nvb.pojo.Committee;
+import com.nvb.pojo.EvaluationCriteriaCollection;
 import com.nvb.pojo.EvaluationFinalScore;
 import com.nvb.pojo.EvaluationScore;
 import com.nvb.pojo.Lecturer;
 import com.nvb.pojo.Student;
 import java.util.Set;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
  * @author nguyenvanbao
  */
-public class TheseDTO {
+public class ThesesDTO {
     private Integer id;
     private String title;
     private String description;
@@ -27,24 +29,25 @@ public class TheseDTO {
     private EvaluationFinalScore evaluationFinalScore;
     private AcademicStaff createdBy;
     private Committee committeeId;
-    private EvaluationCriteriaCollectionDTO evaluationCriteriaCollectionId;
+    private EvaluationCriteriaCollection evaluationCriteriaCollectionId;
     private Lecturer reviewerId;
+    private MultipartFile file;
 
-    public TheseDTO(Integer id, String title, String description, String status, Set<Lecturer> lecturers, Set<Student> students, Set<EvaluationScore> evaluationScores, EvaluationFinalScore evaluationFinalScore, AcademicStaff createdBy, Committee committeeId, EvaluationCriteriaCollectionDTO evaluationCriteriaCollectionId, Lecturer reviewerId) {
+    public ThesesDTO(Integer id, String title, String description, Set<Lecturer> lecturers, Set<Student> students, Committee committeeId, EvaluationCriteriaCollection evaluationCriteriaCollectionId, Lecturer reviewerId, MultipartFile file) {
         this.id = id;
         this.title = title;
         this.description = description;
-        this.status = status;
         this.lecturers = lecturers;
         this.students = students;
-        this.evaluationScores = evaluationScores;
-        this.evaluationFinalScore = evaluationFinalScore;
-        this.createdBy = createdBy;
         this.committeeId = committeeId;
         this.evaluationCriteriaCollectionId = evaluationCriteriaCollectionId;
         this.reviewerId = reviewerId;
+        this.file = file;
     }
-
+    
+    public ThesesDTO() {
+    }
+    
     public Integer getId() {
         return id;
     }
@@ -125,11 +128,11 @@ public class TheseDTO {
         this.committeeId = committeeId;
     }
 
-    public EvaluationCriteriaCollectionDTO getEvaluationCriteriaCollectionId() {
+    public EvaluationCriteriaCollection getEvaluationCriteriaCollectionId() {
         return evaluationCriteriaCollectionId;
     }
 
-    public void setEvaluationCriteriaCollectionId(EvaluationCriteriaCollectionDTO evaluationCriteriaCollectionId) {
+    public void setEvaluationCriteriaCollectionId(EvaluationCriteriaCollection evaluationCriteriaCollectionId) {
         this.evaluationCriteriaCollectionId = evaluationCriteriaCollectionId;
     }
 
@@ -140,5 +143,28 @@ public class TheseDTO {
     public void setReviewerId(Lecturer reviewerId) {
         this.reviewerId = reviewerId;
     }
+
+    public MultipartFile getFile() {
+        return file;
+    }
+
+    public void setFile(MultipartFile file) {
+        this.file = file;
+    }
     
+    @Override
+    public String toString() {
+        return "ThesesDTO{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", status='" + status + '\'' +
+                ", lecturers=" + (lecturers != null ? lecturers.size() : "null") +
+                ", students=" + (students != null ? students.size() : "null") +
+                ", committeeId=" + (committeeId != null ? committeeId.getId() : "null") +
+                ", evaluationCriteriaCollectionId=" + (evaluationCriteriaCollectionId != null ? evaluationCriteriaCollectionId.getId() : "null") +
+                ", reviewerId=" + (reviewerId != null ? reviewerId.getId() : "null") +
+                ", file=" + (file != null ? file.getOriginalFilename() : "null") +
+                '}';
+    }
 }

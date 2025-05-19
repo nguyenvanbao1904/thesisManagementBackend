@@ -4,13 +4,13 @@
  */
 package com.nvb.repositories.impl;
 
-import com.nvb.dto.UserDTO;
 import com.nvb.pojo.User;
 import com.nvb.repositories.UserRepository;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -70,7 +70,7 @@ public class UserRepositoryImpl implements UserRepository {
         }
 
         query.where(predicates.toArray(new Predicate[0]));
-        
+
         query.select(root);
 
         Query q = s.createQuery(query);
@@ -95,7 +95,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User authenticate(String username, String password) {
         User u = this.getUser(Map.of("username", username));
-        if(this.passwordEncoder.matches(password, u.getPassword())){
+        if (this.passwordEncoder.matches(password, u.getPassword())) {
             return u;
         }
         return null;
@@ -105,22 +105,15 @@ public class UserRepositoryImpl implements UserRepository {
     public List<User> getUsers(Map<String, String> params) {
 
         Session s = this.factory.getObject().getCurrentSession();
-        CriteriaBuilder buider = s.getCriteriaBuilder();
-        CriteriaQuery<User> query = buider.createQuery(User.class);
-        Root root = query.from(User.class);
-        
-        query.select(buider.construct(User.class,
-                root.get("id"),
-                root.get("username"),
-                root.get("firstName"),
-                root.get("lastName"),
-                root.get("email"),
-                root.get("phone"),
-                root.get("avatarUrl"),
-                root.get("role"),
-                root.get("isActive")
-        ));
-        
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<User> query = builder.createQuery(User.class);
+        Root<User> root = query.from(User.class);
+
+        // Join fetch các đối tượng liên kết
+        root.fetch("lecturer", JoinType.LEFT);
+        root.fetch("student", JoinType.LEFT);
+        root.fetch("academicStaff", JoinType.LEFT);
+
 
         if (params != null) {
 
@@ -128,18 +121,18 @@ public class UserRepositoryImpl implements UserRepository {
 
             String kw = params.get("username");
             if (kw != null && !kw.isEmpty()) {
-                predicates.add(buider.like(root.get("username"), String.format("%%%s%%", kw)));
+                predicates.add(builder.like(root.get("username"), String.format("%%%s%%", kw)));
             }
 
             String role = params.get("role");
             if (role != null && !role.isEmpty()) {
-                predicates.add(buider.equal(root.get("role"), role));
+                predicates.add(builder.equal(root.get("role"), role));
             }
 
             String isActive = params.get("isActive");
             if (isActive != null && !isActive.isEmpty()) {
                 Boolean isActiveBool = Boolean.valueOf(isActive);
-                predicates.add(buider.equal(root.get("isActive"), isActiveBool));
+                predicates.add(builder.equal(root.get("isActive"), isActiveBool));
             }
 
             String page = params.get("page");
@@ -149,6 +142,8 @@ public class UserRepositoryImpl implements UserRepository {
             query.where(predicates.toArray(Predicate[]::new));
 
         }
+        query.select(root);
+
         Query q = s.createQuery(query);
 
         if (params != null && params.containsKey("page")) {

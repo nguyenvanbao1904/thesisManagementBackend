@@ -81,16 +81,16 @@ public class Thesis implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @UpdateTimestamp
     private Date updatedAt;
-    @ManyToMany(mappedBy = "thesesSupervisors", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "thesesSupervisors", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Lecturer> lecturers;
-    @ManyToMany(mappedBy = "theses", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "theses", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Student> students;
     @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "thesis", fetch = FetchType.LAZY)
     private Set<EvaluationScore> evaluationScores;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "thesis")
     private EvaluationFinalScore evaluationFinalScore;
     @JoinColumn(name = "created_by", referencedColumnName = "id")
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = true)
     private AcademicStaff createdBy;
     @JoinColumn(name = "committee_id", referencedColumnName = "id")
     @ManyToOne
@@ -101,6 +101,11 @@ public class Thesis implements Serializable {
     @JoinColumn(name = "reviewer_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Lecturer reviewerId;
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 100)
+    @Column(name = "file_url")
+    private String fileUrl;
 
     public Thesis() {
     }
@@ -231,6 +236,38 @@ public class Thesis implements Serializable {
 
     public void setReviewerId(Lecturer reviewerId) {
         this.reviewerId = reviewerId;
+    }
+
+    public Set<Lecturer> getLecturers() {
+        return lecturers;
+    }
+
+    public void setLecturers(Set<Lecturer> lecturers) {
+        this.lecturers = lecturers;
+    }
+
+    public Set<Student> getStudents() {
+        return students;
+    }
+
+    public void setStudents(Set<Student> students) {
+        this.students = students;
+    }
+
+    public Set<EvaluationScore> getEvaluationScores() {
+        return evaluationScores;
+    }
+
+    public void setEvaluationScores(Set<EvaluationScore> evaluationScores) {
+        this.evaluationScores = evaluationScores;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
     @Override

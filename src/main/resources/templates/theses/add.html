@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+
+        <title>Quản lý khóa luận</title>
+
+    <th:block th:replace="/base/base :: bootstrap" ></th:block>
+
+    <link th:href="@{/css/addUser.css}" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <div th:replace="/base/base :: header"></div> <main>
+
+        <div class="container mt-5 mb-5">
+
+            <h1 class="text-center mb-4">Thêm hoặc cập nhật khóa luận</h1>
+
+
+            <!-- Hiển thị thông báo lỗi từ controller -->
+
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+
+                <strong>Lỗi!</strong> <span th:text="${errorMessage}"></span>
+
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+            </div>
+
+
+
+            <form method="post" th:action="@{/theses/add}" th:object="${theses}" enctype="multipart/form-data" class="border p-4 rounded shadow">
+
+
+
+                <!-- Hiển thị thông báo lỗi tổng quan nếu có -->
+
+                <div th:if="${#fields.hasAnyErrors()}" class="alert-validation">
+
+                    <i class="fas fa-exclamation-circle"></i> Vui lòng kiểm tra lại thông tin đã nhập
+
+                </div>
+
+
+
+                <input type="hidden" th:field="*{id}" />
+
+
+
+                <div class="mb-3">
+
+                    <label for="title" class="form-label">Tiêu đề khóa luận</label>
+
+                    <input type="text" th:class="${#fields.hasErrors('title')} ? 'form-control field-error' : 'form-control'"
+
+                           id="title" placeholder="Nhập tiêu đề khóa luận" th:field="*{title}" required />
+
+                    <div th:if="${#fields.hasErrors('title')}" class="error-message"
+
+                         th:errors="*{title}">Lỗi tiêu đề</div>
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    <label for="description" class="form-label">Mô tả khóa luận</label>
+
+                    <textarea th:class="${#fields.hasErrors('description')} ? 'form-control field-error' : 'form-control'"
+
+                              id="description" placeholder="Nhập mô tả khóa luận" th:field="*{description}" rows="3" required></textarea>
+
+                    <div th:if="${#fields.hasErrors('description')}" class="error-message"
+
+                         th:errors="*{description}">Lỗi mô tả</div>
+
+                </div>
+
+
+                 Chọn giảng viên hướng dẫn 
+
+                <div class="mb-3">
+
+                    <label class="form-label">Giảng viên hướng dẫn</label>
+
+                    <div th:if="${#fields.hasErrors('lecturers')}" class="error-message"
+
+                         th:errors="*{lecturers}">Lỗi giảng viên hướng dẫn</div>
+
+
+                    <div th:each="lecturer, stat : ${lecturersList}" class="form-check mb-2 p-3 border rounded d-flex align-items-center">
+
+                        <div style="min-width: 30px;">
+
+                            <input class="form-check-input supervisor-checkbox" type="checkbox"
+
+                                   th:id="'lecturer' + ${stat.index}"
+
+                                   th:name="lecturers"
+
+                                   th:value="${lecturer.id}"
+
+                                   th:data-lecturer-id="${lecturer.id}"
+
+                                   th:checked="${theses.lecturers != null and theses.lecturers.![id].contains(lecturer.id)}"
+
+                                   onchange="updateReviewersList()"/>
+
+                        </div>
+
+                        <label class="form-check-label" th:for="'lecturer' + ${stat.index}">
+
+                            <span th:text="${lecturer.lastName + ' ' + lecturer.firstName + (lecturer.lecturer != null ? ' (' + (lecturer.lecturer.academicTitle != null ? lecturer.lecturer.academicTitle + ' ' : '') + lecturer.lecturer.academicDegree + ')' : '')}"></span>
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                 Chọn sinh viên thực hiện 
+
+                <div class="mb-3">
+
+                    <label class="form-label">Sinh viên thực hiện</label>
+
+                    <div th:if="${#fields.hasErrors('students')}" class="error-message"
+
+                         th:errors="*{students}">Lỗi sinh viên thực hiện</div>
+
+
+                    <div th:each="student, stat : ${studentsList}" class="form-check mb-2 p-3 border rounded d-flex align-items-center">
+
+                        <div style="min-width: 30px;">
+
+                            <input class="form-check-input" type="checkbox"
+
+                                   th:id="'student' + ${stat.index}"
+
+                                   th:name="students"
+
+                                   th:value="${student.id}"
+
+                                   th:checked="${theses.students != null and theses.students.![id].contains(student.id)}" />
+
+                        </div>
+
+                        <label class="form-check-label" th:for="'student' + ${stat.index}">
+
+                            <span th:text="${student.lastName + ' ' + student.firstName + (student.student != null ? ' (' + student.student.studentId + ')' : '')}"></span>
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                 Chọn hội đồng 
+
+                <div class="mb-3">
+
+                    <label for="committeeId" class="form-label">Hội đồng bảo vệ</label>
+
+                    <select th:class="${#fields.hasErrors('committeeId')} ? 'form-control field-error' : 'form-control'"
+
+                            id="committeeId" th:field="*{committeeId}">
+
+                        <option value="">-- Chọn hội đồng --</option>
+
+                        <option th:each="committee : ${committeesList}"
+
+                                th:value="${committee.id}"
+
+                                th:text="${committee.name}"></option>
+
+                    </select>
+
+                    <div th:if="${#fields.hasErrors('committeeId')}" class="error-message"
+
+                         th:errors="*{committeeId}">Lỗi hội đồng</div>
+
+                </div>
+
+
+                 Chọn bộ tiêu chí đánh giá 
+
+                <div class="mb-3">
+
+                    <label for="evaluationCriteriaCollectionId" class="form-label">Bộ tiêu chí đánh giá</label>
+
+                    <select th:class="${#fields.hasErrors('evaluationCriteriaCollectionId')} ? 'form-control field-error' : 'form-control'"
+
+                            id="evaluationCriteriaCollectionId" th:field="*{evaluationCriteriaCollectionId}">
+
+                        <option value="">-- Chọn bộ tiêu chí --</option>
+
+                        <option th:each="collection : ${evaluationCriteriaCollectionsList}"
+
+                                th:value="${collection.id}"
+
+                                th:text="${collection.name}"></option>
+
+                    </select>
+
+                    <div th:if="${#fields.hasErrors('evaluationCriteriaCollectionId')}" class="error-message"
+
+                         th:errors="*{evaluationCriteriaCollectionId}">Lỗi bộ tiêu chí</div>
+
+                </div>
+
+
+                 Chọn người phản biện 
+
+                <div class="mb-3">
+
+                    <label for="reviewerId" class="form-label">Người phản biện</label>
+
+                    <select th:class="${#fields.hasErrors('reviewerId')} ? 'form-control field-error' : 'form-control'"
+
+                            id="reviewerId" th:field="*{reviewerId}">
+
+                        <option value="">-- Chọn người phản biện --</option>
+
+                        <option th:each="reviewer : ${reviewersList}"
+
+                                th:value="${reviewer.id}"
+
+                                th:data-lecturer-id="${reviewer.id}"
+
+                                th:text="${reviewer.lastName + ' ' + reviewer.firstName}"
+
+                                class="reviewer-option"></option>
+
+                    </select>
+
+                    <div th:if="${#fields.hasErrors('reviewerId')}" class="error-message"
+
+                         th:errors="*{reviewerId}">Lỗi người phản biện</div>
+
+                </div>
+
+
+                 Upload file báo cáo 
+
+                <div class="mb-3">
+
+                    <label for="file" class="form-label">File báo cáo khóa luận (Tối đa 10MB)</label>
+
+                    <input id="file" type="file" th:class="${#fields.hasErrors('file')} ? 'form-control field-error' : 'form-control'"
+                           th:field="*{file}">
+
+                    <div th:if="${#fields.hasErrors('file')}" class="error-message"
+
+                         th:errors="*{file}">Lỗi file báo cáo</div>
+
+                </div>
+                
+                <div class="text-center">
+
+                    <button class="btn btn-success mt-3" type="submit">
+
+                        <span th:if="${theses.id == null}">Thêm khóa luận</span>
+
+                        <span th:unless="${theses.id == null}">Cập nhật khóa luận</span>
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </main>
+
+
+
+    <script>
+
+    // Hàm cập nhật danh sách người phản biện dựa trên giảng viên hướng dẫn được chọn
+
+        function updateReviewersList() {
+
+    // Lấy tất cả các checkbox của giảng viên hướng dẫn đã chọn
+
+            const selectedSupervisors = document.querySelectorAll('.supervisor-checkbox:checked');
+
+
+    // Lấy tất cả các option trong dropdown người phản biện
+
+            const reviewerOptions = document.querySelectorAll('.reviewer-option');
+
+
+    // Tạo mảng chứa ID của các giảng viên hướng dẫn đã chọn
+
+            const selectedSupervisorIds = Array.from(selectedSupervisors).map(checkbox => checkbox.getAttribute('data-lecturer-id'));
+
+
+    // Duyệt qua tất cả các option trong dropdown người phản biện
+
+            reviewerOptions.forEach(option => {
+
+                const lecturerId = option.getAttribute('data-lecturer-id');
+
+
+    // Nếu lecturer ID có trong danh sách đã chọn làm giảng viên hướng dẫn, ẩn option này
+
+                if (selectedSupervisorIds.includes(lecturerId)) {
+
+                    option.style.display = 'none';
+
+                    option.disabled = true;
+
+                } else {
+
+                    option.style.display = '';
+
+                    option.disabled = false;
+
+                }
+
+            });
+
+
+    // Nếu người phản biện hiện tại là một trong những giảng viên hướng dẫn đã chọn, reset giá trị
+
+            const reviewerSelect = document.getElementById('reviewerId');
+
+            if (selectedSupervisorIds.includes(reviewerSelect.value)) {
+
+                reviewerSelect.value = '';
+
+            }
+
+        }
+
+
+    // Gọi hàm khi trang tải xong để thiết lập trạng thái ban đầu
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            updateReviewersList();
+
+        });
+
+    </script>
+
+
+
+    <div th:replace="/base/base :: footer"></div>
+
+</body>
+
+</html>
+

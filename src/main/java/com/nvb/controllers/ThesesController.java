@@ -4,14 +4,25 @@
  */
 package com.nvb.controllers;
 
+import com.nvb.dto.ThesesDTO;
+import com.nvb.pojo.EvaluationCriteriaCollection;
 import com.nvb.pojo.Thesis;
+import com.nvb.pojo.User;
+import com.nvb.pojo.UserRole;
+import com.nvb.services.EvaluationCriteriaCollectionService;
 import com.nvb.services.ThesesService;
+import com.nvb.services.UserService;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.hibernate.LazyInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -26,24 +37,59 @@ public class ThesesController {
     @Autowired
     private ThesesService thesesService;
 
-    @GetMapping("")
-    public String showAllTheses(Model model, @RequestParam(required = false) Map<String, String> params) {
-        List<Thesis> theses = thesesService.getTheses(params);
-        model.addAttribute("theses", theses);
-        int page = 1;
-        if (params.get("page") != null) {
-            try {
-                if (theses.isEmpty()) {
-                    page = 0;
-                } else {
-                    page = Integer.parseInt(params.get("page"));
+    @Autowired
+    private UserService userDetailsService;
 
+    @Autowired
+    private EvaluationCriteriaCollectionService evaluationCriteriaCollectionService;
+
+    @GetMapping("")
+    @Transactional(readOnly = true)
+    public String showAll(Model model, @RequestParam(required = false) Map<String, String> params) {
+        try {
+            List<Thesis> theses = thesesService.getTheses(params);
+            model.addAttribute("theses", theses);
+            int page = 1;
+            if (params.get("page") != null) {
+                try {
+                    if (theses.isEmpty()) {
+                        page = 0;
+                    } else {
+                        page = Integer.parseInt(params.get("page"));
+                    }
+                } catch (NumberFormatException e) {
+                    page = 1;
                 }
-            } catch (NumberFormatException e) {
-                page = 1;
             }
+            model.addAttribute("page", page);
+            return "theses/index";
+        } catch (LazyInitializationException ex) {
+            // If we still get LazyInitializationException, return with simplified view
+            model.addAttribute("errorMessage", "Lỗi khi tải dữ liệu. Vui lòng thử lại sau.");
+            return "theses/index";
         }
-        model.addAttribute("page", page);
-        return "theses/index";
+    }
+
+    @GetMapping("/add")
+    public String showAddForm(Model model) {
+        ThesesDTO thesesDTO = new ThesesDTO();
+        List<User> lecturersList = userDetailsService.getUsers(new HashMap<>(Map.of("role", UserRole.ROLE_LECTURER.toString())));
+        List<User> studentsList = userDetailsService.getUsers(new HashMap<>(Map.of("role", UserRole.ROLE_STUDENT.toString())));
+        List<EvaluationCriteriaCollection> evaluationCriteriaCollectionsList = evaluationCriteriaCollectionService.getEvaluationCriteriaCollections(new HashMap<>());
+
+        model.addAttribute("theses", thesesDTO);
+        model.addAttribute("lecturersList", lecturersList);
+        model.addAttribute("studentsList", studentsList);
+        model.addAttribute("evaluationCriteriaCollectionsList", evaluationCriteriaCollectionsList);
+        model.addAttribute("reviewersList", lecturersList);
+        // addAttribute committee sau 
+
+        return "theses/add";
+    }
+
+    @PostMapping("/add")
+    public String addTheses(Model model, @ModelAttribute("theses") ThesesDTO thesesDTO) {
+        thesesService.addOrUpdate(thesesDTO);
+        return "redirect:/theses";
     }
 }

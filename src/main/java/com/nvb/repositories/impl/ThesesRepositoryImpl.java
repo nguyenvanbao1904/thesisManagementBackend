@@ -9,6 +9,7 @@ import com.nvb.repositories.ThesesRepository;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -39,6 +40,13 @@ public class ThesesRepositoryImpl implements ThesesRepository {
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<Thesis> query = builder.createQuery(Thesis.class);
         Root<Thesis> root = query.from(Thesis.class);
+        
+        // Eager fetch related entities to avoid LazyInitializationException
+        root.fetch("reviewerId", JoinType.LEFT);
+        root.fetch("evaluationCriteriaCollectionId", JoinType.LEFT);
+        root.fetch("committeeId", JoinType.LEFT);
+        root.fetch("lecturers", JoinType.LEFT);
+        root.fetch("students", JoinType.LEFT);
 
         List<Predicate> predicates = new ArrayList<>();
 
@@ -53,10 +61,9 @@ public class ThesesRepositoryImpl implements ThesesRepository {
                     params.put("page", "1");
                 }
             }
-
         }
 
-        query.select(root);
+        query.select(root).distinct(true);
         query.where(predicates.toArray(new Predicate[0]));
         Query q = s.createQuery(query);
 
@@ -72,5 +79,17 @@ public class ThesesRepositoryImpl implements ThesesRepository {
             q.setFirstResult(start);
         }
         return q.getResultList();
+    }
+
+    @Override
+    public Thesis addOrUpdate(Thesis thesis) {
+        Session s = factory.getObject().getCurrentSession();
+        if(thesis.getId() == null) {
+            // Use merge instead of persist to handle detached entities
+            return (Thesis) s.merge(thesis);
+        } else {
+            // For updates
+            return (Thesis) s.merge(thesis);
+        }
     }
 }

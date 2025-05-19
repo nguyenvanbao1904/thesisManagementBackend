@@ -14,4 +14,5 @@ import java.util.Map;
  */
 public interface ThesesRepository {
     List<Thesis> getTheses(Map<String, String> params, boolean pagination);
+    Thesis addOrUpdate(Thesis thesis);
 }

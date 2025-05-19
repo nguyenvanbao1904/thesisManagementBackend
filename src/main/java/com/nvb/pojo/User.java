@@ -19,7 +19,6 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -27,7 +26,6 @@ import java.io.Serializable;
 import java.util.Date;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
@@ -118,8 +116,6 @@ public class User implements Serializable {
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
     private AcademicStaff academicStaff;
-    @Transient
-    private MultipartFile file;
 
     public User() {
     }
@@ -279,17 +275,6 @@ public class User implements Serializable {
 
     public void setAcademicStaff(AcademicStaff academicStaff) {
         this.academicStaff = academicStaff;
-    }
-    
-    public MultipartFile getFile() {
-        return file;
-    }
-
-    /**
-     * @param file the file to set
-     */
-    public void setFile(MultipartFile file) {
-        this.file = file;
     }
 
     @Override

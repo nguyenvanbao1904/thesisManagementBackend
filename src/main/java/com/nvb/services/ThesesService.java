@@ -4,10 +4,7 @@
  */
 package com.nvb.services;
 
-import com.nvb.dto.EvaluationCriteriaCollectionDTO;
-import com.nvb.dto.EvaluationCriteriaDTO;
-import com.nvb.pojo.EvaluationCriteria;
-import com.nvb.pojo.EvaluationCriteriaCollection;
+import com.nvb.dto.ThesesDTO;
 import com.nvb.pojo.Thesis;
 import java.util.List;
 import java.util.Map;
@@ -20,4 +17,5 @@ import java.util.Map;
 public interface ThesesService {
     List<Thesis> getTheses(Map<String, String> params);
     List<Thesis> getTheses(Map<String, String> params, boolean pagination);
+    Thesis addOrUpdate(ThesesDTO thesesDTO);
 }
