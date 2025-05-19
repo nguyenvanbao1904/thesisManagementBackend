@@ -11,6 +11,7 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ public class StudentRepositoryImpl implements StudentRepository {
             if (studentId != null && !studentId.isEmpty()) {
                 predicates.add(builder.equal(root.get("studentId"), studentId));
             }
-            
+
         }
 
         query.where(predicates.toArray(new Predicate[0]));
@@ -60,7 +61,41 @@ public class StudentRepositoryImpl implements StudentRepository {
             return null;
         } catch (org.hibernate.NonUniqueResultException ex) {
             System.err.println(ex.getMessage());
-            return null; 
+            return null;
+        }
+    }
+
+    @Override
+    public Student getStudentWithDetails(Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<Student> query = builder.createQuery(Student.class);
+        Root<Student> root = query.from(Student.class);
+        root.fetch("theses", JoinType.LEFT);
+        root.fetch("user", JoinType.LEFT);
+
+        query.select(root);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (params != null) {
+            String studentId = params.get("studentId");
+            if (studentId != null && !studentId.isEmpty()) {
+                predicates.add(builder.equal(root.get("studentId"), studentId));
+            }
+
+        }
+
+        query.where(predicates.toArray(new Predicate[0]));
+
+        Query q = s.createQuery(query);
+        try {
+            return (Student) q.getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
+        } catch (org.hibernate.NonUniqueResultException ex) {
+            System.err.println(ex.getMessage());
+            return null;
         }
     }
 }

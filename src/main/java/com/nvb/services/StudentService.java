@@ -16,4 +16,5 @@ import java.util.Map;
 public interface StudentService {
     Student prepareStudent(User user, UserDTO userDto);
     Student getStudent(Map<String, String> params);
+    Student getStudentWithDetails(Map<String, String> params);
 }

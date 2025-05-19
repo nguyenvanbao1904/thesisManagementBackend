@@ -5,8 +5,11 @@
 package com.nvb.validators;
 
 import com.nvb.dto.ThesesDTO;
+import com.nvb.pojo.Student;
 import com.nvb.pojo.Thesis;
+import com.nvb.services.StudentService;
 import com.nvb.services.ThesesService;
+import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -22,6 +25,9 @@ public class ThesesValidator implements Validator {
     
     @Autowired
     private ThesesService thesesService;
+    
+    @Autowired
+    private StudentService studentService;
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -52,6 +58,17 @@ public class ThesesValidator implements Validator {
         // toi da 2 sinh vien tham gia
         if(thesesDTO.getStudents()!= null && thesesDTO.getStudents().size() > 2){
             errors.rejectValue("students", "theses.students.maxMsg");
+        }
+        
+        // 1 sinh vien chi duoc tham gia 1 khoa luan
+        for(Student student : thesesDTO.getStudents()){
+            Student s = studentService.getStudentWithDetails(new HashMap<>(Map.of("studentId", student.getStudentId())));
+            if(!s.gettheses().isEmpty()){
+                errors.rejectValue("students",
+                        null,
+                        String.format("Sinh viên %s %s đã được đăng ký khóa luận tốt nghiệp",
+                                s.getUser().getLastName(), s.getUser().getFirstName()));
+            }
         }
     }
 

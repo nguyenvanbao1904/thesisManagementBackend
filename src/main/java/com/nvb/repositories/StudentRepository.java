@@ -13,4 +13,5 @@ import java.util.Map;
  */
 public interface StudentRepository {
     Student getStudent(Map<String, String> params);
+    Student getStudentWithDetails(Map<String, String> params);
 }

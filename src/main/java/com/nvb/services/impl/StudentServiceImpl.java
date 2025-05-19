@@ -48,5 +48,10 @@ public class StudentServiceImpl implements StudentService{
     public Student getStudent(Map<String, String> params) {
         return this.studentRepository.getStudent(params);
     }
+
+    @Override
+    public Student getStudentWithDetails(Map<String, String> params) {
+        return this.studentRepository.getStudentWithDetails(params);
+    }
     
 }
