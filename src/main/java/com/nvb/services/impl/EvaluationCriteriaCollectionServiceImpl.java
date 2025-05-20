@@ -14,12 +14,11 @@ import com.nvb.pojo.EvaluationCriteriaCollectionDetailPK;
 import com.nvb.repositories.EvaluationCriteriaCollectionRepository;
 import com.nvb.services.AcademicsStaffService;
 import com.nvb.services.EvaluationCriteriaCollectionService;
-import java.util.ArrayList;
+import com.nvb.services.EvaluationCriteriaService;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,6 +39,9 @@ public class EvaluationCriteriaCollectionServiceImpl implements EvaluationCriter
     @Autowired
     private AcademicsStaffService academicsStaffService;
 
+    @Autowired
+    private EvaluationCriteriaService evaluationCriteriaService;
+
     @Override
     public List<EvaluationCriteriaCollection> getEvaluationCriteriaCollections(Map<String, String> params) {
         return this.getEvaluationCriteriaCollections(params, false);
@@ -59,69 +61,57 @@ public class EvaluationCriteriaCollectionServiceImpl implements EvaluationCriter
         if (authentication != null && authentication.isAuthenticated()) {
             academicStaff = academicsStaffService.getAcademicStaff(Map.of("username", authentication.getName()));
         }
-
+        
         if (evaluationCriteriaCollectionDTO.getId() == null) {
             evaluationCriteriaCollection = new EvaluationCriteriaCollection();
-            evaluationCriteriaCollection.setName(evaluationCriteriaCollectionDTO.getName());
-            evaluationCriteriaCollection.setDescription(evaluationCriteriaCollectionDTO.getDescription());
-            if (academicStaff != null) {
-                evaluationCriteriaCollection.setCreatedBy(academicStaff);
-            }
             evaluationCriteriaCollection.setEvaluationCriteriaCollectionDetails(new HashSet<>());
-            evaluationCriteriaCollection = evaluationCriteriaCollectionRepository.addOrUpdateEvaluationCriteriaCollection(evaluationCriteriaCollection);
         } else {
-            Map<String, String> params = new HashMap<>();
-            params.put("id", evaluationCriteriaCollectionDTO.getId().toString());
-            List<EvaluationCriteriaCollection> existingCollections = evaluationCriteriaCollectionRepository.getEvaluationCriteriaCollectionsWithDetails(params, false);
-            if (existingCollections.isEmpty()) {
-                throw new RuntimeException("EvaluationCriteriaCollection with ID " + evaluationCriteriaCollectionDTO.getId() + " not found for update.");
+            evaluationCriteriaCollection = evaluationCriteriaCollectionRepository.getEvaluationCriteriaCollection(
+                    Map.of("id", evaluationCriteriaCollectionDTO.getId().toString()));
+            
+            if (evaluationCriteriaCollection == null) {
+                throw new RuntimeException("EvaluationCriteriaCollection with ID " + 
+                        evaluationCriteriaCollectionDTO.getId() + " not found for update.");
             }
-            evaluationCriteriaCollection = existingCollections.get(0);
-
-            evaluationCriteriaCollection.setName(evaluationCriteriaCollectionDTO.getName());
-            evaluationCriteriaCollection.setDescription(evaluationCriteriaCollectionDTO.getDescription());
-            evaluationCriteriaCollection.setCreatedBy(academicStaff);
-
-            if (evaluationCriteriaCollection.getEvaluationCriteriaCollectionDetails() == null) {
-                evaluationCriteriaCollection.setEvaluationCriteriaCollectionDetails(new HashSet<>());
-            }
+            
+            evaluationCriteriaCollection.getEvaluationCriteriaCollectionDetails().clear();
         }
 
-        Set<EvaluationCriteriaCollectionDetail> currentDetails = evaluationCriteriaCollection.getEvaluationCriteriaCollectionDetails();
-        Map<Integer, EvaluationCriteriaCollectionDetail> existingDetailsMap = new HashMap<>();
-        for (EvaluationCriteriaCollectionDetail detail : currentDetails) {
-            if (detail.getEvaluationCriteria() != null) {
-                existingDetailsMap.put(detail.getEvaluationCriteria().getId(), detail);
-            }
-        }
+        evaluationCriteriaCollection.setName(evaluationCriteriaCollectionDTO.getName());
+        evaluationCriteriaCollection.setDescription(evaluationCriteriaCollectionDTO.getDescription());
+        evaluationCriteriaCollection.setCreatedBy(academicStaff);
 
-        List<EvaluationCriteria> criterias = evaluationCriteriaCollectionDTO.getSelectedCriterias() != null
-                ? new ArrayList<>(evaluationCriteriaCollectionDTO.getSelectedCriterias())
-                : new ArrayList<>();
-
-        currentDetails.removeIf(detail -> detail.getEvaluationCriteria() != null
-                && !criterias.contains(detail.getEvaluationCriteria()));
-
-        if (evaluationCriteriaCollectionDTO.getEvaluationCriterias() != null) {
+        // luu de lay id
+        evaluationCriteriaCollection = evaluationCriteriaCollectionRepository.addOrUpdateEvaluationCriteriaCollection(evaluationCriteriaCollection);
+        
+        if (evaluationCriteriaCollectionDTO.getSelectedCriterias() != null && 
+            evaluationCriteriaCollectionDTO.getEvaluationCriterias() != null) {
+            
+            Map<Integer, Float> criteriaWeights = new HashMap<>();
             for (EvaluationCriteriaDTO criteriaDTO : evaluationCriteriaCollectionDTO.getEvaluationCriterias()) {
-
-                EvaluationCriteria criteria = criterias.stream().filter(c -> c.getId().equals(criteriaDTO.getId())).findFirst().orElse(null);
-                if (criteria != null) {
-                    EvaluationCriteriaCollectionDetail detail = existingDetailsMap.get(criteriaDTO.getId());
-                    if (detail == null) {
-                        EvaluationCriteriaCollectionDetailPK pk = new EvaluationCriteriaCollectionDetailPK(evaluationCriteriaCollection.getId(), criteria.getId());
-                        detail = new EvaluationCriteriaCollectionDetail(pk);
-                        detail.setEvaluationCriteriaCollection(evaluationCriteriaCollection);
-                        detail.setEvaluationCriteria(criteria);
-                        currentDetails.add(detail);
-                    }
-                    detail.setWeight(criteriaDTO.getWeight() != null ? criteriaDTO.getWeight() : 0f);
+                if (criteriaDTO.getId() != null && criteriaDTO.getWeight() != null) {
+                    criteriaWeights.put(criteriaDTO.getId(), criteriaDTO.getWeight());
                 }
-
             }
+            
+            for (EvaluationCriteria criteria : evaluationCriteriaCollectionDTO.getSelectedCriterias()) {
+                EvaluationCriteriaCollectionDetailPK pk = new EvaluationCriteriaCollectionDetailPK(
+                        evaluationCriteriaCollection.getId(), criteria.getId());
+                
+                EvaluationCriteriaCollectionDetail detail = new EvaluationCriteriaCollectionDetail(pk);
+                detail.setEvaluationCriteriaCollection(evaluationCriteriaCollection);
+                detail.setEvaluationCriteria(criteria);
+                
+                Float weight = criteriaWeights.getOrDefault(criteria.getId(), 0f);
+                detail.setWeight(weight);
+                
+                evaluationCriteriaCollection.getEvaluationCriteriaCollectionDetails().add(detail);
+            }
+            
+            evaluationCriteriaCollection = evaluationCriteriaCollectionRepository.addOrUpdateEvaluationCriteriaCollection(evaluationCriteriaCollection);
         }
 
-        return evaluationCriteriaCollectionRepository.addOrUpdateEvaluationCriteriaCollection(evaluationCriteriaCollection);
+        return evaluationCriteriaCollection;
     }
 
     @Override
