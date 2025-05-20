@@ -64,14 +64,14 @@ public class ThesesValidator implements Validator {
         for (Student student : thesesDTO.getStudents()) {
             Student s = studentService.getStudentWithDetails(new HashMap<>(Map.of("studentId", student.getStudentId())));
             if (thesesDTO.getId() == null) {
-                if (!s.gettheses().isEmpty()) {
+                if (!s.getTheses().isEmpty()) {
                     errors.rejectValue("students",
                             null,
                             String.format("Sinh viên %s %s đã được đăng ký khóa luận tốt nghiệp",
                                     s.getUser().getLastName(), s.getUser().getFirstName()));
                 }
             }else{
-                if (!s.gettheses().isEmpty() && !s.gettheses().iterator().next().getId().equals(thesesDTO.getId())) {
+                if (!s.getTheses().isEmpty() && !s.getTheses().iterator().next().getId().equals(thesesDTO.getId())) {
                     errors.rejectValue("students",
                             null,
                             String.format("Sinh viên %s %s đã được đăng ký khóa luận tốt nghiệp",

@@ -5,10 +5,12 @@
 package com.nvb.repositories;
 
 import com.nvb.pojo.Lecturer;
+import java.util.Map;
 
 /**
  *
  * @author nguyenvanbao
  */
 public interface LecturerRepository {
+    Lecturer getLecturerWithDetails(Map<String, String> params);
 }

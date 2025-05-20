@@ -83,7 +83,10 @@ public class StudentRepositoryImpl implements StudentRepository {
             if (studentId != null && !studentId.isEmpty()) {
                 predicates.add(builder.equal(root.get("studentId"), studentId));
             }
-
+            String id = params.get("id");
+            if (id != null && !id.isEmpty()) {
+                predicates.add(builder.equal(root.get("id"), id));
+            }
         }
 
         query.where(predicates.toArray(new Predicate[0]));

@@ -17,10 +17,8 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
@@ -90,51 +88,10 @@ public class ThesesRepositoryImpl implements ThesesRepository {
     @Override
     public Thesis addOrUpdate(Thesis thesis) {
         Session s = factory.getObject().getCurrentSession();
-
         if (thesis.getId() == null) {
-            // Lưu các ID của lecturer và student
-            Set<Integer> lecturerIds = new HashSet<>();
-            Set<Integer> studentIds = new HashSet<>();
-
-            for (Lecturer lecturer : thesis.getLecturers()) {
-                lecturerIds.add(lecturer.getId());
-            }
-
-            for (Student student : thesis.getStudents()) {
-                studentIds.add(student.getId());
-            }
-
-            // Xóa tạm thời danh sách để tránh persist cascading
-            thesis.setLecturers(new HashSet<>());
-            thesis.setStudents(new HashSet<>());
-
-            // Lưu thesis trước
             s.persist(thesis);
-
-            // Thiết lập lại mối quan hệ với lecturer và student
-            Set<Lecturer> managedLecturers = new HashSet<>();
-            for (Integer lecturerId : lecturerIds) {
-                Lecturer managedLecturer = s.get(Lecturer.class, lecturerId);
-                if (managedLecturer != null) {
-                    managedLecturers.add(managedLecturer);
-                    // Thêm thesis vào collection của lecturer
-                    managedLecturer.getThesesSupervisors().add(thesis);
-                }
-            }
-            thesis.setLecturers(managedLecturers);
-
-            Set<Student> managedStudents = new HashSet<>();
-            for (Integer studentId : studentIds) {
-                Student managedStudent = s.get(Student.class, studentId);
-                if (managedStudent != null) {
-                    managedStudents.add(managedStudent);
-                    // Thêm thesis vào collection của student
-                    managedStudent.gettheses().add(thesis);
-                }
-            }
-            thesis.setStudents(managedStudents);
         } else {
-            thesis = (Thesis) s.merge(thesis);
+            s.merge(thesis);
         }
         return thesis;
     }
@@ -178,51 +135,11 @@ public class ThesesRepositoryImpl implements ThesesRepository {
     }
 
     @Override
-    public Lecturer getLecturerWithTheses(Integer lecturerId) {
-        Session s = this.factory.getObject().getCurrentSession();
-        CriteriaBuilder builder = s.getCriteriaBuilder();
-        CriteriaQuery<Lecturer> query = builder.createQuery(Lecturer.class);
-        Root<Lecturer> root = query.from(Lecturer.class);
-
-        // Eager fetch theses to ensure the relationship is loaded
-        root.fetch("thesesSupervisors", JoinType.LEFT);
-
-        query.select(root);
-        query.where(builder.equal(root.get("id"), lecturerId));
-
-        try {
-            return s.createQuery(query).getSingleResult();
-        } catch (NoResultException ex) {
-            return null;
-        }
-    }
-
-    @Override
-    public Student getStudentWithTheses(Integer studentId) {
-        Session s = this.factory.getObject().getCurrentSession();
-        CriteriaBuilder builder = s.getCriteriaBuilder();
-        CriteriaQuery<Student> query = builder.createQuery(Student.class);
-        Root<Student> root = query.from(Student.class);
-
-        // Eager fetch theses to ensure the relationship is loaded
-        root.fetch("theses", JoinType.LEFT);
-
-        query.select(root);
-        query.where(builder.equal(root.get("id"), studentId));
-
-        try {
-            return s.createQuery(query).getSingleResult();
-        } catch (NoResultException ex) {
-            return null;
-        }
-    }
-
-    @Override
     public void deleteThesis(int id) {
         Session s = factory.getObject().getCurrentSession();
         Thesis thesis = getThesis(new HashMap<>(Map.of("id", String.valueOf(id))));
         for (Student student : thesis.getStudents()) {
-            student.gettheses().remove(thesis);  // Xóa thesis cụ thể khỏi tập hợp của student
+            student.getTheses().remove(thesis);  // Xóa thesis cụ thể khỏi tập hợp của student
         }
 
         for (Lecturer lecturer : thesis.getLecturers()) {

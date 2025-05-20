@@ -4,8 +4,6 @@
  */
 package com.nvb.pojo;
 
-import com.nvb.pojo.Thesis;
-import com.nvb.pojo.User;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -24,7 +22,6 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Set;
 
@@ -55,10 +52,7 @@ public class Lecturer implements Serializable {
     @Column(name = "academic_degree", nullable = false)
     @NotNull
     private String academicDegree;
-    @JoinTable(name = "thesis_supervisors", joinColumns = {
-        @JoinColumn(name = "lecturer_id", referencedColumnName = "id")}, inverseJoinColumns = {
-        @JoinColumn(name = "thesis_id", referencedColumnName = "id")})
-    @ManyToMany
+    @ManyToMany(mappedBy = "lecturers")
     private Set<Thesis> thesesSupervisors;
     @JoinColumn(name = "id")
     @OneToOne(optional = false, fetch = FetchType.LAZY)
@@ -70,18 +64,6 @@ public class Lecturer implements Serializable {
     private Set<EvaluationScore> evaluationScores;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "reviewerId")
     private Set<Thesis> thesesReviewer;
-
-    public Lecturer() {
-    }
-
-    public Lecturer(Integer id) {
-        this.id = id;
-    }
-
-    public Lecturer(Integer id, String academicTitle) {
-        this.id = id;
-        this.academicTitle = academicTitle;
-    }
 
     public Integer getId() {
         return id;
@@ -107,7 +89,6 @@ public class Lecturer implements Serializable {
         this.academicDegree = academicDegree;
     }
 
-    @XmlTransient
     public Set<Thesis> getThesesSupervisors() {
         return thesesSupervisors;
     }
@@ -124,25 +105,22 @@ public class Lecturer implements Serializable {
         this.user = user;
     }
 
-    @XmlTransient
-    public Set<CommitteeMember> getcommitteeMembers() {
+    public Set<CommitteeMember> getCommitteeMembers() {
         return committeeMembers;
     }
 
-    public void setcommitteeMembers(Set<CommitteeMember> committeeMembers) {
+    public void setCommitteeMembers(Set<CommitteeMember> committeeMembers) {
         this.committeeMembers = committeeMembers;
     }
 
-    @XmlTransient
-    public Set<EvaluationScore> getevaluationScores() {
+    public Set<EvaluationScore> getEvaluationScores() {
         return evaluationScores;
     }
 
-    public void setevaluationScores(Set<EvaluationScore> evaluationScores) {
+    public void setEvaluationScores(Set<EvaluationScore> evaluationScores) {
         this.evaluationScores = evaluationScores;
     }
 
-    @XmlTransient
     public Set<Thesis> getThesesReviewer() {
         return thesesReviewer;
     }
@@ -150,30 +128,5 @@ public class Lecturer implements Serializable {
     public void setThesesReviewer(Set<Thesis> thesesReviewer) {
         this.thesesReviewer = thesesReviewer;
     }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Lecturer)) {
-            return false;
-        }
-        Lecturer other = (Lecturer) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "com.nvb.configs.Lecturer[ id=" + id + " ]";
-    }
-    
 }
+    

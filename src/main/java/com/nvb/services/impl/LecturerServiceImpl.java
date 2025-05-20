@@ -9,6 +9,7 @@ import com.nvb.pojo.Lecturer;
 import com.nvb.pojo.User;
 import com.nvb.repositories.LecturerRepository;
 import com.nvb.services.LecturerService;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,5 +37,10 @@ public class LecturerServiceImpl implements LecturerService{
         lecturer.setAcademicTitle(userDto.getAcademicTitle().isBlank() ? null : userDto.getAcademicTitle());
         lecturer.setAcademicDegree(userDto.getAcademicDegree());
         return lecturer;
+    }
+
+    @Override
+    public Lecturer getLecturerWithDetails(Map<String, String> params) {
+        return lecturerRepository.getLecturerWithDetails(params);
     }
 }

@@ -13,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
@@ -26,7 +27,6 @@ import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
@@ -81,9 +81,19 @@ public class Thesis implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @UpdateTimestamp
     private Date updatedAt;
-    @ManyToMany(mappedBy = "thesesSupervisors", fetch = FetchType.LAZY)
+    @ManyToMany
+    @JoinTable(
+            name = "thesis_supervisors",
+            joinColumns = @JoinColumn(name = "thesis_id"),
+            inverseJoinColumns = @JoinColumn(name = "lecturer_id")
+    )
     private Set<Lecturer> lecturers;
-    @ManyToMany(mappedBy = "theses", fetch = FetchType.LAZY)
+    @ManyToMany
+    @JoinTable(
+            name = "thesis_student",
+            joinColumns = @JoinColumn(name = "thesis_id"),
+            inverseJoinColumns = @JoinColumn(name = "student_id")
+    )
     private Set<Student> students;
     @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "thesis", fetch = FetchType.LAZY)
     private Set<EvaluationScore> evaluationScores;
@@ -103,7 +113,7 @@ public class Thesis implements Serializable {
     private Lecturer reviewerId;
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 100)
+    @Size(min = 1, max = 500)
     @Column(name = "file_url")
     private String fileUrl;
 
@@ -171,30 +181,27 @@ public class Thesis implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    @XmlTransient
-    public Set<Lecturer> getlecturers() {
+    public Set<Lecturer> getLecturers() {
         return lecturers;
     }
 
-    public void setlecturers(Set<Lecturer> lecturers) {
+    public void setLecturers(Set<Lecturer> lecturers) {
         this.lecturers = lecturers;
     }
 
-    @XmlTransient
-    public Set<Student> getstudents() {
+    public Set<Student> getStudents() {
         return students;
     }
 
-    public void setstudents(Set<Student> students) {
+    public void setStudents(Set<Student> students) {
         this.students = students;
     }
 
-    @XmlTransient
-    public Set<EvaluationScore> getevaluationScores() {
+    public Set<EvaluationScore> getEvaluationScores() {
         return evaluationScores;
     }
 
-    public void setevaluationScores(Set<EvaluationScore> evaluationScores) {
+    public void setEvaluationScores(Set<EvaluationScore> evaluationScores) {
         this.evaluationScores = evaluationScores;
     }
 
@@ -238,30 +245,6 @@ public class Thesis implements Serializable {
         this.reviewerId = reviewerId;
     }
 
-    public Set<Lecturer> getLecturers() {
-        return lecturers;
-    }
-
-    public void setLecturers(Set<Lecturer> lecturers) {
-        this.lecturers = lecturers;
-    }
-
-    public Set<Student> getStudents() {
-        return students;
-    }
-
-    public void setStudents(Set<Student> students) {
-        this.students = students;
-    }
-
-    public Set<EvaluationScore> getEvaluationScores() {
-        return evaluationScores;
-    }
-
-    public void setEvaluationScores(Set<EvaluationScore> evaluationScores) {
-        this.evaluationScores = evaluationScores;
-    }
-
     public String getFileUrl() {
         return fileUrl;
     }
@@ -294,5 +277,5 @@ public class Thesis implements Serializable {
     public String toString() {
         return "com.nvb.configs.Thesis[ id=" + id + " ]";
     }
-    
+
 }

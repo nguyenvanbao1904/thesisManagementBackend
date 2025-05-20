@@ -5,6 +5,7 @@
 package com.nvb.pojo;
 
 import jakarta.persistence.Basic;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -21,7 +22,6 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Set;
 
@@ -49,10 +49,7 @@ public class Student implements Serializable {
     @Size(min = 1, max = 20)
     @Column(name = "student_id")
     private String studentId;
-    @JoinTable(name = "thesis_student", joinColumns = {
-        @JoinColumn(name = "student_id", referencedColumnName = "id")}, inverseJoinColumns = {
-        @JoinColumn(name = "thesis_id", referencedColumnName = "id")})
-    @ManyToMany
+    @ManyToMany(mappedBy = "students")
     private Set<Thesis> theses;
     @JoinColumn(name = "major_id", referencedColumnName = "id")
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -90,12 +87,11 @@ public class Student implements Serializable {
         this.studentId = studentId;
     }
 
-    @XmlTransient
-    public Set<Thesis> gettheses() {
+    public Set<Thesis> getTheses() {
         return theses;
     }
 
-    public void settheses(Set<Thesis> theses) {
+    public void setTheses(Set<Thesis> theses) {
         this.theses = theses;
     }
 
@@ -114,6 +110,8 @@ public class Student implements Serializable {
     public void setUser(User user) {
         this.user = user;
     }
+
+   
 
     @Override
     public int hashCode() {
