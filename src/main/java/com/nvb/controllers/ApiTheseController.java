@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/theses")
 @CrossOrigin
-public class APITheseController {
+public class ApiTheseController {
     
     @Autowired
     private ThesesService thesesService;

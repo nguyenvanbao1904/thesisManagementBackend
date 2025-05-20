@@ -46,7 +46,7 @@ public class ThesesRepositoryImpl implements ThesesRepository {
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<Thesis> query = builder.createQuery(Thesis.class);
         Root<Thesis> root = query.from(Thesis.class);
-        
+
         // Eager fetch related entities to avoid LazyInitializationException
         root.fetch("reviewerId", JoinType.LEFT);
         root.fetch("evaluationCriteriaCollectionId", JoinType.LEFT);
@@ -90,27 +90,27 @@ public class ThesesRepositoryImpl implements ThesesRepository {
     @Override
     public Thesis addOrUpdate(Thesis thesis) {
         Session s = factory.getObject().getCurrentSession();
-        
+
         if (thesis.getId() == null) {
             // Lưu các ID của lecturer và student
             Set<Integer> lecturerIds = new HashSet<>();
             Set<Integer> studentIds = new HashSet<>();
-            
+
             for (Lecturer lecturer : thesis.getLecturers()) {
                 lecturerIds.add(lecturer.getId());
             }
-            
+
             for (Student student : thesis.getStudents()) {
                 studentIds.add(student.getId());
             }
-            
+
             // Xóa tạm thời danh sách để tránh persist cascading
             thesis.setLecturers(new HashSet<>());
             thesis.setStudents(new HashSet<>());
-            
+
             // Lưu thesis trước
             s.persist(thesis);
-            
+
             // Thiết lập lại mối quan hệ với lecturer và student
             Set<Lecturer> managedLecturers = new HashSet<>();
             for (Integer lecturerId : lecturerIds) {
@@ -122,7 +122,7 @@ public class ThesesRepositoryImpl implements ThesesRepository {
                 }
             }
             thesis.setLecturers(managedLecturers);
-            
+
             Set<Student> managedStudents = new HashSet<>();
             for (Integer studentId : studentIds) {
                 Student managedStudent = s.get(Student.class, studentId);
@@ -145,7 +145,7 @@ public class ThesesRepositoryImpl implements ThesesRepository {
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<Thesis> query = builder.createQuery(Thesis.class);
         Root<Thesis> root = query.from(Thesis.class);
-        
+
         // Eager fetch related entities to avoid LazyInitializationException
         root.fetch("reviewerId", JoinType.LEFT);
         root.fetch("evaluationCriteriaCollectionId", JoinType.LEFT);
@@ -161,7 +161,7 @@ public class ThesesRepositoryImpl implements ThesesRepository {
                 predicates.add(builder.equal(root.get("title"), title));
             }
             String id = params.get("id");
-            if(id != null && !id.isEmpty()){
+            if (id != null && !id.isEmpty()) {
                 predicates.add(builder.equal(root.get("id"), id));
             }
         }
@@ -170,46 +170,46 @@ public class ThesesRepositoryImpl implements ThesesRepository {
         query.where(predicates.toArray(new Predicate[0]));
         Query q = s.createQuery(query);
 
-        try{
+        try {
             return (Thesis) q.getSingleResult();
-        }catch(NoResultException ex){
+        } catch (NoResultException ex) {
             return null;
         }
     }
-    
+
     @Override
     public Lecturer getLecturerWithTheses(Integer lecturerId) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<Lecturer> query = builder.createQuery(Lecturer.class);
         Root<Lecturer> root = query.from(Lecturer.class);
-        
+
         // Eager fetch theses to ensure the relationship is loaded
         root.fetch("thesesSupervisors", JoinType.LEFT);
-        
+
         query.select(root);
         query.where(builder.equal(root.get("id"), lecturerId));
-        
+
         try {
             return s.createQuery(query).getSingleResult();
         } catch (NoResultException ex) {
             return null;
         }
     }
-    
+
     @Override
     public Student getStudentWithTheses(Integer studentId) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<Student> query = builder.createQuery(Student.class);
         Root<Student> root = query.from(Student.class);
-        
+
         // Eager fetch theses to ensure the relationship is loaded
         root.fetch("theses", JoinType.LEFT);
-        
+
         query.select(root);
         query.where(builder.equal(root.get("id"), studentId));
-        
+
         try {
             return s.createQuery(query).getSingleResult();
         } catch (NoResultException ex) {
@@ -220,6 +220,14 @@ public class ThesesRepositoryImpl implements ThesesRepository {
     @Override
     public void deleteThesis(int id) {
         Session s = factory.getObject().getCurrentSession();
-        s.remove(getThesis(new HashMap<>(Map.of("id", String.valueOf(id)))));
+        Thesis thesis = getThesis(new HashMap<>(Map.of("id", String.valueOf(id))));
+        for (Student student : thesis.getStudents()) {
+            student.gettheses().remove(thesis);  // Xóa thesis cụ thể khỏi tập hợp của student
+        }
+
+        for (Lecturer lecturer : thesis.getLecturers()) {
+            lecturer.getThesesSupervisors().remove(thesis);  // Xóa thesis cụ thể khỏi tập hợp của lecturer
+        }
+        s.remove(thesis);
     }
 }

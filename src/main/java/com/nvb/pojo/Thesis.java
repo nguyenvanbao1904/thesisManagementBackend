@@ -81,9 +81,9 @@ public class Thesis implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @UpdateTimestamp
     private Date updatedAt;
-    @ManyToMany(mappedBy = "thesesSupervisors", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "thesesSupervisors", fetch = FetchType.LAZY)
     private Set<Lecturer> lecturers;
-    @ManyToMany(mappedBy = "theses", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "theses", fetch = FetchType.LAZY)
     private Set<Student> students;
     @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "thesis", fetch = FetchType.LAZY)
     private Set<EvaluationScore> evaluationScores;
