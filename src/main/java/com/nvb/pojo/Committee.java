@@ -88,7 +88,7 @@ public class Committee implements Serializable {
     private AcademicStaff createdBy;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "committee", orphanRemoval = true)
     private Set<CommitteeMember> committeeMembers;
-    @OneToMany(mappedBy = "committeeId", orphanRemoval = true)
+    @OneToMany(mappedBy = "committeeId")
     private Set<Thesis> theses;
 
     public Committee() {

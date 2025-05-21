@@ -14,7 +14,6 @@ import com.nvb.pojo.EvaluationCriteriaCollectionDetailPK;
 import com.nvb.repositories.EvaluationCriteriaCollectionRepository;
 import com.nvb.services.AcademicsStaffService;
 import com.nvb.services.EvaluationCriteriaCollectionService;
-import com.nvb.services.EvaluationCriteriaService;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -65,11 +64,6 @@ public class EvaluationCriteriaCollectionServiceImpl implements EvaluationCriter
         } else {
             evaluationCriteriaCollection = evaluationCriteriaCollectionRepository.getEvaluationCriteriaCollection(
                     Map.of("id", evaluationCriteriaCollectionDTO.getId().toString()));
-            
-            if (evaluationCriteriaCollection == null) {
-                throw new RuntimeException("EvaluationCriteriaCollection with ID " + 
-                        evaluationCriteriaCollectionDTO.getId() + " not found for update.");
-            }
             
             evaluationCriteriaCollection.getEvaluationCriteriaCollectionDetails().clear();
         }

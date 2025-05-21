@@ -5,7 +5,6 @@
 package com.nvb.repositories.impl;
 
 import com.nvb.pojo.Committee;
-import com.nvb.pojo.Thesis;
 import com.nvb.repositories.CommitteeRepository;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -81,6 +80,11 @@ public class CommitteeRepositoryImpl implements CommitteeRepository{
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<Committee> query = builder.createQuery(Committee.class);
         Root<Committee> root = query.from(Committee.class);
+        
+        // Fetch các mối quan hệ
+        root.fetch("committeeMembers", JoinType.LEFT);
+        root.fetch("theses", JoinType.LEFT);
+        root.fetch("createdBy", JoinType.LEFT);
 
         List<Predicate> predicates = new ArrayList<>();
 
@@ -94,7 +98,12 @@ public class CommitteeRepositoryImpl implements CommitteeRepository{
         query.select(root);
         query.where(predicates.toArray(new Predicate[0]));
         Query q = s.createQuery(query);
-        return (Committee) q.getSingleResult();
+        
+        try {
+            return (Committee) q.getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
@@ -106,5 +115,11 @@ public class CommitteeRepositoryImpl implements CommitteeRepository{
             s.merge(committee);
         }
         return committee;
+    }
+
+    @Override
+    public void deleteCommittee(int id) {
+        Session s = factory.getObject().getCurrentSession();
+        s.remove(s.get(Committee.class, id));
     }
 }

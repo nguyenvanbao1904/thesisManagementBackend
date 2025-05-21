@@ -4,6 +4,7 @@
  */
 package com.nvb.configs;
 
+import com.nvb.dto.CommitteeDTO;
 import com.nvb.dto.EvaluationCriteriaCollectionDTO;
 import com.nvb.dto.EvaluationCriteriaDTO;
 import com.nvb.dto.ThesesDTO;
@@ -14,6 +15,7 @@ import com.nvb.formatter.EvaluationCriteriaDTOFormatter;
 import com.nvb.formatter.EvaluationCriteriaFormatter;
 import com.nvb.formatter.LecturerFormatter;
 import com.nvb.formatter.StudentFormatter;
+import com.nvb.pojo.Committee;
 import com.nvb.pojo.Thesis;
 import com.nvb.pojo.User;
 import com.nvb.validators.EvaluationCriteriaCollectionValidator;
@@ -158,6 +160,10 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
             mapper.skip(ThesesDTO::setLecturers);
             mapper.skip(ThesesDTO::setStudents);
             mapper.skip(ThesesDTO::setEvaluationScores);
+        });
+        modelMapper.typeMap(Committee.class, CommitteeDTO.class).addMappings(mapper -> {
+            mapper.skip(CommitteeDTO::setCommitteeMembers);
+            mapper.skip(CommitteeDTO::setTheses);
         });
         return modelMapper;
     }

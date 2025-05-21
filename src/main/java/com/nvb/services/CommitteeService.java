@@ -24,4 +24,6 @@ public interface CommitteeService {
     Committee getCommittee(Map<String, String> params);
 
     Committee addOrUpdate(CommitteeDTO committeeDTO);
+    
+    void deleteCommittee(int id);
 }

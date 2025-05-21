@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -68,33 +67,43 @@ public class CommitteeServiceImpl implements CommitteeService {
         if (authentication != null && authentication.isAuthenticated()) {
             academicStaff = academicsStaffService.getAcademicStaff(Map.of("username", authentication.getName()));
         }
+
         if (committeeDTO.getId() == null) {
             committee = new Committee();
             committee.setStatus(CommitteeStatus.LOCKED.toString());
+            committee.setCommitteeMembers(new HashSet<>());
+            committee.setTheses(new HashSet<>());
         } else {
             committee = committeeRepository.getCommittee(new HashMap<>(Map.of("id", String.valueOf(committeeDTO.getId()))));
-            committee.setCommitteeMembers(null);
-            committee.setTheses(null);
+
+            // Xóa các thành viên cũ khỏi collection
+            committee.getCommitteeMembers().clear();
+
+            // Xóa các thesis khỏi collection và cập nhật tham chiếu
+            if (committee.getTheses() != null) {
+                committee.getTheses().forEach(thesis -> thesis.setCommitteeId(null));
+                committee.getTheses().clear();
+            }
         }
+
         committee.setCreatedBy(academicStaff);
         committee.setDefenseDate(committeeDTO.getDefenseDate());
         committee.setIsActive(true);
         committee.setLocation(committeeDTO.getLocation());
-        
-        // Lưu trước lay id
+
+        // Lưu trước để lấy ID
         committee = committeeRepository.addOrUpdate(committee);
-        
-        // Tạo Set cho committee members
+
+        // Tạo các thành viên mới
         if (committeeDTO.getMemberLecturerId() != null && committeeDTO.getMemberRole() != null) {
-            Set<CommitteeMember> committeeMembers = new HashSet<>();
             for (int i = 0; i < committeeDTO.getMemberLecturerId().length; i++) {
                 // Chỉ thêm các giảng viên được chọn
                 if (committeeDTO.getMemberLecturerId()[i] != null) {
                     CommitteeMember member = new CommitteeMember();
-                    
+
                     String roleStr = committeeDTO.getMemberRole()[i];
                     CommitteeMemberRole role;
-                    
+
                     try {
                         switch (roleStr) {
                             case "CHAIRMAN":
@@ -110,42 +119,39 @@ public class CommitteeServiceImpl implements CommitteeService {
                                 role = CommitteeMemberRole.ROLE_MEMBER;
                                 break;
                         }
-                        
+
                         member.setRole(role.name());
                     } catch (IllegalArgumentException e) {
                         throw new IllegalArgumentException("Invalid committee role: " + roleStr);
                     }
 
-                    // Tạo khóa chính tổng hợp với committee_id và lecturer_id
+                    // Tạo khóa chính tổng hợp
                     CommitteeMemberPK pk = new CommitteeMemberPK();
-                    pk.setCommitteeId(committee.getId()); // Thiết lập committee_id
+                    pk.setCommitteeId(committee.getId());
                     pk.setLecturerId(committeeDTO.getMemberLecturerId()[i]);
                     member.setCommitteeMemberPK(pk);
 
                     // Lấy đối tượng Lecturer
                     Lecturer lecturer = lecturerService.getLecturerWithDetails(Map.of("id", committeeDTO.getMemberLecturerId()[i].toString()));
                     member.setLecturer(lecturer);
-                    
+
                     // Thiết lập mối quan hệ
                     member.setCommittee(committee);
 
-                    committeeMembers.add(member);
+                    committee.getCommitteeMembers().add(member);
                 }
             }
-            committee.setCommitteeMembers(committeeMembers);
         }
 
         // Tạo Set cho theses
         if (committeeDTO.getThesesIds() != null && committeeDTO.getThesesIds().length > 0) {
-            Set<Thesis> theses = new HashSet<>();
             for (Integer thesisId : committeeDTO.getThesesIds()) {
                 Thesis thesis = thesesService.getThesis(Map.of("id", thesisId.toString()));
                 if (thesis != null) {
                     thesis.setCommitteeId(committee);
-                    theses.add(thesis);
+                    committee.getTheses().add(thesis);
                 }
             }
-            committee.setTheses(theses);
         }
 
         // Cập nhật lại committee sau khi đã thiết lập các mối quan hệ
@@ -160,5 +166,10 @@ public class CommitteeServiceImpl implements CommitteeService {
     @Override
     public List<Committee> getCommittees(Map<String, String> params, boolean pagination, boolean details) {
         return committeeRepository.getCommittees(params, pagination, details);
+    }
+
+    @Override
+    public void deleteCommittee(int id) {
+        committeeRepository.deleteCommittee(id);
     }
 }

@@ -16,4 +16,5 @@ public interface CommitteeRepository {
     List<Committee> getCommittees(Map<String, String> params, boolean pagination, boolean details);
     Committee getCommittee(Map<String, String> params);
     Committee addOrUpdate(Committee committee);
+    void deleteCommittee(int id);
 }
