@@ -7,6 +7,7 @@ package com.nvb.services;
 import com.nvb.dto.UserDTO;
 import com.nvb.pojo.Lecturer;
 import com.nvb.pojo.User;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,4 +17,5 @@ import java.util.Map;
 public interface LecturerService {
     Lecturer prepareLecturer(User user, UserDTO userDto);
     Lecturer getLecturerWithDetails(Map<String, String> params);
+    List<Lecturer> getLecturers(Map<String,String> params);
 }

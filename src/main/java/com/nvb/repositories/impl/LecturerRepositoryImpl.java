@@ -11,6 +11,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
+import java.util.List;
 import java.util.Map;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,25 @@ public class LecturerRepositoryImpl implements LecturerRepository {
 
         try {
             return s.createQuery(query).getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
+        }
+    }
+
+    @Override
+    public List<Lecturer> getLecturers(Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<Lecturer> query = builder.createQuery(Lecturer.class);
+        Root<Lecturer> root = query.from(Lecturer.class);
+        root.fetch("user", JoinType.LEFT);
+        query.select(root);
+        if (params != null) {
+            
+        }
+
+        try {
+            return s.createQuery(query).getResultList();
         } catch (NoResultException ex) {
             return null;
         }

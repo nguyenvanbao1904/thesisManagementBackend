@@ -1,0 +1,72 @@
+<!<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Quản lý hội đồng</title>
+    <th:block th:replace="~{/base/base :: bootstrap}" ></th:block>
+</head>
+<body>
+    <div th:replace="~{/base/base :: header}"></div> 
+    <main>
+        <div class="container">
+            <h1>Quản lý hội đồng</h1>
+            <a th:href="@{/committees/add}" class="btn btn-info mt-2">Thêm hội đồng</a>
+            <hr/>
+
+            <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                <p th:text="${errorMessage}"></p>
+            </div>
+
+            <form th:action="@{/committees}">
+                <div class="mb-3 mt-3">
+                    <input type="text" class="form-control" name="title" placeholder="Tiêu đề" />
+                </div>
+                <div class="mb-3 mt-3">
+                    <button class="btn btn-info" type="submit">Tìm kiếm</button>
+                </div>
+            </form>
+            <hr  />   
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Ngày bảo vệ</th>
+                        <th>Địa điểm</th>
+                        <th>Trạng thái</th>
+                        <th>Được tạo bởi</th>
+                        <th>Số lượng thành viên trong hội đồng</th>
+                        <th>Số lượng khóa luận đã chỉ định</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="committee : ${committees}">
+                        <td th:text="${committee.id}"></td>
+                        <td th:text="${#temporals.format(committee.defenseDate, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td th:text="${committee.location.replace('_', ' ')}"></td>
+                        <td th:text="${committee.status}"></td>
+                        <td th:if="${committee.createdBy != null}" th:text="${committee.createdBy.user != null ? committee.createdBy.user.firstName + ' ' + committee.createdBy.user.lastName : 'N/A'}"></td>
+                        <td th:if="${committee.createdBy == null}">N/A</td>
+                        <td>
+                            <span th:if="${committee.committeeMembers != null and !committee.committeeMembers.isEmpty()}" th:text="${committee.committeeMembers.size() + ' thành viên'}"></span>
+                            <span th:unless="${committee.committeeMembers != null and !committee.committeeMembers.isEmpty()}">0 thành viên</span>
+                        </td>
+                        <td>
+                            <span th:if="${committee.theses != null and !committee.theses.isEmpty()}" th:text="${committee.theses.size() + ' khóa luận'}"></span>
+                            <span th:unless="${committee.theses != null and !committee.theses.isEmpty()}">0 khóa luận</span>
+                        </td>
+                        <td>
+                            <a class="btn btn-danger btn-sm" th:onclick="'deleteItem(\''+@{/api/committees/}+'\','+${committee.id}+')'">Xóa</a>
+                            <a class="btn btn-success btn-sm" th:href="@{'/committees/' + ${committee.id}}">Cập nhật️</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="text-center mb-2">
+            <a th:if="${page > 0}" th:href="@{/committees(page=${page + 1})}" class="btn btn-info btn-lg mt-3">Xem thêm</a>
+        </div>
+    </main>
+    <div th:replace="~{/base/base :: footer}"></div>
+    <script th:src="@{/js/deleteItem.js}"></script>
+</body>
+</html>

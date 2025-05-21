@@ -4,7 +4,7 @@
  */
 package com.nvb.repositories;
 
-import com.nvb.pojo.Lecturer;
+import com.nvb.pojo.Committee;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +12,8 @@ import java.util.Map;
  *
  * @author nguyenvanbao
  */
-public interface LecturerRepository {
-    Lecturer getLecturerWithDetails(Map<String, String> params);
-    List<Lecturer> getLecturers(Map<String, String> params);
+public interface CommitteeRepository {
+    List<Committee> getCommittees(Map<String, String> params, boolean pagination, boolean details);
+    Committee getCommittee(Map<String, String> params);
+    Committee addOrUpdate(Committee committee);
 }

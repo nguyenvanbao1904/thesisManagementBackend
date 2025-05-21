@@ -22,10 +22,13 @@ import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Set;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  *
@@ -54,8 +57,8 @@ public class Committee implements Serializable {
     @Basic(optional = false)
     @NotNull
     @Column(name = "defense_date")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date defenseDate;
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    private LocalDateTime defenseDate;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 150)
@@ -67,25 +70,25 @@ public class Committee implements Serializable {
     @Column(name = "status")
     private String status;
     @Basic(optional = false)
-    @NotNull
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
+    @CreationTimestamp
     private Date createdAt;
     @Basic(optional = false)
-    @NotNull
     @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
+    @UpdateTimestamp
     private Date updatedAt;
     @Basic(optional = false)
     @NotNull
     @Column(name = "is_active")
     private boolean isActive;
     @JoinColumn(name = "created_by", referencedColumnName = "id")
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = true)
     private AcademicStaff createdBy;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "committee")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "committee", orphanRemoval = true)
     private Set<CommitteeMember> committeeMembers;
-    @OneToMany(mappedBy = "committeeId")
+    @OneToMany(mappedBy = "committeeId", orphanRemoval = true)
     private Set<Thesis> theses;
 
     public Committee() {
@@ -95,7 +98,7 @@ public class Committee implements Serializable {
         this.id = id;
     }
 
-    public Committee(Integer id, Date defenseDate, String location, String status, Date createdAt, Date updatedAt, boolean isActive) {
+    public Committee(Integer id, LocalDateTime defenseDate, String location, String status, Date createdAt, Date updatedAt, boolean isActive) {
         this.id = id;
         this.defenseDate = defenseDate;
         this.location = location;
@@ -113,11 +116,11 @@ public class Committee implements Serializable {
         this.id = id;
     }
 
-    public Date getDefenseDate() {
+    public LocalDateTime getDefenseDate() {
         return defenseDate;
     }
 
-    public void setDefenseDate(Date defenseDate) {
+    public void setDefenseDate(LocalDateTime defenseDate) {
         this.defenseDate = defenseDate;
     }
 
@@ -153,7 +156,7 @@ public class Committee implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public boolean getIsActive() {
+    public boolean isIsActive() {
         return isActive;
     }
 
@@ -169,21 +172,19 @@ public class Committee implements Serializable {
         this.createdBy = createdBy;
     }
 
-    @XmlTransient
-    public Set<CommitteeMember> getcommitteeMembers() {
+    public Set<CommitteeMember> getCommitteeMembers() {
         return committeeMembers;
     }
 
-    public void setcommitteeMembers(Set<CommitteeMember> committeeMembers) {
+    public void setCommitteeMembers(Set<CommitteeMember> committeeMembers) {
         this.committeeMembers = committeeMembers;
     }
 
-    @XmlTransient
-    public Set<Thesis> gettheses() {
+    public Set<Thesis> getTheses() {
         return theses;
     }
 
-    public void settheses(Set<Thesis> theses) {
+    public void setTheses(Set<Thesis> theses) {
         this.theses = theses;
     }
 

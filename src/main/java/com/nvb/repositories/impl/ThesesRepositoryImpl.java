@@ -59,6 +59,10 @@ public class ThesesRepositoryImpl implements ThesesRepository {
             if (title != null && !title.isEmpty()) {
                 predicates.add(builder.like(root.get("title"), String.format("%%%s%%", title)));
             }
+            String committeeId = params.get("committeeId");
+            if (committeeId != null && committeeId.isEmpty()) {
+                predicates.add(builder.isNull(root.get("committeeId")));
+            }
             if (pagination) {
                 String page = params.get("page");
                 if (page == null) {

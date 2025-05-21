@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản lý hội đồng</title>
+    <th:block th:replace="~{/base/base :: bootstrap}"></th:block>
+    <link th:href="@{/css/addUser.css}" rel="stylesheet">
+</head>
+
+<body>
+<div th:replace="~{/base/base :: header}"></div>
+
+<main>
+    <div class="container mt-5 mb-5">
+        <h1 class="text-center mb-4">Thêm hoặc cập nhật hội đồng</h1>
+
+        <form method="post" th:action="@{/committees/add}" th:object="${committee}" class="border p-4 rounded shadow">
+
+            <!-- Hiển thị thông báo lỗi tổng quan nếu có -->
+            <div th:if="${#fields.hasAnyErrors()}" class="alert-validation">
+                <i class="fas fa-exclamation-circle"></i> Vui lòng kiểm tra lại thông tin đã nhập
+            </div>
+
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="mb-3">
+                <label for="defenseDate" class="form-label">Ngày hội đồng bảo vệ khóa luận</label>
+                <input type="datetime-local" th:class="${#fields.hasErrors('defenseDate')} ? 'form-control field-error' : 'form-control'"
+                       id="defenseDate" th:field="*{defenseDate}" required />
+                <div th:if="${#fields.hasErrors('defenseDate')}" class="error-message" th:errors="*{defenseDate}">Lỗi ngày bảo vệ</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="location" class="form-label">Địa điểm</label>
+                <select th:class="${#fields.hasErrors('location')} ? 'form-control field-error' : 'form-control'"
+                       id="location" th:field="*{location}" required>
+                    <option value="">-- Chọn địa điểm --</option>
+                    <option th:each="campus : ${committeeCampus}" 
+                            th:value="${campus}" 
+                            th:text="${campus.toString().replace('_', ' ')}">
+                    </option>
+                </select>
+                <div th:if="${#fields.hasErrors('location')}" class="error-message" th:errors="*{location}">Lỗi địa điểm</div>
+            </div>
+
+            <!--Phần thêm thành viên hội đồng--> 
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Thành viên hội đồng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        Vui lòng chọn từ 3-5 thành viên cho hội đồng, bao gồm 1 chủ tịch, 1 thư ký và các thành viên khác.
+                    </div>
+                    
+                    Thành viên 1 - Chủ tịch 
+                    <div class="committee-member border p-3 mb-2 rounded">
+                        <h6>Thành viên 1 (Chủ tịch)</h6>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="form-label">Giảng viên</label>
+                                <select class="form-control" name="memberLecturerId" required>
+                                    <option value="">-- Chọn giảng viên --</option>
+                                    <option th:each="lecturer : ${lecturers}" 
+                                            th:value="${lecturer.id}" 
+                                            th:text="${lecturer.academicDegree + '. ' + lecturer.user.firstName + ' ' + lecturer.user.lastName}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Vai trò</label>
+                                <select class="form-control" name="memberRole" required>
+                                    <option value="CHAIRMAN" selected>Chủ tịch</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    Thành viên 2 - Thư ký 
+                    <div class="committee-member border p-3 mb-2 rounded">
+                        <h6>Thành viên 2 (Thư ký)</h6>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="form-label">Giảng viên</label>
+                                <select class="form-control" name="memberLecturerId" required>
+                                    <option value="">-- Chọn giảng viên --</option>
+                                    <option th:each="lecturer : ${lecturers}" 
+                                            th:value="${lecturer.id}" 
+                                            th:text="${lecturer.academicDegree + '. ' + lecturer.user.firstName + ' ' + lecturer.user.lastName}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Vai trò</label>
+                                <select class="form-control" name="memberRole" required>
+                                    <option value="SECRETARY" selected>Thư ký</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    Thành viên 3 - Phản biện 
+                    <div class="committee-member border p-3 mb-2 rounded">
+                        <h6>Thành viên 3 (Phản biện)</h6>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="form-label">Giảng viên</label>
+                                <select class="form-control" name="memberLecturerId" required>
+                                    <option value="">-- Chọn giảng viên --</option>
+                                    <option th:each="lecturer : ${lecturers}" 
+                                            th:value="${lecturer.id}" 
+                                            th:text="${lecturer.academicDegree + '. ' + lecturer.user.firstName + ' ' + lecturer.user.lastName}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Vai trò</label>
+                                <select class="form-control" name="memberRole" required>
+                                    <option value="REVIEWER" selected>Phản biện</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    Thành viên 4 
+                    <div class="committee-member border p-3 mb-2 rounded">
+                        <h6>Thành viên 4</h6>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="form-label">Giảng viên</label>
+                                <select class="form-control" name="memberLecturerId">
+                                    <option value="">-- Chọn giảng viên --</option>
+                                    <option th:each="lecturer : ${lecturers}" 
+                                            th:value="${lecturer.id}" 
+                                            th:text="${lecturer.academicDegree + '. ' + lecturer.user.firstName + ' ' + lecturer.user.lastName}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Vai trò</label>
+                                <select class="form-control" name="memberRole">
+                                    <option value="MEMBER" selected>Thành viên</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    Thành viên 5 
+                    <div class="committee-member border p-3 mb-2 rounded">
+                        <h6>Thành viên 5</h6>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="form-label">Giảng viên</label>
+                                <select class="form-control" name="memberLecturerId">
+                                    <option value="">-- Chọn giảng viên --</option>
+                                    <option th:each="lecturer : ${lecturers}" 
+                                            th:value="${lecturer.id}" 
+                                            th:text="${lecturer.academicDegree + '. ' + lecturer.user.firstName + ' ' + lecturer.user.lastName}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Vai trò</label>
+                                <select class="form-control" name="memberRole">
+                                    <option value="MEMBER" selected>Thành viên</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phần chọn khóa luận -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Khóa luận trong hội đồng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Chọn khóa luận</label>
+                        <select multiple class="form-control" name="thesesIds" size="5">
+                            <option th:each="thesis : ${unassignedTheses}" 
+                                    th:value="${thesis.id}" 
+                                    th:text="${thesis.title}">
+                            </option>
+                        </select>
+                        <small class="form-text text-muted">Có thể chọn nhiều khóa luận bằng cách giữ phím Ctrl (hoặc Command trên Mac) và nhấp chuột.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button class="btn btn-success mt-3" type="submit">
+                    <span th:if="${committee.id == null}">Thêm hội đồng</span>
+                    <span th:unless="${committee.id == null}">Cập nhật hội đồng</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<div th:replace="~{/base/base :: footer}"></div>
+</body>
+</html>

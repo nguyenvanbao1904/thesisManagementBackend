@@ -39,9 +39,6 @@ public class EvaluationCriteriaCollectionServiceImpl implements EvaluationCriter
     @Autowired
     private AcademicsStaffService academicsStaffService;
 
-    @Autowired
-    private EvaluationCriteriaService evaluationCriteriaService;
-
     @Override
     public List<EvaluationCriteriaCollection> getEvaluationCriteriaCollections(Map<String, String> params) {
         return this.getEvaluationCriteriaCollections(params, false);
