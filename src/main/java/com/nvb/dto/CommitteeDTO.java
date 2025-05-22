@@ -7,6 +7,8 @@ package com.nvb.dto;
 import com.nvb.pojo.AcademicStaff;
 import com.nvb.pojo.CommitteeMember;
 import com.nvb.pojo.Thesis;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.Set;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,7 +21,9 @@ public class CommitteeDTO {
 
     private Integer id;
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @Future(message = "{committee.defenseDate.future}")
     private LocalDateTime defenseDate;
+    @NotBlank
     private String location;
     private String status;
     private AcademicStaff createdBy;

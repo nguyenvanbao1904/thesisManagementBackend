@@ -18,6 +18,7 @@ import com.nvb.formatter.StudentFormatter;
 import com.nvb.pojo.Committee;
 import com.nvb.pojo.Thesis;
 import com.nvb.pojo.User;
+import com.nvb.validators.CommitteeValidator;
 import com.nvb.validators.EvaluationCriteriaCollectionValidator;
 import com.nvb.validators.EvaluationCriteriaValidator;
 import com.nvb.validators.ThesesValidator;
@@ -92,6 +93,9 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
 
     @Autowired
     private ThesesValidator thesesValidator;
+    
+    @Autowired
+    private CommitteeValidator committeeValidator;
 
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
@@ -134,6 +138,16 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
         springValidators.add(thesesValidator);
         WebAppValidator webAppValidator = new WebAppValidator();
         webAppValidator.setSupportedClass(ThesesDTO.class);
+        webAppValidator.setSpringValidators(springValidators);
+        return webAppValidator;
+    }
+    
+    @Bean
+    public WebAppValidator committeeWebAppValidator() {
+        Set<Validator> springValidators = new HashSet<>();
+        springValidators.add(committeeValidator);
+        WebAppValidator webAppValidator = new WebAppValidator();
+        webAppValidator.setSupportedClass(CommitteeDTO.class);
         webAppValidator.setSpringValidators(springValidators);
         return webAppValidator;
     }

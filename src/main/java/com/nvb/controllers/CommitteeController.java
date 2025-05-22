@@ -12,14 +12,20 @@ import com.nvb.pojo.Thesis;
 import com.nvb.services.CommitteeService;
 import com.nvb.services.LecturerService;
 import com.nvb.services.ThesesService;
+import com.nvb.validators.WebAppValidator;
+import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,6 +51,15 @@ public class CommitteeController {
 
     @Autowired
     private ModelMapper modelMapper;
+    
+    @Autowired
+    @Qualifier("committeeWebAppValidator")
+    private WebAppValidator committeeWebAppValidator;
+
+    @InitBinder()
+    public void initCommitteeWebAppValidatorBinder(WebDataBinder binder) {
+        binder.setValidator(committeeWebAppValidator);
+    }
 
     @GetMapping("")
     public String showAll(Model model, @RequestParam(required = false) Map<String, String> params) {
@@ -78,21 +93,21 @@ public class CommitteeController {
 
         return "committee/add";
     }
-    
+
     @GetMapping("/{id}")
     public String update(Model model, @PathVariable(name = "id") int id) {
         Committee committee = committeeService.getCommittee(Map.of("id", String.valueOf(id)));
         if (committee == null) {
             return "redirect:/committees";
         }
-        
+
         CommitteeDTO committeeDTO = modelMapper.map(committee, CommitteeDTO.class);
-        
+
         // Chuẩn bị dữ liệu cho thành viên hội đồng
         if (committee.getCommitteeMembers() != null && !committee.getCommitteeMembers().isEmpty()) {
             Integer[] memberIds = new Integer[committee.getCommitteeMembers().size()];
             String[] memberRoles = new String[committee.getCommitteeMembers().size()];
-            
+
             int i = 0;
             for (CommitteeMember member : committee.getCommitteeMembers()) {
                 memberIds[i] = member.getLecturer().getId();
@@ -103,39 +118,48 @@ public class CommitteeController {
                 memberRoles[i] = role;
                 i++;
             }
-            
+
             committeeDTO.setMemberLecturerId(memberIds);
             committeeDTO.setMemberRole(memberRoles);
         }
-        
+
         if (committee.getTheses() != null && !committee.getTheses().isEmpty()) {
             Integer[] thesesIds = new Integer[committee.getTheses().size()];
-            
+
             int i = 0;
             for (Thesis thesis : committee.getTheses()) {
                 thesesIds[i] = thesis.getId();
                 i++;
             }
-            
+
             committeeDTO.setThesesIds(thesesIds);
         }
-        
+
         model.addAttribute("committee", committeeDTO);
         model.addAttribute("committeeCampus", CommitteeCampus.values());
         model.addAttribute("lecturers", lecturerService.getLecturers(new HashMap<>()));
-        
+
         List<Thesis> unassignedTheses = thesesService.getTheses(new HashMap<>(Map.of("committeeId", "")));
         if (committee.getTheses() != null) {
             unassignedTheses.addAll(committee.getTheses());
         }
         model.addAttribute("unassignedTheses", unassignedTheses);
-        
+
         return "committee/add";
     }
 
     @PostMapping("/add")
     public String add(Model model,
-            @ModelAttribute("committee") CommitteeDTO committeeDTO) {
+            @Valid @ModelAttribute("committee") CommitteeDTO committeeDTO,
+            BindingResult result) {
+
+        if (result.hasErrors()) {
+            model.addAttribute("committee", committeeDTO);
+            model.addAttribute("committeeCampus", CommitteeCampus.values());
+            model.addAttribute("lecturers", lecturerService.getLecturers(new HashMap<>()));
+            model.addAttribute("unassignedTheses", thesesService.getTheses(new HashMap<>(Map.of("committeeId", ""))));
+            return "committee/add";
+        }
         committeeService.addOrUpdate(committeeDTO);
         return "redirect:/committees";
     }
