@@ -16,44 +16,30 @@
                 <p th:text="${errorMessage}"></p>
             </div>
 
-            <form th:action="@{/committees}">
-                <div class="mb-3 mt-3">
-                    <input type="text" class="form-control" name="title" placeholder="Tiêu đề" />
-                </div>
-                <div class="mb-3 mt-3">
-                    <button class="btn btn-info" type="submit">Tìm kiếm</button>
-                </div>
-            </form>
             <hr  />   
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th></th>
+                        <th>ID</th>
                         <th>Ngày bảo vệ</th>
                         <th>Địa điểm</th>
                         <th>Trạng thái</th>
+                        <th>Hoạt động</th>
                         <th>Được tạo bởi</th>
-                        <th>Số lượng thành viên trong hội đồng</th>
-                        <th>Số lượng khóa luận đã chỉ định</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:each="committee : ${committees}">
                         <td th:text="${committee.id}"></td>
-                        <td th:text="${#temporals.format(committee.defenseDate, 'dd/MM/yyyy HH:mm')}"></td>
-                        <td th:text="${committee.location.replace('_', ' ')}"></td>
+                        <td th:text="${committee.defenseDate != null ? #temporals.format(committee.defenseDate, 'dd/MM/yyyy HH:mm') : 'N/A'}"></td>
+                        <td th:text="${committee.location}"></td>
                         <td th:text="${committee.status}"></td>
-                        <td th:if="${committee.createdBy != null}" th:text="${committee.createdBy.user != null ? committee.createdBy.user.firstName + ' ' + committee.createdBy.user.lastName : 'N/A'}"></td>
-                        <td th:if="${committee.createdBy == null}">N/A</td>
                         <td>
-                            <span th:if="${committee.committeeMembers != null and !committee.committeeMembers.isEmpty()}" th:text="${committee.committeeMembers.size() + ' thành viên'}"></span>
-                            <span th:unless="${committee.committeeMembers != null and !committee.committeeMembers.isEmpty()}">0 thành viên</span>
+                            <span th:if="${committee.isActive}" class="badge bg-success">Có</span>
+                            <span th:unless="${committee.isActive}" class="badge bg-danger">Không</span>
                         </td>
-                        <td>
-                            <span th:if="${committee.theses != null and !committee.theses.isEmpty()}" th:text="${committee.theses.size() + ' khóa luận'}"></span>
-                            <span th:unless="${committee.theses != null and !committee.theses.isEmpty()}">0 khóa luận</span>
-                        </td>
+                        <td th:text="${committee.createdByName != null ? committee.createdByName : 'N/A'}"></td>
                         <td>
                             <a class="btn btn-danger btn-sm" th:onclick="'deleteItem(\''+@{/api/committees/}+'\','+${committee.id}+')'">Xóa</a>
                             <a class="btn btn-success btn-sm" th:href="@{'/committees/' + ${committee.id}}">Cập nhật️</a>

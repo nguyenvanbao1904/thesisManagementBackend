@@ -4,79 +4,44 @@
  */
 package com.nvb.pojo;
 
-import jakarta.persistence.Basic;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Set;
 
-/**
- *
- * @author nguyenvanbao
- */
 @Entity
 @Table(name = "student")
 @XmlRootElement
+@DiscriminatorValue("ROLE_STUDENT")
 @NamedQueries({
     @NamedQuery(name = "Student.findAll", query = "SELECT s FROM Student s"),
     @NamedQuery(name = "Student.findById", query = "SELECT s FROM Student s WHERE s.id = :id"),
     @NamedQuery(name = "Student.findByStudentId", query = "SELECT s FROM Student s WHERE s.studentId = :studentId")})
-public class Student implements Serializable {
+@PrimaryKeyJoinColumn(name = "id") // 
+public class Student extends User implements Serializable { 
 
     private static final long serialVersionUID = 1L;
-    @Id
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "id")
-    private Integer id;
+
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 20)
     @Column(name = "student_id")
     private String studentId;
+
     @ManyToMany(mappedBy = "students")
     private Set<Thesis> theses;
+
     @JoinColumn(name = "major_id", referencedColumnName = "id")
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Major major;
-    @JoinColumn(name = "id")
-    @OneToOne(optional = false, fetch = FetchType.LAZY)
-    @MapsId
-    private User user;
 
     public Student() {
     }
 
     public Student(Integer id) {
-        this.id = id;
-    }
-
-    public Student(Integer id, String studentId) {
-        this.id = id;
-        this.studentId = studentId;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
+        super(id);
     }
 
     public String getStudentId() {
@@ -102,40 +67,4 @@ public class Student implements Serializable {
     public void setMajor(Major major) {
         this.major = major;
     }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-   
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Student)) {
-            return false;
-        }
-        Student other = (Student) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "com.nvb.configs.Student[ id=" + id + " ]";
-    }
-    
 }

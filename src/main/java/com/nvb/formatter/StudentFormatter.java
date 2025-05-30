@@ -1,7 +1,7 @@
 package com.nvb.formatter;
 
 import com.nvb.pojo.Student;
-import com.nvb.services.StudentService;
+import com.nvb.repositories.StudentRepository;
 import java.text.ParseException;
 import java.util.Locale;
 import java.util.Map;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class StudentFormatter implements Formatter<Student> {
 
     @Autowired
-    private StudentService studentService;
+    private StudentRepository studentRepository;
 
     @Override
     public String print(Student object, Locale locale) {
@@ -28,7 +28,7 @@ public class StudentFormatter implements Formatter<Student> {
         if (id == null || id.trim().isEmpty()) {
             return null;
         }
-        Student student = studentService.getStudentWithDetails(Map.of("id", id));
+        Student student = studentRepository.get(Map.of("id", id), true);
         return student;
     }
 }

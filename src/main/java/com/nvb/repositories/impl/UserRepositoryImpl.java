@@ -5,12 +5,15 @@
 package com.nvb.repositories.impl;
 
 import com.nvb.pojo.User;
+import com.nvb.pojo.Student;
+import com.nvb.pojo.Admin;
+import com.nvb.pojo.AcademicStaff;
+import com.nvb.pojo.Lecturer;
 import com.nvb.repositories.UserRepository;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -38,7 +41,7 @@ public class UserRepositoryImpl implements UserRepository {
     private BCryptPasswordEncoder passwordEncoder;
 
     @Override
-    public User getUser(Map<String, String> params) {
+    public User get(Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<User> query = builder.createQuery(User.class);
@@ -70,7 +73,6 @@ public class UserRepositoryImpl implements UserRepository {
         }
 
         query.where(predicates.toArray(new Predicate[0]));
-
         query.select(root);
 
         Query q = s.createQuery(query);
@@ -82,7 +84,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User addOrUpdateUser(User u) {
+    public User addOrUpdate(User u) {
         Session s = this.factory.getObject().getCurrentSession();
         if (u.getId() == null) {
             s.persist(u);
@@ -94,7 +96,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User authenticate(String username, String password) {
-        User u = this.getUser(Map.of("username", username));
+        User u = this.get(Map.of("username", username));
         if (this.passwordEncoder.matches(password, u.getPassword())) {
             return u;
         }
@@ -102,21 +104,16 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<User> getUsers(Map<String, String> params) {
-
+    public List<User> getAll(Map<String, String> params, boolean pagination, boolean details) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<User> query = builder.createQuery(User.class);
         Root<User> root = query.from(User.class);
 
-        // Join fetch các đối tượng liên kết
-        root.fetch("lecturer", JoinType.LEFT);
-        root.fetch("student", JoinType.LEFT);
-        root.fetch("academicStaff", JoinType.LEFT);
-
+        if (details) {
+        }
 
         if (params != null) {
-
             List<Predicate> predicates = new ArrayList<>();
 
             String kw = params.get("username");
@@ -126,7 +123,20 @@ public class UserRepositoryImpl implements UserRepository {
 
             String role = params.get("role");
             if (role != null && !role.isEmpty()) {
-                predicates.add(builder.equal(root.get("role"), role));
+                switch (role) {
+                    case "ROLE_ADMIN":
+                        predicates.add(builder.equal(root.type(), Admin.class));
+                        break;
+                    case "ROLE_ACADEMICSTAFF":
+                        predicates.add(builder.equal(root.type(), AcademicStaff.class));
+                        break;
+                    case "ROLE_LECTURER":
+                        predicates.add(builder.equal(root.type(), Lecturer.class));
+                        break;
+                    case "ROLE_STUDENT":
+                        predicates.add(builder.equal(root.type(), Student.class));
+                        break;
+                }
             }
 
             String isActive = params.get("isActive");
@@ -135,14 +145,9 @@ public class UserRepositoryImpl implements UserRepository {
                 predicates.add(builder.equal(root.get("isActive"), isActiveBool));
             }
 
-            String page = params.get("page");
-            if (page == null) {
-                params.put("page", "1");
-            }
             query.where(predicates.toArray(Predicate[]::new));
-
         }
-        query.select(root);
+        query.select(root).distinct(true);
 
         Query q = s.createQuery(query);
 
@@ -161,7 +166,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void deleteUser(User u) {
+    public void delete(User u) {
         Session s = this.factory.getObject().getCurrentSession();
         s.remove(u);
     }

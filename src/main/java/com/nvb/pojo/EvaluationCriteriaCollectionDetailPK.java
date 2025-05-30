@@ -60,7 +60,6 @@ public class EvaluationCriteriaCollectionDetailPK implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
         if (!(object instanceof EvaluationCriteriaCollectionDetailPK)) {
             return false;
         }
@@ -76,7 +75,7 @@ public class EvaluationCriteriaCollectionDetailPK implements Serializable {
 
     @Override
     public String toString() {
-        return "com.nvb.configs.EvaluationCriteriaCollectionDetailPK[ collectionId=" + collectionId + ", criteriaId=" + criteriaId + " ]";
+        return "com.nvb.pojo.EvaluationCriteriaCollectionDetailPK[ collectionId=" + collectionId + ", criteriaId=" + criteriaId + " ]";
     }
     
 }

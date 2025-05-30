@@ -4,17 +4,17 @@
  */
 package com.nvb.services;
 
-import com.nvb.pojo.Major;
 import java.util.List;
 import java.util.Map;
+import com.nvb.dto.MajorDTO;
 
 /**
  *
  * @author nguyenvanbao
  */
 public interface MajorService {
-    Major addOrUpdateMajor(Major major);
-    List<Major> getMajors(Map<String, String> params);
-    Major getMajorById(int majorId);
-    void deleteMajor(int id);
+    MajorDTO addOrUpdate(MajorDTO majorDTO);
+    List<MajorDTO> getAll(Map<String, String> params);
+    MajorDTO get(Map<String, String> params);
+    void delete(int id);
 }

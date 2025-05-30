@@ -6,7 +6,6 @@ package com.nvb.validators;
 
 import com.nvb.dto.EvaluationCriteriaCollectionDTO;
 import com.nvb.dto.EvaluationCriteriaDTO;
-import com.nvb.pojo.EvaluationCriteriaCollection;
 import com.nvb.services.EvaluationCriteriaCollectionService;
 import java.util.HashMap;
 import java.util.List;
@@ -37,13 +36,13 @@ public class EvaluationCriteriaCollectionValidator implements Validator {
 
         // Kiểm tra trùng lặp name
         if (collectionDto.getName() != null && !collectionDto.getName().isBlank()) {
-            EvaluationCriteriaCollection existing = evaluationCriteriaCollectionService.getEvaluationCriteriaCollection(new HashMap<>(Map.of("name", collectionDto.getName().trim())));
+            EvaluationCriteriaCollectionDTO existing = evaluationCriteriaCollectionService.get(new HashMap<>(Map.of("name", collectionDto.getName().trim())));
             if (collectionDto.getId() == null) {
                 if (existing != null) {
                     errors.rejectValue("name", "evaluationCriteriaCollection.name.duplicateMsg");
                 }
             } else {
-                if (existing != null && !existing.getId().equals(collectionDto.getId())) {
+                if (existing != null && existing.getId() != null && !existing.getId().equals(collectionDto.getId())) {
                     errors.rejectValue("name", "evaluationCriteriaCollection.name.duplicateMsg");
                 }
             }
@@ -58,8 +57,8 @@ public class EvaluationCriteriaCollectionValidator implements Validator {
                     totalWeight += criteriaDto.getWeight();
                 }
             }
-            if (Math.abs(totalWeight - 1.0f) > 0.001f) {
-                errors.reject("evaluationCriteriaCollection.totalWeight.invalidMsg");
+            if (Math.abs(totalWeight - 1.0f) > 0.00001f) {
+                errors.reject("evaluationCriteriaCollection.totalWeight.invalidMsg", "Tổng trọng số của các tiêu chí phải bằng 1 (100%).");
             }
         }
     }

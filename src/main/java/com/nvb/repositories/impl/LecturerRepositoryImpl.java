@@ -10,7 +10,9 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.hibernate.Session;
@@ -31,23 +33,45 @@ public class LecturerRepositoryImpl implements LecturerRepository {
     private LocalSessionFactoryBean factory;
 
     @Override
-    public Lecturer getLecturerWithDetails(Map<String, String> params) {
+    public Lecturer get(Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<Lecturer> query = builder.createQuery(Lecturer.class);
         Root<Lecturer> root = query.from(Lecturer.class);
 
-        // Eager fetch theses to ensure the relationship is loaded
-        root.fetch("thesesSupervisors", JoinType.LEFT);
-        root.fetch("user", JoinType.LEFT);
+        List<Predicate> predicates = new ArrayList<>();
 
-        query.select(root);
         if (params != null) {
             String id = params.get("id");
             if (id != null && !id.isEmpty()) {
-                query.where(builder.equal(root.get("id"), id));
+                predicates.add(builder.equal(root.get("id"), Integer.parseInt(id)));
+            }
+
+            String username = params.get("username");
+            if (username != null && !username.isEmpty()) {
+                predicates.add(builder.equal(root.get("username"), username));
             }
         }
+
+        // Không cần fetch user vì đã sử dụng inheritance
+        // Chỉ cần fetch các relationship khác nếu cần
+        if (params != null) {
+            if (Boolean.parseBoolean(params.getOrDefault("fetchThesesSupervisors", "false"))) {
+                root.fetch("thesesSupervisors", JoinType.LEFT);
+            }
+            if (Boolean.parseBoolean(params.getOrDefault("fetchCommitteeMembers", "false"))) {
+                root.fetch("committeeMembers", JoinType.LEFT);
+            }
+            if (Boolean.parseBoolean(params.getOrDefault("fetchEvaluationScores", "false"))) {
+                root.fetch("evaluationScores", JoinType.LEFT);
+            }
+            if (Boolean.parseBoolean(params.getOrDefault("fetchThesesReviewer", "false"))) {
+                root.fetch("thesesReviewer", JoinType.LEFT);
+            }
+        }
+
+        query.where(predicates.toArray(new Predicate[0]));
+        query.select(root);
 
         try {
             return s.createQuery(query).getSingleResult();
@@ -57,21 +81,44 @@ public class LecturerRepositoryImpl implements LecturerRepository {
     }
 
     @Override
-    public List<Lecturer> getLecturers(Map<String, String> params) {
+    public List<Lecturer> getAll(Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<Lecturer> query = builder.createQuery(Lecturer.class);
         Root<Lecturer> root = query.from(Lecturer.class);
-        root.fetch("user", JoinType.LEFT);
-        query.select(root);
+
+        // Không cần fetch user vì đã sử dụng inheritance
+        // Chỉ cần fetch các relationship khác nếu cần
         if (params != null) {
-            
+            if (Boolean.parseBoolean(params.getOrDefault("fetchThesesSupervisors", "false"))) {
+                root.fetch("thesesSupervisors", JoinType.LEFT);
+            }
+            if (Boolean.parseBoolean(params.getOrDefault("fetchCommitteeMembers", "false"))) {
+                root.fetch("committeeMembers", JoinType.LEFT);
+            }
+            if (Boolean.parseBoolean(params.getOrDefault("fetchEvaluationScores", "false"))) {
+                root.fetch("evaluationScores", JoinType.LEFT);
+            }
+            if (Boolean.parseBoolean(params.getOrDefault("fetchThesesReviewer", "false"))) {
+                root.fetch("thesesReviewer", JoinType.LEFT);
+            }
         }
 
-        try {
-            return s.createQuery(query).getResultList();
-        } catch (NoResultException ex) {
-            return null;
+        query.select(root);
+        return s.createQuery(query).getResultList();
+    }
+
+    @Override
+    public List<Lecturer> getByIds(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return new ArrayList<>();
         }
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<Lecturer> query = builder.createQuery(Lecturer.class);
+        Root<Lecturer> root = query.from(Lecturer.class);
+        query.select(root);
+        query.where(root.get("id").in(ids));
+        return s.createQuery(query).getResultList();
     }
 }

@@ -25,7 +25,6 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
@@ -36,13 +35,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableTransactionManagement
 @EnableWebSecurity
 @ComponentScan(basePackages = {
+    "com.nvb.controllers",
     "com.nvb.repositories",
     "com.nvb.services",
-    "com.nvb.utils",      
-    "com.nvb.filters"   
+    "com.nvb.filters",
+    "com.nvb.utils",
+    "com.nvb.components"
 })
 @PropertySource("classpath:application.properties")
-public class SpringSercurityConfigs {
+public class SpringSecurityConfigs {
     
     @Autowired
     private Environment env;

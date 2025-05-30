@@ -4,11 +4,7 @@
  */
 package com.nvb.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.nvb.pojo.AcademicStaff;
-import com.nvb.pojo.EvaluationCriteria;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 
 /**
@@ -18,26 +14,31 @@ import java.util.List;
 public class EvaluationCriteriaCollectionDTO {
 
     private Integer id;
+    
     @NotBlank(message = "{evaluationCriteriaCollection.name.notnullMsg}")
     private String name;
+    
     @NotBlank(message = "{evaluationCriteriaCollection.description.notnullMsg}")
     private String description;
+    
     private List<EvaluationCriteriaDTO> evaluationCriterias;
-    @JsonIgnore
-    private AcademicStaff createdBy;
-
-    @NotEmpty(message = "{evaluationCriteriaCollection.evaluationCriterias.notnullMsg}")
-    private List<EvaluationCriteria> selectedCriterias;
+    
+    private Integer[] selectedCriteriaIds;
+    
+    // Thông tin bổ sung cho hiển thị
+    private String createdByName;
+    private Integer createdById;
 
     public EvaluationCriteriaCollectionDTO() {
     }
 
-    public EvaluationCriteriaCollectionDTO(Integer id, String name, String description, List<EvaluationCriteriaDTO> evaluationCriterias, AcademicStaff createdBy) {
+    public EvaluationCriteriaCollectionDTO(Integer id, String name, String description, Integer[] selectedCriteriaIds, String createdByName, Integer createdById) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.evaluationCriterias = evaluationCriterias;
-        this.createdBy = createdBy;
+        this.selectedCriteriaIds = selectedCriteriaIds;
+        this.createdByName = createdByName;
+        this.createdById = createdById;
     }
 
     public Integer getId() {
@@ -72,19 +73,37 @@ public class EvaluationCriteriaCollectionDTO {
         this.evaluationCriterias = evaluationCriterias;
     }
 
-    public AcademicStaff getCreatedBy() {
-        return createdBy;
+    public Integer[] getSelectedCriteriaIds() {
+        return selectedCriteriaIds;
     }
 
-    public void setCreatedBy(AcademicStaff createdBy) {
-        this.createdBy = createdBy;
+    public void setSelectedCriteriaIds(Integer[] selectedCriteriaIds) {
+        this.selectedCriteriaIds = selectedCriteriaIds;
     }
 
-    public List<EvaluationCriteria> getSelectedCriterias() {
-        return selectedCriterias;
+    public String getCreatedByName() {
+        return createdByName;
     }
 
-    public void setSelectedCriterias(List<EvaluationCriteria> selectedCriterias) {
-        this.selectedCriterias = selectedCriterias;
+    public void setCreatedByName(String createdByName) {
+        this.createdByName = createdByName;
+    }
+
+    public Integer getCreatedById() {
+        return createdById;
+    }
+
+    public void setCreatedById(Integer createdById) {
+        this.createdById = createdById;
+    }
+
+    @Override
+    public String toString() {
+        return "EvaluationCriteriaCollectionDTO{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", selectedCriteriaIds=" + (selectedCriteriaIds != null ? selectedCriteriaIds.length : "null") +
+                '}';
     }
 }

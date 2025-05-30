@@ -5,19 +5,31 @@
 package com.nvb.services;
 
 import com.nvb.dto.ThesesDTO;
-import com.nvb.pojo.Thesis;
+import com.nvb.dto.ThesesListDTO;
 import java.util.List;
 import java.util.Map;
-
 
 /**
  *
  * @author nguyenvanbao
  */
 public interface ThesesService {
-    List<Thesis> getTheses(Map<String, String> params);
-    List<Thesis> getTheses(Map<String, String> params, boolean pagination);
-    Thesis getThesis(Map<String, String> params);
-    Thesis addOrUpdate(ThesesDTO thesesDTO);
-    void deleteThesis(int id);
+
+    List<ThesesDTO> getAll(Map<String, String> params);
+
+    List<ThesesDTO> getAll(Map<String, String> params, boolean pagination);
+
+    List<ThesesDTO> getAll(Map<String, String> params, boolean pagination, boolean details);
+
+    List<ThesesListDTO> getAllForListView(Map<String, String> params, boolean pagination);
+
+    ThesesDTO addOrUpdate(ThesesDTO thesesDTO);
+
+    ThesesDTO get(Map<String, String> params);
+
+    void delete(int id);
+
+    boolean isStudentInAnotherActiveThesis(Integer studentUserId, Integer currentThesisIdToExclude);
+    
+    List<ThesesDTO> getByIds(List<Integer> ids);
 }

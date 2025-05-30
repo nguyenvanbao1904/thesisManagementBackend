@@ -4,13 +4,12 @@
  */
 package com.nvb.dto;
 
-import com.nvb.pojo.AcademicStaff;
-import com.nvb.pojo.CommitteeMember;
-import com.nvb.pojo.Thesis;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 
 /**
@@ -20,43 +19,48 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class CommitteeDTO {
 
     private Integer id;
+    
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     @Future(message = "{committee.defenseDate.future}")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime defenseDate;
-    @NotBlank
+    
+    @NotBlank(message = "{committee.location.notBlank}")
     private String location;
+    
     private String status;
-    private AcademicStaff createdBy;
-    private Set<CommitteeMember> committeeMembers;
-    private Set<Thesis> theses;
+    private Boolean isActive;
+    
+    // Thông tin thành viên hội đồng
+    @NotNull(message = "{committee.memberLecturerId.notNull}")
     private Integer[] memberLecturerId;
+    
+    @NotNull(message = "{committee.memberRole.notNull}")
     private String[] memberRole;
+    
+    // Danh sách khóa luận thuộc hội đồng
     private Integer[] thesesIds;
+    
+    // Thông tin bổ sung cho hiển thị
+    private List<CommitteeMemberDTO> committeeMembers;
+    private List<ThesesDTO> theses;
+    private String createdByName;
 
-    public CommitteeDTO(Integer id, LocalDateTime defenseDate, String location, String status, AcademicStaff createdBy, Set<CommitteeMember> committeeMembers, Set<Thesis> theses) {
-        this.id = id;
-        this.defenseDate = defenseDate;
-        this.location = location;
-        this.status = status;
-        this.createdBy = createdBy;
-        this.committeeMembers = committeeMembers;
-        this.theses = theses;
+    public CommitteeDTO() {
     }
 
-    public CommitteeDTO(Integer id, LocalDateTime defenseDate, String location, String status, AcademicStaff createdBy, Set<CommitteeMember> committeeMembers, Set<Thesis> theses, Integer[] memberLecturerId, String[] memberRole, Integer[] thesesIds) {
+    public CommitteeDTO(Integer id, LocalDateTime defenseDate, String location, String status, 
+                      Boolean isActive, Integer[] memberLecturerId, String[] memberRole, 
+                      Integer[] thesesIds, String createdByName) {
         this.id = id;
         this.defenseDate = defenseDate;
         this.location = location;
         this.status = status;
-        this.createdBy = createdBy;
-        this.committeeMembers = committeeMembers;
-        this.theses = theses;
+        this.isActive = isActive;
         this.memberLecturerId = memberLecturerId;
         this.memberRole = memberRole;
         this.thesesIds = thesesIds;
-    }
-    
-    public CommitteeDTO() {
+        this.createdByName = createdByName;
     }
 
     public Integer getId() {
@@ -91,28 +95,12 @@ public class CommitteeDTO {
         this.status = status;
     }
 
-    public AcademicStaff getCreatedBy() {
-        return createdBy;
+    public Boolean getIsActive() {
+        return isActive;
     }
 
-    public void setCreatedBy(AcademicStaff createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Set<CommitteeMember> getCommitteeMembers() {
-        return committeeMembers;
-    }
-
-    public void setCommitteeMembers(Set<CommitteeMember> committeeMembers) {
-        this.committeeMembers = committeeMembers;
-    }
-
-    public Set<Thesis> getTheses() {
-        return theses;
-    }
-
-    public void setTheses(Set<Thesis> theses) {
-        this.theses = theses;
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
     public Integer[] getMemberLecturerId() {
@@ -137,5 +125,42 @@ public class CommitteeDTO {
 
     public void setThesesIds(Integer[] thesesIds) {
         this.thesesIds = thesesIds;
+    }
+
+    public List<CommitteeMemberDTO> getCommitteeMembers() {
+        return committeeMembers;
+    }
+
+    public void setCommitteeMembers(List<CommitteeMemberDTO> committeeMembers) {
+        this.committeeMembers = committeeMembers;
+    }
+
+    public List<ThesesDTO> getTheses() {
+        return theses;
+    }
+
+    public void setTheses(List<ThesesDTO> theses) {
+        this.theses = theses;
+    }
+
+    public String getCreatedByName() {
+        return createdByName;
+    }
+
+    public void setCreatedByName(String createdByName) {
+        this.createdByName = createdByName;
+    }
+
+    @Override
+    public String toString() {
+        return "CommitteeDTO{" +
+                "id=" + id +
+                ", defenseDate=" + defenseDate +
+                ", location='" + location + '\'' +
+                ", status='" + status + '\'' +
+                ", memberLecturerId=" + (memberLecturerId != null ? memberLecturerId.length : "null") +
+                ", memberRole=" + (memberRole != null ? memberRole.length : "null") +
+                ", thesesIds=" + (thesesIds != null ? thesesIds.length : "null") +
+                '}';
     }
 }

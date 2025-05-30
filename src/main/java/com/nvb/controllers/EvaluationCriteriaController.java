@@ -11,8 +11,6 @@ import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -47,15 +45,9 @@ public class EvaluationCriteriaController {
         binder.setValidator(evaluationCriteriaWebAppValidator);
     }
 
-    @Autowired
-    private ModelMapper modelMapper;
-
     @GetMapping("")
     public String showAll(Model model, @RequestParam(required = false) Map<String, String> params) {
-        
-        List<EvaluationCriteriaDTO> evaluationCriterias = modelMapper.map(
-                evaluationCriteriaService.getEvaluationCriterias(params, true),
-                new TypeToken<List<EvaluationCriteriaDTO>>() {}.getType());
+        List<EvaluationCriteriaDTO> evaluationCriterias = evaluationCriteriaService.getAll(params, true);
         
         model.addAttribute("evaluationCriterias", evaluationCriterias);
         int page = 1;
@@ -88,15 +80,14 @@ public class EvaluationCriteriaController {
             model.addAttribute("evaluationCriteria", evaluationCriteria);
             return "evaluationCriteria/add";
         }
-        evaluationCriteriaService.addOrUpdateEvaluationCriteria(evaluationCriteria);
+        evaluationCriteriaService.addOrUpdate(evaluationCriteria);
         return "redirect:/evaluation_criterias";
     }
     
     @GetMapping("/{id}")
     public String updateView(Model model, @PathVariable(name = "id") int id) {
-        model.addAttribute("evaluationCriteria", modelMapper.map(
-                evaluationCriteriaService.getEvaluationCriteria(new HashMap<>(Map.of("id", String.valueOf(id)))),
-                EvaluationCriteriaDTO.class));
+        EvaluationCriteriaDTO criteria = evaluationCriteriaService.get(new HashMap<>(Map.of("id", String.valueOf(id))));
+        model.addAttribute("evaluationCriteria", criteria);
         return "evaluationCriteria/add";
     }
 }

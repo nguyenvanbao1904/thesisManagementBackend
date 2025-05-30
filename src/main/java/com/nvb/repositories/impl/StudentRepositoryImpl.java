@@ -35,12 +35,16 @@ public class StudentRepositoryImpl implements StudentRepository {
     private LocalSessionFactoryBean factory;
 
     @Override
-    public Student getStudent(Map<String, String> params) {
+    public Student get(Map<String, String> params, boolean details) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<Student> query = builder.createQuery(Student.class);
         Root<Student> root = query.from(Student.class);
         query.select(root);
+
+        if (details) {
+            root.fetch("theses", JoinType.LEFT);
+        }
 
         List<Predicate> predicates = new ArrayList<>();
 
@@ -48,6 +52,10 @@ public class StudentRepositoryImpl implements StudentRepository {
             String studentId = params.get("studentId");
             if (studentId != null && !studentId.isEmpty()) {
                 predicates.add(builder.equal(root.get("studentId"), studentId));
+            }
+            String id = params.get("id");
+            if (id != null && !id.isEmpty()) {
+                predicates.add(builder.equal(root.get("id"), id));
             }
 
         }
@@ -66,14 +74,11 @@ public class StudentRepositoryImpl implements StudentRepository {
     }
 
     @Override
-    public Student getStudentWithDetails(Map<String, String> params) {
+    public List<Student> getAll(Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<Student> query = builder.createQuery(Student.class);
         Root<Student> root = query.from(Student.class);
-        root.fetch("theses", JoinType.LEFT);
-        root.fetch("user", JoinType.LEFT);
-
         query.select(root);
 
         List<Predicate> predicates = new ArrayList<>();
@@ -93,12 +98,20 @@ public class StudentRepositoryImpl implements StudentRepository {
 
         Query q = s.createQuery(query);
         try {
-            return (Student) q.getSingleResult();
+            return q.getResultList();
         } catch (NoResultException ex) {
-            return null;
-        } catch (org.hibernate.NonUniqueResultException ex) {
-            System.err.println(ex.getMessage());
-            return null;
+            return new ArrayList<>();
         }
+    }
+
+    @Override
+    public Student addOrUpdate(Student student) {
+        Session s = this.factory.getObject().getCurrentSession();
+        if (student.getId() == null) {
+            s.persist(student);
+        } else {
+            s.merge(student);
+        }
+        return student;
     }
 }

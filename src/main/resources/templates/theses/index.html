@@ -14,11 +14,11 @@
             <a th:href="@{/evaluation_criterias}" class="btn btn-info mt-2">Quản lý các tiêu chí</a>
             <a th:href="@{/committees}" class="btn btn-info mt-2">Quản lý hội đồng</a>
             <hr/>
-            
+
             <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
                 <p th:text="${errorMessage}"></p>
             </div>
-            
+
             <form th:action="@{/theses}">
                 <div class="mb-3 mt-3">
                     <input type="text" class="form-control" name="title" placeholder="Tiêu đề" />
@@ -31,33 +31,21 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
+                        <th></th>
                         <th>Tiêu đề</th>
                         <th>Mô tả</th>
                         <th>Trạng thái</th>
-                        <th>Giảng viên phản biện</th>
-                        <th>Bộ tiêu chí chấm điểm</th>
-                        <th>Giảng viên hướng dẫn</th>
-                        <th>Sinh viên thực hiện</th>
-                        <th>Hội đồng chấm điểm</th>
                         <th>Tài liệu</th>
                         <th>Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:each="thesis: ${theses}">
+                        <td th:text="${thesis.id}"></td>
                         <td th:text="${thesis.title}"></td>
                         <td th:text="${thesis.description}"></td>
                         <td th:text="${thesis.status}"></td>
-                        <td th:text="${thesis.reviewerId != null ? thesis.reviewerId.getId() : ''}"></td>
-                        <td th:text="${thesis.evaluationCriteriaCollectionId != null ? thesis.evaluationCriteriaCollectionId.getId() : ''}"></td>
-                        <td>
-                            <span th:if="${thesis.lecturers != null and !thesis.lecturers.isEmpty()}" th:text="${thesis.lecturers.size() + ' giảng viên'}"></span>
-                        </td>
-                        <td>
-                            <span th:if="${thesis.students != null and !thesis.students.isEmpty()}" th:text="${thesis.students.size() + ' sinh viên'}"></span>
-                        </td>
-                        <td th:text="${thesis.committeeId != null ? thesis.committeeId.getId() : ''}"></td>
-                        <td>
+                         <td>
                             <a th:if="${thesis.fileUrl != null}" th:href="${thesis.fileUrl}" target="_blank" class="btn btn-sm btn-primary">Xem tài liệu</a>
                         </td>
                         <td>

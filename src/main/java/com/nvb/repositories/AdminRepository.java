@@ -4,8 +4,6 @@
  */
 package com.nvb.repositories;
 
-import com.nvb.pojo.Admin;
-
 /**
  *
  * @author nguyenvanbao

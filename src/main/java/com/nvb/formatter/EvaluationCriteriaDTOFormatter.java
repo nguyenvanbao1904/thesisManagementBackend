@@ -10,7 +10,6 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.Formatter;
 import org.springframework.stereotype.Component;
@@ -25,9 +24,6 @@ public class EvaluationCriteriaDTOFormatter implements Formatter<EvaluationCrite
     @Autowired
     private EvaluationCriteriaService evaluationCriteriaService;
     
-    @Autowired
-    private ModelMapper modelMapper;
-
     @Override
     public String print(EvaluationCriteriaDTO object, Locale locale) {
          if (object == null) {
@@ -42,7 +38,7 @@ public class EvaluationCriteriaDTOFormatter implements Formatter<EvaluationCrite
             return null; 
         }
         
-        return modelMapper.map(evaluationCriteriaService.getEvaluationCriteria(new HashMap<>(Map.of("id", text))), EvaluationCriteriaDTO.class);
+        return evaluationCriteriaService.get(new HashMap<>(Map.of("id", text)));
     }
     
 }

@@ -7,12 +7,15 @@
         function toggleRoleFields() {
             const studentFields = document.getElementById('studentFields');
             const lecturerFields = document.getElementById('lecturerFields');
-            const selectedRole = document.getElementById('role').value;
+            const roleSelect = document.getElementById('role');
+
+            // Nếu đang cập nhật (không có roleSelect), lấy giá trị role từ hidden input
+            const selectedRole = roleSelect ? roleSelect.value : document.querySelector('input[name="role"]').value;
 
             // Đặt lại style cơ bản trước
             if (studentFields) {
                 studentFields.style.display = 'none';
-                studentFields.style.border = 'none'; // Xóa border cũ nếu có
+                studentFields.style.border = 'none';
             }
             if (lecturerFields) {
                 lecturerFields.style.display = 'none';
@@ -21,33 +24,26 @@
             if (selectedRole === 'ROLE_STUDENT') {
                 if (studentFields) {
                     studentFields.style.display = 'block';
-                } else {
-                    console.error("studentFields element not found!");
                 }
-                if (lecturerFields)
+                if (lecturerFields) {
                     lecturerFields.style.display = 'none';
+                }
             } else if (selectedRole === 'ROLE_LECTURER') {
-                if (studentFields)
+                if (studentFields) {
                     studentFields.style.display = 'none';
+                }
                 if (lecturerFields) {
                     lecturerFields.style.display = 'block';
-                } else {
-                    console.error("lecturerFields element not found!");
                 }
-            } else {
-                // No specific role selected or role not student/lecturer, hiding both.
             }
         }
 
-// Kích hoạt khi trang được tải (window.onload giữ nguyên như cũ)
         window.onload = function () {
             toggleRoleFields();
 
             const roleSelect = document.getElementById('role');
             if (roleSelect) {
                 roleSelect.addEventListener('change', toggleRoleFields);
-            } else {
-                console.error("Role select element not found!");
             }
         };
     </script>
@@ -105,8 +101,8 @@
                     <div th:if="${#fields.hasErrors('email')}" class="error-message"
                          th:errors="*{email}">Lỗi email</div>
                 </div>
-                
-                 <div class="mb-3">
+
+                <div class="mb-3">
                     <label for="phone" class="form-label">Số điện thoại:</label>
                     <input type="text" th:class="${#fields.hasErrors('phone')} ? 'form-control field-error' : 'form-control'"
                            id="phone" placeholder="Số điện thoại" th:field="*{phone}"/>
@@ -116,13 +112,29 @@
 
                 <div class="mb-3">
                     <label for="role" class="form-label">Vai trò:</label>
-                    <select th:class="${#fields.hasErrors('role')} ? 'form-select field-error' : 'form-select'"
-                            th:field="*{role}" id="role" required>
+                    <!-- Khi tạo mới: hiển thị dropdown -->
+                    <select th:if="${user.id == null}" 
+                            th:class="${#fields.hasErrors('role')} ? 'form-select field-error' : 'form-select'"
+                            th:field="*{role}" 
+                            id="role" 
+                            required>
                         <option value="" disabled selected>-- Chọn vai trò --</option>
                         <option value="ROLE_ACADEMICSTAFF">Giáo vụ</option>
                         <option value="ROLE_LECTURER">Giảng viên</option>
                         <option value="ROLE_STUDENT">Sinh viên</option>
                     </select>
+
+                    <!-- Khi cập nhật: hiển thị text không thể chỉnh sửa -->
+                    <div th:unless="${user.id == null}" class="form-control-plaintext">
+                        <span th:switch="*{role}">
+                            <span th:case="'ROLE_ADMIN'">Quản trị viên</span>
+                            <span th:case="'ROLE_ACADEMICSTAFF'">Giáo vụ</span>
+                            <span th:case="'ROLE_LECTURER'">Giảng viên</span>
+                            <span th:case="'ROLE_STUDENT'">Sinh viên</span>
+                        </span>
+                        <!-- Thêm hidden input để giữ giá trị role -->
+                        <input type="hidden" th:field="*{role}" />
+                    </div>
                     <div th:if="${#fields.hasErrors('role')}" class="error-message"
                          th:errors="*{role}">Lỗi vai trò</div>
                 </div>

@@ -5,7 +5,8 @@
 package com.nvb.services;
 
 import com.nvb.dto.EvaluationCriteriaCollectionDTO;
-import com.nvb.pojo.EvaluationCriteriaCollection;
+import com.nvb.dto.EvaluationCriteriaCollectionListDTO;
+// import com.nvb.pojo.EvaluationCriteriaCollection; // Sẽ bị xóa
 import java.util.List;
 import java.util.Map;
 
@@ -15,18 +16,18 @@ import java.util.Map;
  */
 public interface EvaluationCriteriaCollectionService {
 
-    List<EvaluationCriteriaCollection> getEvaluationCriteriaCollections(Map<String, String> params);
+    List<EvaluationCriteriaCollectionDTO> getAll(Map<String, String> params);
 
-    List<EvaluationCriteriaCollection> getEvaluationCriteriaCollections(Map<String, String> params, boolean pagination);
-    
-    EvaluationCriteriaCollection getEvaluationCriteriaCollection(Map<String, String> params);
+    List<EvaluationCriteriaCollectionDTO> getAll(Map<String, String> params, boolean pagination);
 
-    EvaluationCriteriaCollection addOrUpdateEvaluationCriteriaCollection(EvaluationCriteriaCollectionDTO evaluationCriteriaCollectionDTO);
+    List<EvaluationCriteriaCollectionDTO> getAll(Map<String, String> params, boolean pagination, boolean details);
 
-    List<EvaluationCriteriaCollection> getEvaluationCriteriaCollectionsWithDetails(Map<String, String> params, boolean pagination);
+    EvaluationCriteriaCollectionDTO get(Map<String, String> params);
 
-    List<EvaluationCriteriaCollection> getEvaluationCriteriaCollectionsWithDetails(Map<String, String> params);
+    EvaluationCriteriaCollectionDTO addOrUpdate(EvaluationCriteriaCollectionDTO evaluationCriteriaCollectionDTO);
 
-    void deleteEvaluationCriteriaCollection(int id);
+    void delete(int id);
+
+    List<EvaluationCriteriaCollectionListDTO> getAllForListView(Map<String, String> params, boolean pagination);
 
 }

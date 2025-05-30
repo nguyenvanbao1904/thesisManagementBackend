@@ -5,7 +5,8 @@
 package com.nvb.services;
 
 import com.nvb.dto.CommitteeDTO;
-import com.nvb.pojo.Committee;
+import com.nvb.dto.CommitteeListDTO;
+// import com.nvb.pojo.Committee; // Removed
 import java.util.List;
 import java.util.Map;
 
@@ -15,15 +16,17 @@ import java.util.Map;
  */
 public interface CommitteeService {
 
-    List<Committee> getCommittees(Map<String, String> params);
+    List<CommitteeDTO> getAll(Map<String, String> params);
 
-    List<Committee> getCommittees(Map<String, String> params, boolean pagination);
+    List<CommitteeDTO> getAll(Map<String, String> params, boolean pagination);
 
-    List<Committee> getCommittees(Map<String, String> params, boolean pagination, boolean details);
+    List<CommitteeDTO> getAll(Map<String, String> params, boolean pagination, boolean details);
 
-    Committee getCommittee(Map<String, String> params);
+    List<CommitteeListDTO> getAllForListView(Map<String, String> params, boolean pagination);
 
-    Committee addOrUpdate(CommitteeDTO committeeDTO);
+    CommitteeDTO get(Map<String, String> params);
+
+    CommitteeDTO addOrUpdate(CommitteeDTO committeeDTO);
     
-    void deleteCommittee(int id);
+    void delete(int id);
 }

@@ -5,18 +5,22 @@
 package com.nvb.controllers;
 
 import com.nvb.dto.EvaluationCriteriaCollectionDTO;
-import com.nvb.dto.EvaluationCriteriaDTO;
-import com.nvb.pojo.EvaluationCriteriaCollection;
 import com.nvb.services.EvaluationCriteriaCollectionService;
+import com.nvb.validators.WebAppValidator;
+import jakarta.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -37,60 +41,54 @@ public class ApiEvaluationCriteriaCollectionController {
 
     @Autowired
     private EvaluationCriteriaCollectionService evaluationCriteriaCollectionService;
-
+    
     @Autowired
-    private ModelMapper modelMapper;
+    @Qualifier("evaluationCriteriaCollectionWebAppValidator")
+    private WebAppValidator evaluationCriteriaCollectionWebAppValidator;
+
+    @InitBinder()
+    public void initEvaluationCriteriaCollectionBinder(WebDataBinder binder) {
+        binder.setValidator(evaluationCriteriaCollectionWebAppValidator);
+    }
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void destroy(@PathVariable(value = "id") int id) {
-        evaluationCriteriaCollectionService.deleteEvaluationCriteriaCollection(id);
+        evaluationCriteriaCollectionService.delete(id);
     }
 
     @GetMapping("")
     public ResponseEntity<List<EvaluationCriteriaCollectionDTO>> list(@RequestParam Map<String, String> params) {
-        List<EvaluationCriteriaCollection> lsEcc = evaluationCriteriaCollectionService.getEvaluationCriteriaCollectionsWithDetails(params, true);
-        List<EvaluationCriteriaCollectionDTO> rs = lsEcc.stream()
-                .map(ecc -> {
-                    EvaluationCriteriaCollectionDTO eccd = new EvaluationCriteriaCollectionDTO();
-                    eccd.setId(ecc.getId());
-                    eccd.setDescription(ecc.getDescription());
-                    eccd.setName(ecc.getName());
-                    eccd.setCreatedBy(ecc.getCreatedBy());
-
-                    eccd.setEvaluationCriterias(
-                            ecc.getEvaluationCriteriaCollectionDetails().stream()
-                                    .map(detail -> {
-                                        EvaluationCriteriaDTO dto = modelMapper.map(detail.getEvaluationCriteria(), EvaluationCriteriaDTO.class);
-                                        dto.setWeight(detail.getWeight());
-                                        return dto;
-                                    })
-                                    .toList()
-                    );
-
-                    return eccd;
-                })
-                .toList();
-
-        return new ResponseEntity<>(rs, HttpStatus.OK);
+        List<EvaluationCriteriaCollectionDTO> collections = evaluationCriteriaCollectionService.getAll(params, true);
+        return new ResponseEntity<>(collections, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public EvaluationCriteriaCollectionDTO update(
+    public ResponseEntity<EvaluationCriteriaCollectionDTO> update(
             @PathVariable int id,
-            @RequestBody EvaluationCriteriaCollectionDTO dto) {
-
-        if (id == dto.getId()) {
-            evaluationCriteriaCollectionService.addOrUpdateEvaluationCriteriaCollection(dto);
-
+            @RequestBody @Valid EvaluationCriteriaCollectionDTO dto,
+            BindingResult bindingResult) {
+        if (id != dto.getId() || bindingResult.hasErrors()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return dto;
+        EvaluationCriteriaCollectionDTO updatedDto = evaluationCriteriaCollectionService.addOrUpdate(dto);
+        return new ResponseEntity<>(updatedDto, HttpStatus.OK);
     }
 
     @PostMapping("")
-    public EvaluationCriteriaCollectionDTO create(
-            @RequestBody EvaluationCriteriaCollectionDTO dto) {
-        evaluationCriteriaCollectionService.addOrUpdateEvaluationCriteriaCollection(dto);
-        return dto;
+    public ResponseEntity<EvaluationCriteriaCollectionDTO> create(
+            @RequestBody @Valid EvaluationCriteriaCollectionDTO dto,
+            BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        EvaluationCriteriaCollectionDTO createdDto = evaluationCriteriaCollectionService.addOrUpdate(dto);
+        return new ResponseEntity<>(createdDto, HttpStatus.CREATED);
+    }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<EvaluationCriteriaCollectionDTO> retrieve(@PathVariable(value = "id") int id) {
+        EvaluationCriteriaCollectionDTO evaluationCriteriaCollectionDTO = evaluationCriteriaCollectionService.get(new HashMap<>(Map.of("id", String.valueOf(id))));
+        return new ResponseEntity<>(evaluationCriteriaCollectionDTO, HttpStatus.OK);
     }
 }

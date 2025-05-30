@@ -5,6 +5,8 @@
 package com.nvb.services.impl;
 
 import com.nvb.dto.CommitteeDTO;
+import com.nvb.dto.CommitteeListDTO;
+import com.nvb.dto.CommitteeMemberDTO;
 import com.nvb.pojo.AcademicStaff;
 import com.nvb.pojo.Committee;
 import com.nvb.pojo.CommitteeMember;
@@ -13,15 +15,24 @@ import com.nvb.pojo.CommitteeMemberRole;
 import com.nvb.pojo.CommitteeStatus;
 import com.nvb.pojo.Lecturer;
 import com.nvb.pojo.Thesis;
+import com.nvb.repositories.AcademicsStaffRepository;
 import com.nvb.repositories.CommitteeRepository;
-import com.nvb.services.AcademicsStaffService;
+import com.nvb.repositories.LecturerRepository;
+import com.nvb.repositories.ThesesRepository;
 import com.nvb.services.CommitteeService;
-import com.nvb.services.LecturerService;
-import com.nvb.services.ThesesService;
+import jakarta.persistence.EntityNotFoundException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,41 +51,104 @@ public class CommitteeServiceImpl implements CommitteeService {
     private CommitteeRepository committeeRepository;
 
     @Autowired
-    private AcademicsStaffService academicsStaffService;
+    private AcademicsStaffRepository academicsStaffRepository;
 
     @Autowired
-    private ThesesService thesesService;
+    private LecturerRepository lecturerRepository;
 
     @Autowired
-    private LecturerService lecturerService;
+    private ThesesRepository thesesRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Override
-    public List<Committee> getCommittees(Map<String, String> params) {
-        return getCommittees(params, false);
+    public List<CommitteeDTO> getAll(Map<String, String> params) {
+        return getAll(params, false, false);
     }
 
     @Override
-    public List<Committee> getCommittees(Map<String, String> params, boolean pagination) {
-        return getCommittees(params, pagination, false);
+    public List<CommitteeDTO> getAll(Map<String, String> params, boolean pagination) {
+        return getAll(params, pagination, false);
     }
 
     @Override
-    public Committee addOrUpdate(CommitteeDTO committeeDTO) {
+    public List<CommitteeDTO> getAll(Map<String, String> params, boolean pagination, boolean details) {
+        return committeeRepository.getAll(params, pagination, details)
+                .stream().map(this::toCommitteeDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CommitteeListDTO> getAllForListView(Map<String, String> params, boolean pagination) {
+        return committeeRepository.getAll(params, pagination, false)
+                .stream().map(this::toCommitteeListDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public CommitteeDTO get(Map<String, String> params) {
+        Committee committee = committeeRepository.get(params);
+        return committee != null ? toCommitteeDTO(committee) : null;
+    }
+
+    private CommitteeMemberRole parseRole(String roleStr) {
+        if (roleStr == null) {
+            throw new IllegalArgumentException("Chuỗi vai trò không được null");
+        }
+        switch (roleStr.toUpperCase()) {
+            case "CHAIRMAN":
+                return CommitteeMemberRole.ROLE_CHAIRMAN;
+            case "SECRETARY":
+                return CommitteeMemberRole.ROLE_SECRETARY;
+            case "REVIEWER":
+                return CommitteeMemberRole.ROLE_REVIEWER;
+            case "MEMBER":
+                return CommitteeMemberRole.ROLE_MEMBER;
+            default:
+                return CommitteeMemberRole.valueOf(roleStr.toUpperCase());
+        }
+    }
+
+    @Override
+    public CommitteeDTO addOrUpdate(CommitteeDTO committeeDTO) {
         Committee committee;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         AcademicStaff academicStaff = null;
 
         if (authentication != null && authentication.isAuthenticated()) {
-            academicStaff = academicsStaffService.getAcademicStaff(Map.of("username", authentication.getName()));
+            academicStaff = academicsStaffRepository.get(Map.of("username", authentication.getName()));
         }
 
+        // Chuẩn bị map Lecturer
+        Set<Integer> dtoLecturerIds = Optional.ofNullable(committeeDTO.getMemberLecturerId())
+                .map(ids -> Arrays.stream(ids).filter(Objects::nonNull).collect(Collectors.toSet()))
+                .orElse(Collections.emptySet());
+
+        Map<Integer, Lecturer> lecturerMap = dtoLecturerIds.isEmpty() ? new HashMap<>()
+                : lecturerRepository.getByIds(new ArrayList<>(dtoLecturerIds)).stream()
+                        .collect(Collectors.toMap(Lecturer::getId, l -> l));
+
+        // Chuan bi map Thesis
+        Set<Integer> dtoThesesIds = Optional.ofNullable(committeeDTO.getThesesIds())
+                .map(ids -> Arrays.stream(ids).filter(Objects::nonNull).collect(Collectors.toSet()))
+                .orElse(Collections.emptySet());
+
+        Map<Integer, Thesis> thesesMap = dtoThesesIds.isEmpty() ? new HashMap<>()
+                : thesesRepository.getByIds(new ArrayList<>(dtoThesesIds)).stream()
+                        .collect(Collectors.toMap(Thesis::getId, t -> t));
+
         if (committeeDTO.getId() == null) {
+
             committee = new Committee();
             committee.setStatus(CommitteeStatus.LOCKED.toString());
             committee.setCommitteeMembers(new HashSet<>());
             committee.setTheses(new HashSet<>());
+            committee.setIsActive(true);
+
         } else {
-            committee = committeeRepository.getCommittee(new HashMap<>(Map.of("id", String.valueOf(committeeDTO.getId()))));
+            committee = committeeRepository.get(Map.of("id", String.valueOf(committeeDTO.getId())));
+            if (committee == null) {
+                throw new EntityNotFoundException("Không tìm thấy hội đồng với ID: " + committeeDTO.getId());
+            }
 
             // Xóa các thành viên cũ khỏi collection
             committee.getCommitteeMembers().clear();
@@ -86,90 +160,105 @@ public class CommitteeServiceImpl implements CommitteeService {
             }
         }
 
+        committee.setLocation(committeeDTO.getLocation());
         committee.setCreatedBy(academicStaff);
         committee.setDefenseDate(committeeDTO.getDefenseDate());
-        committee.setIsActive(true);
-        committee.setLocation(committeeDTO.getLocation());
 
-        // Lưu trước để lấy ID
+        // Lưu Committee trước để có ID
         committee = committeeRepository.addOrUpdate(committee);
 
-        // Tạo các thành viên mới
         if (committeeDTO.getMemberLecturerId() != null && committeeDTO.getMemberRole() != null) {
             for (int i = 0; i < committeeDTO.getMemberLecturerId().length; i++) {
-                // Chỉ thêm các giảng viên được chọn
-                if (committeeDTO.getMemberLecturerId()[i] != null) {
-                    CommitteeMember member = new CommitteeMember();
-
-                    String roleStr = committeeDTO.getMemberRole()[i];
-                    CommitteeMemberRole role;
-
-                    try {
-                        switch (roleStr) {
-                            case "CHAIRMAN":
-                                role = CommitteeMemberRole.ROLE_CHAIRMAN;
-                                break;
-                            case "SECRETARY":
-                                role = CommitteeMemberRole.ROLE_SECRETARY;
-                                break;
-                            case "REVIEWER":
-                                role = CommitteeMemberRole.ROLE_REVIEWER;
-                                break;
-                            default:
-                                role = CommitteeMemberRole.ROLE_MEMBER;
-                                break;
-                        }
-
-                        member.setRole(role.name());
-                    } catch (IllegalArgumentException e) {
-                        throw new IllegalArgumentException("Invalid committee role: " + roleStr);
-                    }
-
-                    // Tạo khóa chính tổng hợp
-                    CommitteeMemberPK pk = new CommitteeMemberPK();
-                    pk.setCommitteeId(committee.getId());
-                    pk.setLecturerId(committeeDTO.getMemberLecturerId()[i]);
-                    member.setCommitteeMemberPK(pk);
-
-                    // Lấy đối tượng Lecturer
-                    Lecturer lecturer = lecturerService.getLecturerWithDetails(Map.of("id", committeeDTO.getMemberLecturerId()[i].toString()));
-                    member.setLecturer(lecturer);
-
-                    // Thiết lập mối quan hệ
-                    member.setCommittee(committee);
-
-                    committee.getCommitteeMembers().add(member);
+                Integer lecturerId = committeeDTO.getMemberLecturerId()[i];
+                String roleStr = committeeDTO.getMemberRole()[i];
+                if (lecturerId == null || roleStr == null) {
+                    continue;
                 }
+
+                Lecturer lecturer = lecturerMap.get(lecturerId);
+                if (lecturer == null) {
+                    throw new EntityNotFoundException("Không tìm thấy giảng viên với ID: " + lecturerId);
+                }
+
+                CommitteeMember member = new CommitteeMember();
+                // Sử dụng ID của committee đã lưu
+                member.setCommitteeMemberPK(new CommitteeMemberPK(committee.getId(), lecturerId));
+                member.setRole(parseRole(roleStr).name());
+                member.setLecturer(lecturer);
+                member.setCommittee(committee);
+                committee.getCommitteeMembers().add(member);
             }
         }
 
-        // Tạo Set cho theses
-        if (committeeDTO.getThesesIds() != null && committeeDTO.getThesesIds().length > 0) {
+        // Thêm luận văn
+        if (committeeDTO.getThesesIds() != null) {
             for (Integer thesisId : committeeDTO.getThesesIds()) {
-                Thesis thesis = thesesService.getThesis(Map.of("id", thesisId.toString()));
+                if (thesisId == null) {
+                    continue;
+                }
+                Thesis thesis = thesesMap.get(thesisId);
                 if (thesis != null) {
                     thesis.setCommitteeId(committee);
                     committee.getTheses().add(thesis);
+                } else {
+                    System.err.println("Cảnh báo: Không tìm thấy luận văn với ID " + thesisId);
                 }
             }
         }
 
-        // Cập nhật lại committee sau khi đã thiết lập các mối quan hệ
-        return committeeRepository.addOrUpdate(committee);
+        Committee savedCommittee = committeeRepository.addOrUpdate(committee);
+        return this.toCommitteeDTO(savedCommittee);
     }
 
     @Override
-    public Committee getCommittee(Map<String, String> params) {
-        return committeeRepository.getCommittee(params);
+    public void delete(int id) {
+        committeeRepository.delete(id);
     }
 
-    @Override
-    public List<Committee> getCommittees(Map<String, String> params, boolean pagination, boolean details) {
-        return committeeRepository.getCommittees(params, pagination, details);
+    private CommitteeDTO toCommitteeDTO(Committee committee) {
+        CommitteeDTO dto = new CommitteeDTO();
+
+        dto.setId(committee.getId());
+        dto.setDefenseDate(committee.getDefenseDate());
+        dto.setLocation(committee.getLocation());
+        dto.setStatus(committee.getStatus());
+        dto.setIsActive(committee.isIsActive());
+
+        // Map createdBy
+        if (committee.getCreatedBy() != null) {
+            dto.setCreatedByName(committee.getCreatedBy().getFirstName() + " " + committee.getCreatedBy().getLastName());
+        }
+
+        // Map committee members
+        if (committee.getCommitteeMembers() != null) {
+            List<CommitteeMemberDTO> memberDTOs = committee.getCommitteeMembers().stream()
+                    .map(member -> {
+                        CommitteeMemberDTO memberDTO = new CommitteeMemberDTO();
+                        memberDTO.setLecturerId(member.getLecturer().getId());
+                        memberDTO.setLecturerName(member.getLecturer().getFirstName() + " " + member.getLecturer().getLastName());
+                        memberDTO.setRole(member.getRole());
+                        return memberDTO;
+                    })
+                    .collect(Collectors.toList());
+            dto.setCommitteeMembers(memberDTOs);
+        }
+
+        // Map thesis IDs
+        if (committee.getTheses() != null) {
+            List<Integer> thesisIds = committee.getTheses().stream()
+                    .map(Thesis::getId)
+                    .collect(Collectors.toList());
+            dto.setThesesIds(thesisIds.toArray(new Integer[0]));
+        }
+
+        return dto;
     }
 
-    @Override
-    public void deleteCommittee(int id) {
-        committeeRepository.deleteCommittee(id);
+    private CommitteeListDTO toCommitteeListDTO(Committee committee) {
+        CommitteeListDTO dto = modelMapper.map(committee, CommitteeListDTO.class);
+        if (committee.getCreatedBy() != null && committee.getCreatedBy() != null) {
+            dto.setCreatedByName(committee.getCreatedBy().getFirstName() + " " + committee.getCreatedBy().getLastName());
+        }
+        return dto;
     }
 }

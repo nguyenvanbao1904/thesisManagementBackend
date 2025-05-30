@@ -5,6 +5,7 @@
 package com.nvb.repositories;
 
 import com.nvb.pojo.Student;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,6 +13,7 @@ import java.util.Map;
  * @author nguyenvanbao
  */
 public interface StudentRepository {
-    Student getStudent(Map<String, String> params);
-    Student getStudentWithDetails(Map<String, String> params);
+    Student get(Map<String, String> params, boolean details);
+    Student addOrUpdate(Student student);
+    List<Student> getAll(Map<String, String> params);
 }

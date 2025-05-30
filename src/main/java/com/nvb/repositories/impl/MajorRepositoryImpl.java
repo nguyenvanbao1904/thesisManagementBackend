@@ -6,6 +6,7 @@ package com.nvb.repositories.impl;
 
 import com.nvb.pojo.Major;
 import com.nvb.repositories.MajorRepository;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -33,7 +34,7 @@ public class MajorRepositoryImpl implements MajorRepository{
     private LocalSessionFactoryBean factory;
     
     @Override
-    public Major addOrUpdateMajor(Major major) {
+    public Major addOrUpdate(Major major) {
         Session s = factory.getObject().getCurrentSession();
         if (major.getId() == null) {
             s.persist(major);
@@ -44,7 +45,7 @@ public class MajorRepositoryImpl implements MajorRepository{
     }
 
     @Override
-    public List<Major> getMajors(Map<String, String> params) {
+    public List<Major> getAll(Map<String, String> params) {
         Session s = factory.getObject().getCurrentSession();
         
         CriteriaBuilder buider = s.getCriteriaBuilder();
@@ -88,15 +89,44 @@ public class MajorRepositoryImpl implements MajorRepository{
     }
 
     @Override
-    public Major getMajorById(int majorId) {
-        Session s = this.factory.getObject().getCurrentSession();
-        return s.get(Major.class, majorId);
+    public Major get(Map<String, String> params) {
+        Session s = factory.getObject().getCurrentSession();
+        
+        CriteriaBuilder buider = s.getCriteriaBuilder();
+        CriteriaQuery<Major> query = buider.createQuery(Major.class);
+        Root root = query.from(Major.class);
+        query.select(root);
+        
+        if (params != null) {
+            
+            List<Predicate> predicates = new ArrayList<>();
+
+            String kw = params.get("name");
+            if (kw != null && !kw.isEmpty()) {
+                predicates.add(buider.equal(root.get("name"), kw));
+            }
+            
+            String id = params.get("id");
+            if (id != null && !id.isEmpty()) {
+                predicates.add(buider.equal(root.get("id"), id));
+            }
+            
+            query.where(predicates.toArray(Predicate[]::new));
+           
+        }
+        Query q = s.createQuery(query);
+        
+        try{
+            return (Major) q.getSingleResult();
+        }catch(NoResultException ex){
+            return null;
+        }
     }
 
     @Override
-    public void deleteMajor(int id){
+    public void delete(int id){
         Session s = this.factory.getObject().getCurrentSession();
-        s.remove(this.getMajorById(id));
+        s.remove(s.get(Major.class, id));
     }
     
 }

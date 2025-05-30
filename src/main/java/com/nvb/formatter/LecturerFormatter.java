@@ -1,7 +1,7 @@
 package com.nvb.formatter;
 
 import com.nvb.pojo.Lecturer;
-import com.nvb.services.LecturerService;
+import com.nvb.repositories.LecturerRepository;
 import java.text.ParseException;
 import java.util.Locale;
 import java.util.Map;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class LecturerFormatter implements Formatter<Lecturer> {
 
     @Autowired
-    private LecturerService lecturerService;
+    private LecturerRepository lecturerRepository;
 
     @Override
     public String print(Lecturer object, Locale locale) {
@@ -28,7 +28,6 @@ public class LecturerFormatter implements Formatter<Lecturer> {
         if (id == null || id.trim().isEmpty()) {
             return null;
         }
-        Lecturer lecturer = lecturerService.getLecturerWithDetails(Map.of("id", id));
-        return lecturer;
+        return lecturerRepository.get(Map.of("id", id));
     }
 }

@@ -13,9 +13,9 @@ import java.util.Map;
  * @author nguyenvanbao
  */
 public interface UserRepository {
-    User getUser(Map<String,String> params);
-    User addOrUpdateUser(User u);
+    User get(Map<String,String> params);
+    User addOrUpdate(User u);
     User authenticate(String username, String password);
-    List<User> getUsers(Map<String,String> params);
-    void deleteUser(User u);
+    List<User> getAll(Map<String,String> params, boolean pagination, boolean details);
+    void delete(User u);
 }

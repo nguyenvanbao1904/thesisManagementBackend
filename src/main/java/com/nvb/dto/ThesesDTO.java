@@ -4,13 +4,6 @@
  */
 package com.nvb.dto;
 
-import com.nvb.pojo.AcademicStaff;
-import com.nvb.pojo.Committee;
-import com.nvb.pojo.EvaluationCriteriaCollection;
-import com.nvb.pojo.EvaluationFinalScore;
-import com.nvb.pojo.EvaluationScore;
-import com.nvb.pojo.Lecturer;
-import com.nvb.pojo.Student;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.Set;
@@ -23,38 +16,56 @@ import org.springframework.web.multipart.MultipartFile;
 public class ThesesDTO {
 
     private Integer id;
+    
     @NotBlank(message = "{theses.title.notnullMsg}")
     private String title;
+    
     @NotBlank(message = "{theses.description.notnullMsg}")
     private String description;
+    
     private String status;
+    
     @NotNull(message = "{theses.lecturers.notnullMsg}")
-    private Set<Lecturer> lecturers;
+    private Set<Integer> lecturerIds;
+    
     @NotNull(message = "{theses.students.notnullMsg}")
-    private Set<Student> students;
-    private Set<EvaluationScore> evaluationScores;
-    private EvaluationFinalScore evaluationFinalScore;
-    private AcademicStaff createdBy;
-    private Committee committeeId;
+    private Set<Integer> studentIds;
+    
+    private Integer committeeId;
+    
     @NotNull(message = "{theses.evaluationCriteriaCollection.notnullMsg}")
-    private EvaluationCriteriaCollection evaluationCriteriaCollectionId;
+    private Integer evaluationCriteriaCollectionId;
+    
     @NotNull(message = "{theses.reviewerId.notnullMsg}")
-    private Lecturer reviewerId;
+    private Integer reviewerId;
+    
     private MultipartFile file;
+    
+    private String fileUrl;
+    
+    // Thông tin bổ sung cho hiển thị
+    private String committeeName;
+    private String evaluationCriteriaCollectionName;
+    private String reviewerName;
+    private Float averageScore;
 
-    public ThesesDTO(Integer id, String title, String description, Set<Lecturer> lecturers, Set<Student> students, Committee committeeId, EvaluationCriteriaCollection evaluationCriteriaCollectionId, Lecturer reviewerId, MultipartFile file) {
+    public ThesesDTO() {
+    }
+
+    public ThesesDTO(Integer id, String title, String description, String status, 
+                    Set<Integer> lecturerIds, Set<Integer> studentIds, 
+                    Integer committeeId, Integer evaluationCriteriaCollectionId, 
+                    Integer reviewerId, MultipartFile file) {
         this.id = id;
         this.title = title;
         this.description = description;
-        this.lecturers = lecturers;
-        this.students = students;
+        this.status = status;
+        this.lecturerIds = lecturerIds;
+        this.studentIds = studentIds;
         this.committeeId = committeeId;
         this.evaluationCriteriaCollectionId = evaluationCriteriaCollectionId;
         this.reviewerId = reviewerId;
         this.file = file;
-    }
-
-    public ThesesDTO() {
     }
 
     public Integer getId() {
@@ -89,67 +100,43 @@ public class ThesesDTO {
         this.status = status;
     }
 
-    public Set<Lecturer> getLecturers() {
-        return lecturers;
+    public Set<Integer> getLecturerIds() {
+        return lecturerIds;
     }
 
-    public void setLecturers(Set<Lecturer> lecturers) {
-        this.lecturers = lecturers;
+    public void setLecturerIds(Set<Integer> lecturerIds) {
+        this.lecturerIds = lecturerIds;
     }
 
-    public Set<Student> getStudents() {
-        return students;
+    public Set<Integer> getStudentIds() {
+        return studentIds;
     }
 
-    public void setStudents(Set<Student> students) {
-        this.students = students;
+    public void setStudentIds(Set<Integer> studentIds) {
+        this.studentIds = studentIds;
     }
 
-    public Set<EvaluationScore> getEvaluationScores() {
-        return evaluationScores;
-    }
-
-    public void setEvaluationScores(Set<EvaluationScore> evaluationScores) {
-        this.evaluationScores = evaluationScores;
-    }
-
-    public EvaluationFinalScore getEvaluationFinalScore() {
-        return evaluationFinalScore;
-    }
-
-    public void setEvaluationFinalScore(EvaluationFinalScore evaluationFinalScore) {
-        this.evaluationFinalScore = evaluationFinalScore;
-    }
-
-    public AcademicStaff getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(AcademicStaff createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Committee getCommitteeId() {
+    public Integer getCommitteeId() {
         return committeeId;
     }
 
-    public void setCommitteeId(Committee committeeId) {
+    public void setCommitteeId(Integer committeeId) {
         this.committeeId = committeeId;
     }
 
-    public EvaluationCriteriaCollection getEvaluationCriteriaCollectionId() {
+    public Integer getEvaluationCriteriaCollectionId() {
         return evaluationCriteriaCollectionId;
     }
 
-    public void setEvaluationCriteriaCollectionId(EvaluationCriteriaCollection evaluationCriteriaCollectionId) {
+    public void setEvaluationCriteriaCollectionId(Integer evaluationCriteriaCollectionId) {
         this.evaluationCriteriaCollectionId = evaluationCriteriaCollectionId;
     }
 
-    public Lecturer getReviewerId() {
+    public Integer getReviewerId() {
         return reviewerId;
     }
 
-    public void setReviewerId(Lecturer reviewerId) {
+    public void setReviewerId(Integer reviewerId) {
         this.reviewerId = reviewerId;
     }
 
@@ -161,19 +148,59 @@ public class ThesesDTO {
         this.file = file;
     }
 
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public String getCommitteeName() {
+        return committeeName;
+    }
+
+    public void setCommitteeName(String committeeName) {
+        this.committeeName = committeeName;
+    }
+
+    public String getEvaluationCriteriaCollectionName() {
+        return evaluationCriteriaCollectionName;
+    }
+
+    public void setEvaluationCriteriaCollectionName(String evaluationCriteriaCollectionName) {
+        this.evaluationCriteriaCollectionName = evaluationCriteriaCollectionName;
+    }
+
+    public String getReviewerName() {
+        return reviewerName;
+    }
+
+    public void setReviewerName(String reviewerName) {
+        this.reviewerName = reviewerName;
+    }
+
+    public Float getAverageScore() {
+        return averageScore;
+    }
+
+    public void setAverageScore(Float averageScore) {
+        this.averageScore = averageScore;
+    }
+
     @Override
     public String toString() {
-        return "ThesesDTO{"
-                + "id=" + id
-                + ", title='" + title + '\''
-                + ", description='" + description + '\''
-                + ", status='" + status + '\''
-                + ", lecturers=" + (lecturers != null ? lecturers.size() : "null")
-                + ", students=" + (students != null ? students.size() : "null")
-                + ", committeeId=" + (committeeId != null ? committeeId.getId() : "null")
-                + ", evaluationCriteriaCollectionId=" + (evaluationCriteriaCollectionId != null ? evaluationCriteriaCollectionId.getId() : "null")
-                + ", reviewerId=" + (reviewerId != null ? reviewerId.getId() : "null")
-                + ", file=" + (file != null ? file.getOriginalFilename() : "null")
-                + '}';
+        return "ThesesDTO{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", status='" + status + '\'' +
+                ", lecturerIds=" + (lecturerIds != null ? lecturerIds.size() : "null") +
+                ", studentIds=" + (studentIds != null ? studentIds.size() : "null") +
+                ", committeeId=" + committeeId +
+                ", evaluationCriteriaCollectionId=" + evaluationCriteriaCollectionId +
+                ", reviewerId=" + reviewerId +
+                ", file=" + (file != null ? file.getOriginalFilename() : "null") +
+                '}';
     }
 }

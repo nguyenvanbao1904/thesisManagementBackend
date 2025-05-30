@@ -6,7 +6,6 @@ package com.nvb.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -35,6 +34,8 @@ public class UserDTO {
     // Thông tin cho sinh viên
     private String studentId;
     private Integer majorId;
+    private String majorName;
+    private Integer userId;
     
     // Thông tin cho giảng viên
     private String academicTitle;
@@ -43,23 +44,8 @@ public class UserDTO {
     public UserDTO() {
     }
 
-    public UserDTO(Integer id, String username, String password, String firstName, String lastName, String email, String phone, String avatarUrl, String role, MultipartFile file, String studentId, Integer majorId, String academicTitle, String academicDegree) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.avatarUrl = avatarUrl;
-        this.role = role;
-        this.file = file;
-        this.studentId = studentId;
-        this.majorId = majorId;
-        this.academicTitle = academicTitle;
-        this.academicDegree = academicDegree;
-    }
-
-    public UserDTO(Integer id, String username, String firstName, String lastName, String email, String phone, String avatarUrl, String role, MultipartFile file, String studentId, Integer majorId, String academicTitle, String academicDegree) {
+    public UserDTO(Integer id, String username, String firstName, String lastName, String email, 
+                 String phone, String avatarUrl, String role) {
         this.id = id;
         this.username = username;
         this.firstName = firstName;
@@ -68,6 +54,19 @@ public class UserDTO {
         this.phone = phone;
         this.avatarUrl = avatarUrl;
         this.role = role;
+    }
+
+    // Constructor cho tạo mới user
+    public UserDTO(String username, String password, String firstName, String lastName, String email, 
+                 String phone, String role, MultipartFile file, String studentId, Integer majorId, 
+                 String academicTitle, String academicDegree) {
+        this.username = username;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phone = phone;
+        this.role = role;
         this.file = file;
         this.studentId = studentId;
         this.majorId = majorId;
@@ -75,7 +74,21 @@ public class UserDTO {
         this.academicDegree = academicDegree;
     }
 
-    
+    // Constructor cho cập nhật user
+    public UserDTO(Integer id, String firstName, String lastName, String email, 
+                 String phone, MultipartFile file, String studentId, Integer majorId, 
+                 String academicTitle, String academicDegree) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phone = phone;
+        this.file = file;
+        this.studentId = studentId;
+        this.majorId = majorId;
+        this.academicTitle = academicTitle;
+        this.academicDegree = academicDegree;
+    }
     
     public Integer getId() {
         return id;
@@ -181,6 +194,14 @@ public class UserDTO {
         this.majorId = majorId;
     }
 
+    public String getMajorName() {
+        return majorName;
+    }
+
+    public void setMajorName(String majorName) {
+        this.majorName = majorName;
+    }
+
     public String getAcademicTitle() {
         return academicTitle;
     }
@@ -197,8 +218,27 @@ public class UserDTO {
         this.academicDegree = academicDegree;
     }
 
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
+
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
+
     @Override
     public String toString() {
-        return "UserDTO{" + "username=" + username + ", role=" + role + '}';
+        return "UserDTO{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", role='" + role + '\'' +
+                '}';
     }
 }

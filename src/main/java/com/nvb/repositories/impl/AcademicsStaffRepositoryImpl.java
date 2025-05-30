@@ -7,10 +7,9 @@ package com.nvb.repositories.impl;
 import com.nvb.pojo.AcademicStaff;
 import com.nvb.repositories.AcademicsStaffRepository;
 import jakarta.persistence.NoResultException;
-import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -28,44 +27,74 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Repository
 @Transactional
-public class AcademicsStaffRepositoryImpl implements AcademicsStaffRepository{
-    
+public class AcademicsStaffRepositoryImpl implements AcademicsStaffRepository {
+
     @Autowired
     private LocalSessionFactoryBean factory;
 
     @Override
-    public AcademicStaff getAcademicStaff(Map<String, String> params) {
+    public List<AcademicStaff> getAll(Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<AcademicStaff> query = builder.createQuery(AcademicStaff.class);
         Root<AcademicStaff> root = query.from(AcademicStaff.class);
+
+        if (params != null) {
+            if (Boolean.parseBoolean(params.getOrDefault("fetchCommittees", "false"))) {
+                root.fetch("committees", JoinType.LEFT);
+            }
+            if (Boolean.parseBoolean(params.getOrDefault("fetchEvaluationCriteriaCollections", "false"))) {
+                root.fetch("evaluationCriteriaCollections", JoinType.LEFT);
+            }
+            if (Boolean.parseBoolean(params.getOrDefault("fetchTheses", "false"))) {
+                root.fetch("theses", JoinType.LEFT);
+            }
+        }
+
         query.select(root);
+        return s.createQuery(query).getResultList();
+    }
+
+    @Override
+    public AcademicStaff get(Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<AcademicStaff> query = builder.createQuery(AcademicStaff.class);
+        Root<AcademicStaff> root = query.from(AcademicStaff.class);
 
         List<Predicate> predicates = new ArrayList<>();
 
         if (params != null) {
             String id = params.get("id");
             if (id != null && !id.isEmpty()) {
-                predicates.add(builder.equal(root.get("id"), id));
+                predicates.add(builder.equal(root.get("id"), Integer.parseInt(id)));
+            }
+
+            String username = params.get("username");
+            if (username != null && !username.isEmpty()) {
+                predicates.add(builder.equal(root.get("username"), username));
             }
         }
-        
-        String username = params.get("username");
-        if (username != null && !username.isEmpty()) {
-            Join<Object, Object> userJoin = root.join("user");
-            predicates.add(builder.equal(userJoin.get("username"), username));
+
+        if (params != null) {
+            if (Boolean.parseBoolean(params.getOrDefault("fetchCommittees", "false"))) {
+                root.fetch("committees", JoinType.LEFT);
+            }
+            if (Boolean.parseBoolean(params.getOrDefault("fetchEvaluationCriteriaCollections", "false"))) {
+                root.fetch("evaluationCriteriaCollections", JoinType.LEFT);
+            }
+            if (Boolean.parseBoolean(params.getOrDefault("fetchTheses", "false"))) {
+                root.fetch("theses", JoinType.LEFT);
+            }
         }
 
         query.where(predicates.toArray(new Predicate[0]));
+        query.select(root);
 
-        Query q = s.createQuery(query);
         try {
-            return (AcademicStaff) q.getSingleResult();
+            return s.createQuery(query).getSingleResult();
         } catch (NoResultException ex) {
             return null;
-        } catch (org.hibernate.NonUniqueResultException ex) {
-            System.err.println(ex.getMessage());
-            return null; 
         }
     }
 

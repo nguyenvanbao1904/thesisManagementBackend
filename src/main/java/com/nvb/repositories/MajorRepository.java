@@ -13,8 +13,8 @@ import java.util.Map;
  * @author nguyenvanbao
  */
 public interface MajorRepository {
-    Major addOrUpdateMajor(Major major);
-    List<Major> getMajors(Map<String, String> params);
-    Major getMajorById(int majorId);
-    void deleteMajor(int id);
+    Major addOrUpdate(Major major);
+    List<Major> getAll(Map<String, String> params);
+    Major get(Map<String, String> params);
+    void delete(int id);
 }

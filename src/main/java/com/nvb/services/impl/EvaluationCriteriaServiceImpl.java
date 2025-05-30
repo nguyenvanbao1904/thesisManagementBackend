@@ -10,6 +10,8 @@ import com.nvb.repositories.EvaluationCriteriaRepository;
 import com.nvb.services.EvaluationCriteriaService;
 import java.util.List;
 import java.util.Map;
+import org.modelmapper.ModelMapper;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,34 +27,44 @@ public class EvaluationCriteriaServiceImpl implements EvaluationCriteriaService{
     @Autowired
     private EvaluationCriteriaRepository evaluationCriteriaRepository;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
     @Override
-    public List<EvaluationCriteria> getEvaluationCriterias(Map<String, String> params) {
-        return this.getEvaluationCriterias(params, false);
+    public List<EvaluationCriteriaDTO> getAll(Map<String, String> params) {
+        return getAll(params, false);
     }
 
     @Override
-    public List<EvaluationCriteria> getEvaluationCriterias(Map<String, String> params, boolean pagination) {
-        return evaluationCriteriaRepository.getEvaluationCriterias(params, pagination);
+    public List<EvaluationCriteriaDTO> getAll(Map<String, String> params, boolean pagination) {
+        return evaluationCriteriaRepository.getAll(params, pagination)
+            .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     @Override
-    public EvaluationCriteria getEvaluationCriteria(Map<String, String> params) {
-        return evaluationCriteriaRepository.getEvaluationCriteria(params);
+    public EvaluationCriteriaDTO get(Map<String, String> params) {
+        EvaluationCriteria entity = evaluationCriteriaRepository.get(params);
+        return entity != null ? toDTO(entity) : null;
     }
 
     @Override
-    public EvaluationCriteria addOrUpdateEvaluationCriteria(EvaluationCriteriaDTO evaluationCriteriaDTO) {
-        EvaluationCriteria evaluationCriteria = new EvaluationCriteria();
-        evaluationCriteria.setName(evaluationCriteriaDTO.getName());
-        evaluationCriteria.setDescription(evaluationCriteriaDTO.getDescription());
-        evaluationCriteria.setMaxPoint(evaluationCriteriaDTO.getMaxPoint());
-        evaluationCriteria.setId(evaluationCriteriaDTO.getId());
-        return evaluationCriteriaRepository.addOrUpdateEvaluationCriteria(evaluationCriteria);
+    public EvaluationCriteriaDTO addOrUpdate(EvaluationCriteriaDTO evaluationCriteriaDTO) {
+        EvaluationCriteria entity;
+        if (evaluationCriteriaDTO.getId() == null) {
+            entity = new EvaluationCriteria();
+        } else {
+            entity = evaluationCriteriaRepository.get(Map.of("id", evaluationCriteriaDTO.getId().toString()));
+        }
+        modelMapper.map(evaluationCriteriaDTO, entity);
+        return toDTO(evaluationCriteriaRepository.addOrUpdate(entity));
     }
 
     @Override
-    public void deleteEvaluationCriteria(int id) {
-        evaluationCriteriaRepository.deleteEvaluationCriteria(id);
+    public void delete(int id) {
+        evaluationCriteriaRepository.delete(id);
     }
     
+    private EvaluationCriteriaDTO toDTO(EvaluationCriteria entity) {
+        return modelMapper.map(entity, EvaluationCriteriaDTO.class);
+    }
 }

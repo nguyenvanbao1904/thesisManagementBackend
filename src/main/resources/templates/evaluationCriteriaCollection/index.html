@@ -11,7 +11,7 @@
             <h1>Quản lý bộ tiêu chí chấm điểm khóa luận</h1>
             <a th:href="@{/evaluation_criteria_collections/add}" class="btn btn-info mt-2">Thêm bộ tiêu chí chấm điểm khóa luận</a>
             
-            <form th:action="@{/evaluation_criteria_collection}">
+            <form th:action="@{/evaluation-criteria-collections}">
                 <div class="mb-3 mt-3">
                     <input type="text" class="form-control" name="name" placeholder="Name" />
                 </div>
@@ -23,28 +23,30 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th></th>
+                        <th>ID</th>
                         <th>Tên bộ tiêu chí</th> 
                         <th>Mô tả</th>
+                        <th>Người tạo</th>
                         <th></th>
 
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="e : ${evaluationCriteriaCollections}">
-                        <td th:text="${e.id}"></td>
-                        <td th:text="${e.name}"></td>
-                        <td th:text="${e.description}"></td>
+                    <tr th:each="collection : ${collections}">
+                        <td th:text="${collection.id}"></td>
+                        <td th:text="${collection.name}"></td>
+                        <td th:text="${collection.description}"></td>
+                        <td th:text="${collection.createdByName != null ? collection.createdByName : 'N/A'}"></td>
                         <td>
-                            <a class="btn btn-danger" th:onclick="'deleteItem(\''+@{/api/evaluation_criteria_collections/}+'\','+${e.id}+')'">Xóa</a>
-                            <a class="btn btn-success" th:href="@{'/evaluation_criteria_collections/' + ${e.id}}">Cập nhật️</a>
+                            <a class="btn btn-danger btn-sm" th:onclick="'deleteItem(\''+@{/api/evaluation_criteria_collections/}+'\','+${collection.id}+')'">Xóa</a>
+                            <a class="btn btn-success btn-sm" th:href="@{'/evaluation_criteria_collections/' + ${collection.id}}">Cập nhật️</a>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
         <div class="text-center mb-2">
-            <a th:if="${page > 0}" th:href="@{/evaluation_criteria_collections(page=${page + 1})}" class="btn btn-info btn-lg mt-3">Xem thêm</a>
+            <a th:if="${currentPage > 0}" th:href="@{/evaluation_criteria_collections(page=${currentPage + 1}, name=${param.name})}" class="btn btn-info btn-lg mt-3">Xem thêm</a>
         </div>
 
 

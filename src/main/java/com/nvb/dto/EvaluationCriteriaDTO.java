@@ -25,6 +25,9 @@ public class EvaluationCriteriaDTO {
     @DecimalMin(value = "0.0", inclusive = true, message = "{evaluationCriteria.weight.minExclusiveMsg}")
     @DecimalMax(value = "1.0", inclusive = true, message = "{evaluationCriteria.weight.maxMsg}")
     private Float weight;
+    private boolean selectedForCollection;
+
+    public EvaluationCriteriaDTO() {}
 
     public EvaluationCriteriaDTO(Integer id, String name, String description, Float maxPoint, Float weight) {
         this.id = id;
@@ -32,23 +35,6 @@ public class EvaluationCriteriaDTO {
         this.description = description;
         this.maxPoint = maxPoint;
         this.weight = weight;
-    }
-
-    public EvaluationCriteriaDTO(Integer id, String name, String description, Float maxPoint) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.maxPoint = maxPoint;
-    }
-
-    public EvaluationCriteriaDTO(Integer id, Float weight) {
-        this.id = id;
-        this.weight = weight;
-    }
-    
-    
-    
-    public EvaluationCriteriaDTO() {
     }
 
     public Integer getId() {
@@ -91,5 +77,11 @@ public class EvaluationCriteriaDTO {
         this.weight = weight;
     }
 
-   
+    public boolean isSelectedForCollection() {
+        return selectedForCollection;
+    }
+
+    public void setSelectedForCollection(boolean selectedForCollection) {
+        this.selectedForCollection = selectedForCollection;
+    }
 }

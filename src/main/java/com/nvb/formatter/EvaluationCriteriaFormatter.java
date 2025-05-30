@@ -5,7 +5,7 @@
 package com.nvb.formatter;
 
 import com.nvb.pojo.EvaluationCriteria;
-import com.nvb.services.EvaluationCriteriaService;
+import com.nvb.repositories.EvaluationCriteriaRepository;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Locale;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 public class EvaluationCriteriaFormatter implements Formatter<EvaluationCriteria> {
 
     @Autowired
-    private EvaluationCriteriaService evaluationCriteriaService;
+    private EvaluationCriteriaRepository evaluationCriteriaRepository;
 
     @Override
     public String print(EvaluationCriteria object, Locale locale) {
@@ -37,8 +37,7 @@ public class EvaluationCriteriaFormatter implements Formatter<EvaluationCriteria
         if (text == null || text.trim().isEmpty()) {
             return null;
         }
-
-        return evaluationCriteriaService.getEvaluationCriteria(new HashMap<>(Map.of("id", text)));
+        return evaluationCriteriaRepository.get(new HashMap<>(Map.of("id", text)));
     }
 
 }

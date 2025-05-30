@@ -5,10 +5,8 @@
 package com.nvb.validators;
 
 import com.nvb.dto.EvaluationCriteriaDTO;
-import com.nvb.pojo.EvaluationCriteria;
 import com.nvb.services.EvaluationCriteriaService;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -37,13 +35,13 @@ public class EvaluationCriteriaValidator implements Validator{
         
         // Kiểm tra trùng lặp name
         if (ecd.getName() != null && !ecd.getName().isBlank()) {
-            EvaluationCriteria existing = evaluationCriteriaService.getEvaluationCriteria(new HashMap<>(Map.of("name", ecd.getName())));
+            EvaluationCriteriaDTO existing = evaluationCriteriaService.get(new HashMap<>(Map.of("name", ecd.getName())));
             if (ecd.getId() == null) {
                 if (existing != null) {
                     errors.rejectValue("name", "evaluationCriteria.name.duplicateMsg");
                 }
             } else {
-                if (existing != null && existing.getId().equals(ecd.getId())) {
+                if (existing != null && !existing.getId().equals(ecd.getId())) {
                     errors.rejectValue("name", "evaluationCriteria.name.duplicateMsg");
                 }
             }

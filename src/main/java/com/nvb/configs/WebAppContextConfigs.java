@@ -7,6 +7,7 @@ package com.nvb.configs;
 import com.nvb.dto.CommitteeDTO;
 import com.nvb.dto.EvaluationCriteriaCollectionDTO;
 import com.nvb.dto.EvaluationCriteriaDTO;
+import com.nvb.dto.MajorDTO;
 import com.nvb.dto.ThesesDTO;
 import com.nvb.dto.UserDTO;
 import com.nvb.formatter.CommitteeFormatter;
@@ -15,18 +16,18 @@ import com.nvb.formatter.EvaluationCriteriaDTOFormatter;
 import com.nvb.formatter.EvaluationCriteriaFormatter;
 import com.nvb.formatter.LecturerFormatter;
 import com.nvb.formatter.StudentFormatter;
-import com.nvb.pojo.Committee;
-import com.nvb.pojo.Thesis;
 import com.nvb.pojo.User;
 import com.nvb.validators.CommitteeValidator;
 import com.nvb.validators.EvaluationCriteriaCollectionValidator;
 import com.nvb.validators.EvaluationCriteriaValidator;
+import com.nvb.validators.MajorValidator;
 import com.nvb.validators.ThesesValidator;
 import com.nvb.validators.UserValidator;
 import com.nvb.validators.WebAppValidator;
 import java.util.HashSet;
 import java.util.Set;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -93,9 +94,12 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
 
     @Autowired
     private ThesesValidator thesesValidator;
-    
+
     @Autowired
     private CommitteeValidator committeeValidator;
+
+    @Autowired
+    MajorValidator majorValidator;
 
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
@@ -141,13 +145,23 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
         webAppValidator.setSpringValidators(springValidators);
         return webAppValidator;
     }
-    
+
     @Bean
     public WebAppValidator committeeWebAppValidator() {
         Set<Validator> springValidators = new HashSet<>();
         springValidators.add(committeeValidator);
         WebAppValidator webAppValidator = new WebAppValidator();
         webAppValidator.setSupportedClass(CommitteeDTO.class);
+        webAppValidator.setSpringValidators(springValidators);
+        return webAppValidator;
+    }
+
+    @Bean
+    public WebAppValidator majorWebAppValidator() {
+        Set<Validator> springValidators = new HashSet<>();
+        springValidators.add(majorValidator);
+        WebAppValidator webAppValidator = new WebAppValidator();
+        webAppValidator.setSupportedClass(MajorDTO.class);
         webAppValidator.setSpringValidators(springValidators);
         return webAppValidator;
     }
@@ -165,37 +179,44 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
     }
 
     @Bean
-    public ModelMapper modelMapper() {
+    public static ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
+
+        // Disable implicit mapping completely
+        modelMapper.getConfiguration()
+                .setSkipNullEnabled(true)
+                .setMatchingStrategy(MatchingStrategies.STRICT)
+                .setFieldAccessLevel(org.modelmapper.config.Configuration.AccessLevel.PRIVATE)
+                .setFieldMatchingEnabled(false);  // Disable field matching
+
+        // Skip password mapping for User -> UserDTO
         modelMapper.typeMap(User.class, UserDTO.class).addMappings(mapper -> {
             mapper.skip(UserDTO::setPassword);
         });
-        modelMapper.typeMap(Thesis.class, ThesesDTO.class).addMappings(mapper -> {
-            mapper.skip(ThesesDTO::setLecturers);
-            mapper.skip(ThesesDTO::setStudents);
-            mapper.skip(ThesesDTO::setEvaluationScores);
-        });
-        modelMapper.typeMap(Committee.class, CommitteeDTO.class).addMappings(mapper -> {
-            mapper.skip(CommitteeDTO::setCommitteeMembers);
-            mapper.skip(CommitteeDTO::setTheses);
-        });
+
         return modelMapper;
     }
 
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        @Override
+        public void addResourceHandlers
+        (ResourceHandlerRegistry registry
+        
+            ) {
         registry.addResourceHandler("/js/**").addResourceLocations("classpath:/static/js/");
-        registry.addResourceHandler("/css/**").addResourceLocations("classpath:/static/css/");
+            registry.addResourceHandler("/css/**").addResourceLocations("classpath:/static/css/");
 
-    }
+        }
 
-    @Override
-    public void addFormatters(FormatterRegistry registry) {
+        @Override
+        public void addFormatters
+        (FormatterRegistry registry
+        
+            ) {
         registry.addFormatter(evaluationCriteriaDTOFormatter);
-        registry.addFormatter(evaluationCriteriaFormatter);
-        registry.addFormatter(lecturerFormatter);
-        registry.addFormatter(studentFormatter);
-        registry.addFormatter(committeeFormatter);
-        registry.addFormatter(evaluationCriteriaCollectionFormatter);
+            registry.addFormatter(evaluationCriteriaFormatter);
+            registry.addFormatter(lecturerFormatter);
+            registry.addFormatter(studentFormatter);
+            registry.addFormatter(committeeFormatter);
+            registry.addFormatter(evaluationCriteriaCollectionFormatter);
+        }
     }
-}

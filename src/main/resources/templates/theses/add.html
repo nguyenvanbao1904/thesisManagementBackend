@@ -38,38 +38,37 @@
 
             <div class="mb-3">
                 <label class="form-label">Giảng viên hướng dẫn</label>
-                <div th:if="${#fields.hasErrors('lecturers')}" class="error-message" th:errors="*{lecturers}">Lỗi giảng viên hướng dẫn</div>
+                <div th:if="${#fields.hasErrors('lecturerIds')}" class="error-message" th:errors="*{lecturerIds}">Lỗi giảng viên hướng dẫn</div>
 
                 <div th:each="lecturer, stat : ${lecturersList}" class="form-check mb-2 p-3 border rounded d-flex align-items-center">
                     <div style="min-width: 30px;">
                         <input class="form-check-input supervisor-checkbox" type="checkbox"
                                th:id="'lecturer' + ${stat.index}"
-                               th:name="lecturers"
+                               th:name="lecturerIds"
                                th:value="${lecturer.id}"
                                th:data-lecturer-id="${lecturer.id}"
-                               th:checked="${theses.lecturers != null and theses.lecturers.![id].contains(lecturer.id)}"
+                               th:checked="${theses.lecturerIds != null && #arrays.contains(theses.lecturerIds, lecturer.id)}"
                                onchange="updateReviewersList()"/>
                     </div>
                     <label class="form-check-label" th:for="'lecturer' + ${stat.index}">
-                        <span th:text="${lecturer.lastName + ' ' + lecturer.firstName + (lecturer.lecturer != null ? ' (' + (lecturer.lecturer.academicTitle != null ? lecturer.lecturer.academicTitle + ' ' : '') + lecturer.lecturer.academicDegree + ')' : '')}"></span>
+                        <span th:text="${(lecturer.academicDegree != null ? lecturer.academicDegree + '. ' : '') + lecturer.firstName + ' ' + lecturer.lastName + (lecturer.academicTitle != null ? ' (' + lecturer.academicTitle + ')' : '')}"></span>
                     </label>
                 </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Sinh viên thực hiện</label>
-                <div th:if="${#fields.hasErrors('students')}" class="error-message" th:errors="*{students}">Lỗi sinh viên thực hiện</div>
-
+                <div th:if="${#fields.hasErrors('studentIds')}" class="error-message" th:errors="*{studentIds}">Lỗi sinh viên thực hiện</div>
                 <div th:each="student, stat : ${studentsList}" class="form-check mb-2 p-3 border rounded d-flex align-items-center">
                     <div style="min-width: 30px;">
                         <input class="form-check-input" type="checkbox"
                                th:id="'student' + ${stat.index}"
-                               th:name="students"
+                               th:name="studentIds" 
                                th:value="${student.id}"
-                               th:checked="${theses.students != null and theses.students.![id].contains(student.id)}" />
+                               th:checked="${theses.studentIds != null && theses.studentIds.contains(student.id)}" />
                     </div>
                     <label class="form-check-label" th:for="'student' + ${stat.index}">
-                        <span th:text="${student.lastName + ' ' + student.firstName + (student.student != null ? ' (' + student.student.studentId + ')' : '')}"></span>
+                        <span th:text="${student.firstName + ' ' + student.lastName + (student.studentId != null ? ' (' + student.studentId + ')' : '')}"></span>
                     </label>
                 </div>
             </div>
@@ -79,9 +78,9 @@
                 <select th:class="${#fields.hasErrors('committeeId')} ? 'form-control field-error' : 'form-control'"
                         id="committeeId" th:field="*{committeeId}">
                     <option value="">-- Chọn hội đồng --</option>
-                    <option th:each="committee : ${committeesList}"
+                    <option th:each="committee : ${committeeList}"
                             th:value="${committee.id}"
-                            th:text="${committee.name}"></option>
+                            th:text="${'Hội đồng ID: ' + committee.id + (committee.location != null ? ' - Địa điểm: ' + committee.location : '') + (committee.defenseDate != null ? ' - Ngày: ' + #temporals.format(committee.defenseDate, 'dd/MM/yyyy HH:mm') : '')}"></option>
                 </select>
                 <div th:if="${#fields.hasErrors('committeeId')}" class="error-message" th:errors="*{committeeId}">Lỗi hội đồng</div>
             </div>

@@ -1,50 +1,26 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.nvb.pojo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Basic;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Date;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- *
- * @author nguyenvanbao
- */
 @Entity
 @Table(name = "user")
-@XmlRootElement
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
 @NamedQueries({
     @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u"),
     @NamedQuery(name = "User.findById", query = "SELECT u FROM User u WHERE u.id = :id"),
     @NamedQuery(name = "User.findByUserName", query = "SELECT u FROM User u WHERE u.username = :username"),
-    @NamedQuery(name = "User.findByPassword", query = "SELECT u FROM User u WHERE u.password = :password"),
     @NamedQuery(name = "User.findByFirstName", query = "SELECT u FROM User u WHERE u.firstName = :firstName"),
     @NamedQuery(name = "User.findByLastName", query = "SELECT u FROM User u WHERE u.lastName = :lastName"),
     @NamedQuery(name = "User.findByEmail", query = "SELECT u FROM User u WHERE u.email = :email"),
     @NamedQuery(name = "User.findByPhone", query = "SELECT u FROM User u WHERE u.phone = :phone"),
     @NamedQuery(name = "User.findByAvatarUrl", query = "SELECT u FROM User u WHERE u.avatarUrl = :avatarUrl"),
-    @NamedQuery(name = "User.findByRole", query = "SELECT u FROM User u WHERE u.role = :role"),
     @NamedQuery(name = "User.findByCreatedAt", query = "SELECT u FROM User u WHERE u.createdAt = :createdAt"),
     @NamedQuery(name = "User.findByUpdatedAt", query = "SELECT u FROM User u WHERE u.updatedAt = :updatedAt"),
     @NamedQuery(name = "User.findByIsActive", query = "SELECT u FROM User u WHERE u.isActive = :isActive")})
@@ -56,97 +32,67 @@ public class User implements Serializable {
     @Basic(optional = false)
     @Column(name = "id")
     private Integer id;
+
     @Size(max = 100)
     @Column(name = "user_name")
     private String username;
+
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 255)
     @Column(name = "password")
     private String password;
+
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 50)
     @Column(name = "first_name")
     private String firstName;
+
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 50)
     @Column(name = "last_name")
     private String lastName;
+
     @Size(max = 50)
     @Column(name = "email")
     private String email;
+
     @Size(max = 11)
     @Column(name = "phone")
     private String phone;
+
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 100)
     @Column(name = "avatar_url")
     private String avatarUrl;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 18)
-    @Column(name = "role")
-    private String role;
+
+    // Bỏ annotation @Column(name = "role") và trường 'role'
+    // Cột 'user_type' trong DB sẽ được quản lý tự động bởi @DiscriminatorColumn
     @Basic(optional = false)
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
     private Date createdAt;
+
     @Basic(optional = false)
     @Column(name = "updated_at")
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
+
     @Basic(optional = false)
     @NotNull
     @Column(name = "is_active")
     private boolean isActive = true;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private Student student;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private Admin admin;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private Lecturer lecturer;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private AcademicStaff academicStaff;
 
     public User() {
     }
 
     public User(Integer id) {
         this.id = id;
-    }
-
-    public User(Integer id, String username, String password, String firstName, String lastName, String email, String phone, String avatarUrl, String role, boolean isActive) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.phone = phone;
-        this.avatarUrl = avatarUrl;
-        this.role = role;
-        this.isActive = isActive;
-    }
-    
-    public User(Integer id, String username, String firstName, String lastName, String email, String phone, String avatarUrl, String role, boolean isActive) {
-        this.id = id;
-        this.username = username;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.phone = phone;
-        this.avatarUrl = avatarUrl;
-        this.role = role;
-        this.isActive = isActive;
     }
 
     public Integer getId() {
@@ -213,14 +159,6 @@ public class User implements Serializable {
         this.avatarUrl = avatarUrl;
     }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -237,7 +175,7 @@ public class User implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public boolean getIsActive() {
+    public boolean isIsActive() {
         return isActive;
     }
 
@@ -245,60 +183,20 @@ public class User implements Serializable {
         this.isActive = isActive;
     }
 
-    public Student getStudent() {
-        return student;
-    }
+    public String getUserType() {
+        String simpleClassName = this.getClass().getSimpleName();
 
-    public void setStudent(Student student) {
-        this.student = student;
-    }
-
-    public Admin getAdmin() {
-        return admin;
-    }
-
-    public void setAdmin(Admin admin) {
-        this.admin = admin;
-    }
-
-    public Lecturer getLecturer() {
-        return lecturer;
-    }
-
-    public void setLecturer(Lecturer lecturer) {
-        this.lecturer = lecturer;
-    }
-
-    public AcademicStaff getAcademicStaff() {
-        return academicStaff;
-    }
-
-    public void setAcademicStaff(AcademicStaff academicStaff) {
-        this.academicStaff = academicStaff;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof User)) {
-            return false;
+        switch (simpleClassName) {
+            case "Admin":
+                return "ROLE_ADMIN";
+            case "AcademicStaff":
+                return "ROLE_ACADEMICSTAFF";
+            case "Lecturer":
+                return "ROLE_LECTURER";
+            case "Student":
+                return "ROLE_STUDENT";
+            default:
+                return "ROLE_USER"; 
         }
-        User other = (User) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
     }
-
-    @Override
-    public String toString() {
-        return "com.nvb.configs.User[ id=" + id + " ]";
-    }
-    
 }

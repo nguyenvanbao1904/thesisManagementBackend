@@ -35,7 +35,7 @@ public class EvaluationCriteriaRepositoryImpl implements EvaluationCriteriaRepos
     private LocalSessionFactoryBean factory;
 
     @Override
-    public List<EvaluationCriteria> getEvaluationCriterias(Map<String, String> params, boolean pagination) {
+    public List<EvaluationCriteria> getAll(Map<String, String> params, boolean pagination) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<EvaluationCriteria> query = builder.createQuery(EvaluationCriteria.class);
@@ -48,19 +48,16 @@ public class EvaluationCriteriaRepositoryImpl implements EvaluationCriteriaRepos
             if (name != null && !name.isEmpty()) {
                 predicates.add(builder.like(root.get("name"), String.format("%%%s%%", name)));
             }
-            if (pagination) {
-                String page = params.get("page");
-                if (page == null) {
-                    params.put("page", "1");
-                }
-            }
         }
 
         query.where(predicates.toArray(new Predicate[0]));
         query.select(root);
         Query q = s.createQuery(query);
 
-        if (params != null && params.containsKey("page")) {
+        if (pagination && params != null && params.containsKey("page")) {
+            if (Integer.parseInt(params.get("page")) == 0) {
+                return new ArrayList<>();
+            }
             int page = 1;
             try {
                 page = Integer.parseInt(params.get("page"));
@@ -75,7 +72,7 @@ public class EvaluationCriteriaRepositoryImpl implements EvaluationCriteriaRepos
     }
 
     @Override
-    public EvaluationCriteria getEvaluationCriteria(Map<String, String> params) {
+    public EvaluationCriteria get(Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder builder = s.getCriteriaBuilder();
         CriteriaQuery<EvaluationCriteria> query = builder.createQuery(EvaluationCriteria.class);
@@ -107,7 +104,7 @@ public class EvaluationCriteriaRepositoryImpl implements EvaluationCriteriaRepos
     }
 
     @Override
-    public EvaluationCriteria addOrUpdateEvaluationCriteria(EvaluationCriteria evaluationCriteria) {
+    public EvaluationCriteria addOrUpdate(EvaluationCriteria evaluationCriteria) {
         Session s = factory.getObject().getCurrentSession();
         if (evaluationCriteria.getId() == null) {
             s.persist(evaluationCriteria);
@@ -118,8 +115,19 @@ public class EvaluationCriteriaRepositoryImpl implements EvaluationCriteriaRepos
     }
 
     @Override
-    public void deleteEvaluationCriteria(int id) {
+    public void delete(int id) {
         Session s = factory.getObject().getCurrentSession();
         s.remove(s.get(EvaluationCriteria.class, id));
+    }
+
+    @Override
+    public List<EvaluationCriteria> getByIds(List<Integer> ids) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<EvaluationCriteria> query = builder.createQuery(EvaluationCriteria.class);
+        Root<EvaluationCriteria> root = query.from(EvaluationCriteria.class);
+
+        query.select(root).where(root.get("id").in(ids));
+        return s.createQuery(query).getResultList();
     }
 }

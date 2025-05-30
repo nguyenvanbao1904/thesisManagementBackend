@@ -5,7 +5,6 @@
 package com.nvb.services;
 
 import com.nvb.dto.EvaluationCriteriaDTO;
-import com.nvb.pojo.EvaluationCriteria;
 import java.util.List;
 import java.util.Map;
 
@@ -15,13 +14,13 @@ import java.util.Map;
  */
 public interface EvaluationCriteriaService {
 
-    List<EvaluationCriteria> getEvaluationCriterias(Map<String, String> params);
+    List<EvaluationCriteriaDTO> getAll(Map<String, String> params);
 
-    List<EvaluationCriteria> getEvaluationCriterias(Map<String, String> params, boolean pagination);
+    List<EvaluationCriteriaDTO> getAll(Map<String, String> params, boolean pagination);
 
-    EvaluationCriteria getEvaluationCriteria(Map<String, String> params);
+    EvaluationCriteriaDTO get(Map<String, String> params);
     
-    EvaluationCriteria addOrUpdateEvaluationCriteria(EvaluationCriteriaDTO evaluationCriteriaDTO);
+    EvaluationCriteriaDTO addOrUpdate(EvaluationCriteriaDTO evaluationCriteriaDTO);
     
-    void deleteEvaluationCriteria(int id);
+    void delete(int id);
 }

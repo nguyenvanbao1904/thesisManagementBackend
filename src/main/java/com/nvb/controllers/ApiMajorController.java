@@ -30,6 +30,6 @@ public class ApiMajorController {
     @DeleteMapping(value = "/majors/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void destroy(@PathVariable(value = "id") int id) {
-        majorService.deleteMajor(id);
+        majorService.delete(id);
     }
 }

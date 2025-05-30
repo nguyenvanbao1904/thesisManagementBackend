@@ -13,8 +13,8 @@ import java.util.Map;
  * @author nguyenvanbao
  */
 public interface CommitteeRepository {
-    List<Committee> getCommittees(Map<String, String> params, boolean pagination, boolean details);
-    Committee getCommittee(Map<String, String> params);
+    List<Committee> getAll(Map<String, String> params, boolean pagination, boolean details);
+    Committee get(Map<String, String> params);
     Committee addOrUpdate(Committee committee);
-    void deleteCommittee(int id);
+    void delete(int id);
 }

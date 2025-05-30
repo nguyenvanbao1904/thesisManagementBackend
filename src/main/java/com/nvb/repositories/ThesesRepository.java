@@ -13,8 +13,16 @@ import java.util.Map;
  * @author nguyenvanbao
  */
 public interface ThesesRepository {
-    List<Thesis> getTheses(Map<String, String> params, boolean pagination);
+
+    List<Thesis> getAll(Map<String, String> params, boolean pagination, boolean details);
+
     Thesis addOrUpdate(Thesis thesis);
-    Thesis getThesis(Map<String, String> params);
-    void deleteThesis(int id);
+
+    Thesis get(Map<String, String> params);
+
+    void delete(int id);
+
+    int countThesesByStudentAndNotThisThesis(Integer studentUserId, Integer thesisIdToExclude);
+
+    List<Thesis> getByIds(List<Integer> ids);
 }

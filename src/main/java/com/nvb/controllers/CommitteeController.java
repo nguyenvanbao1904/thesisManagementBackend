@@ -5,19 +5,25 @@
 package com.nvb.controllers;
 
 import com.nvb.dto.CommitteeDTO;
-import com.nvb.pojo.Committee;
+import com.nvb.dto.CommitteeListDTO;
+import com.nvb.dto.ThesesDTO;
 import com.nvb.pojo.CommitteeCampus;
-import com.nvb.pojo.CommitteeMember;
-import com.nvb.pojo.Thesis;
+import com.nvb.dto.CommitteeMemberDTO;
 import com.nvb.services.CommitteeService;
-import com.nvb.services.LecturerService;
+import com.nvb.services.UserService;
 import com.nvb.services.ThesesService;
 import com.nvb.validators.WebAppValidator;
 import jakarta.validation.Valid;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.modelmapper.ModelMapper;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -44,14 +50,11 @@ public class CommitteeController {
     private CommitteeService committeeService;
 
     @Autowired
-    private LecturerService lecturerService;
+    private UserService userService;
 
     @Autowired
     private ThesesService thesesService;
 
-    @Autowired
-    private ModelMapper modelMapper;
-    
     @Autowired
     @Qualifier("committeeWebAppValidator")
     private WebAppValidator committeeWebAppValidator;
@@ -63,7 +66,7 @@ public class CommitteeController {
 
     @GetMapping("")
     public String showAll(Model model, @RequestParam(required = false) Map<String, String> params) {
-        List<Committee> committees = committeeService.getCommittees(new HashMap<>(), true, true);
+        List<CommitteeListDTO> committees = committeeService.getAllForListView(new HashMap<>(), true);
         model.addAttribute("committees", committees);
         int page = 1;
         if (params.get("page") != null) {
@@ -84,35 +87,27 @@ public class CommitteeController {
     @GetMapping("/add")
     public String showForm(Model model) {
         model.addAttribute("committee", new CommitteeDTO());
-
         model.addAttribute("committeeCampus", CommitteeCampus.values());
-
-        model.addAttribute("lecturers", lecturerService.getLecturers(new HashMap<>()));
-
-        model.addAttribute("unassignedTheses", thesesService.getTheses(new HashMap<>(Map.of("committeeId", ""))));
-
+        model.addAttribute("lecturers", userService.getAll(new HashMap<>(Map.of("role", "ROLE_LECTURER"))));
+        model.addAttribute("unassignedTheses", thesesService.getAll(new HashMap<>(Map.of("committeeId", ""))));
         return "committee/add";
     }
 
     @GetMapping("/{id}")
     public String update(Model model, @PathVariable(name = "id") int id) {
-        Committee committee = committeeService.getCommittee(Map.of("id", String.valueOf(id)));
-        if (committee == null) {
+        CommitteeDTO committeeDTO = committeeService.get(Map.of("id", String.valueOf(id)));
+        if (committeeDTO == null) {
             return "redirect:/committees";
         }
-
-        CommitteeDTO committeeDTO = modelMapper.map(committee, CommitteeDTO.class);
-
-        // Chuẩn bị dữ liệu cho thành viên hội đồng
-        if (committee.getCommitteeMembers() != null && !committee.getCommitteeMembers().isEmpty()) {
-            Integer[] memberIds = new Integer[committee.getCommitteeMembers().size()];
-            String[] memberRoles = new String[committee.getCommitteeMembers().size()];
+        if (committeeDTO.getCommitteeMembers() != null && !committeeDTO.getCommitteeMembers().isEmpty()) {
+            Integer[] memberIds = new Integer[committeeDTO.getCommitteeMembers().size()];
+            String[] memberRoles = new String[committeeDTO.getCommitteeMembers().size()];
 
             int i = 0;
-            for (CommitteeMember member : committee.getCommitteeMembers()) {
-                memberIds[i] = member.getLecturer().getId();
+            for (CommitteeMemberDTO member : committeeDTO.getCommitteeMembers()) {
+                memberIds[i] = member.getLecturerId();
                 String role = member.getRole();
-                if (role.startsWith("ROLE_")) {
+                if (role != null && role.startsWith("ROLE_")) {
                     role = role.substring(5);
                 }
                 memberRoles[i] = role;
@@ -123,11 +118,11 @@ public class CommitteeController {
             committeeDTO.setMemberRole(memberRoles);
         }
 
-        if (committee.getTheses() != null && !committee.getTheses().isEmpty()) {
-            Integer[] thesesIds = new Integer[committee.getTheses().size()];
+        if (committeeDTO.getTheses() != null && !committeeDTO.getTheses().isEmpty()) {
+            Integer[] thesesIds = new Integer[committeeDTO.getTheses().size()];
 
             int i = 0;
-            for (Thesis thesis : committee.getTheses()) {
+            for (ThesesDTO thesis : committeeDTO.getTheses()) {
                 thesesIds[i] = thesis.getId();
                 i++;
             }
@@ -135,16 +130,29 @@ public class CommitteeController {
             committeeDTO.setThesesIds(thesesIds);
         }
 
+        List<ThesesDTO> availableTheses = thesesService.getAll(new HashMap<>(Map.of("committeeId", "")));
+
+        if (committeeDTO.getThesesIds() != null && committeeDTO.getThesesIds().length != 0) {
+
+            // Chuan bi map Thesis
+            Set<Integer> dtoThesesIds = Optional.ofNullable(committeeDTO.getThesesIds())
+                    .map(ids -> Arrays.stream(ids).filter(Objects::nonNull).collect(Collectors.toSet()))
+                    .orElse(Collections.emptySet());
+
+            Map<Integer, ThesesDTO> thesesMap = dtoThesesIds.isEmpty() ? new HashMap<>()
+                    : thesesService.getByIds(new ArrayList<>(dtoThesesIds)).stream()
+                            .collect(Collectors.toMap(ThesesDTO::getId, t -> t));
+
+            for (int thesisId : committeeDTO.getThesesIds()) {
+                if (!availableTheses.stream().anyMatch(t -> t.getId().equals(thesisId))) {
+                    availableTheses.add(thesesMap.get(thesisId));
+                }
+            }
+        }
         model.addAttribute("committee", committeeDTO);
         model.addAttribute("committeeCampus", CommitteeCampus.values());
-        model.addAttribute("lecturers", lecturerService.getLecturers(new HashMap<>()));
-
-        List<Thesis> unassignedTheses = thesesService.getTheses(new HashMap<>(Map.of("committeeId", "")));
-        if (committee.getTheses() != null) {
-            unassignedTheses.addAll(committee.getTheses());
-        }
-        model.addAttribute("unassignedTheses", unassignedTheses);
-
+        model.addAttribute("lecturers", userService.getAll(new HashMap<>(Map.of("role", "ROLE_LECTURER"))));
+        model.addAttribute("unassignedTheses", availableTheses);
         return "committee/add";
     }
 
@@ -156,8 +164,8 @@ public class CommitteeController {
         if (result.hasErrors()) {
             model.addAttribute("committee", committeeDTO);
             model.addAttribute("committeeCampus", CommitteeCampus.values());
-            model.addAttribute("lecturers", lecturerService.getLecturers(new HashMap<>()));
-            model.addAttribute("unassignedTheses", thesesService.getTheses(new HashMap<>(Map.of("committeeId", ""))));
+            model.addAttribute("lecturers", userService.getAll(new HashMap<>(Map.of("role", "ROLE_LECTURER"))));
+            model.addAttribute("unassignedTheses", thesesService.getAll(new HashMap<>(Map.of("committeeId", ""))));
             return "committee/add";
         }
         committeeService.addOrUpdate(committeeDTO);

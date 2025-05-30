@@ -14,12 +14,13 @@ import java.util.Map;
  */
 public interface EvaluationCriteriaRepository {
 
-    List<EvaluationCriteria> getEvaluationCriterias(Map<String, String> params, boolean pagination);
+    List<EvaluationCriteria> getAll(Map<String, String> params, boolean pagination);
 
-    EvaluationCriteria getEvaluationCriteria(Map<String, String> params);
+    EvaluationCriteria get(Map<String, String> params);
 
-    EvaluationCriteria addOrUpdateEvaluationCriteria(EvaluationCriteria evaluationCriteria);
+    EvaluationCriteria addOrUpdate(EvaluationCriteria evaluationCriteria);
 
-    void deleteEvaluationCriteria(int id);
-
+    void delete(int id);
+    
+    List<EvaluationCriteria> getByIds(List<Integer> ids);
 }

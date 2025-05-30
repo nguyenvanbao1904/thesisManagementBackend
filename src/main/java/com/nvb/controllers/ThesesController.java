@@ -4,11 +4,13 @@
  */
 package com.nvb.controllers;
 
+import com.nvb.dto.CommitteeListDTO;
 import com.nvb.dto.ThesesDTO;
-import com.nvb.pojo.EvaluationCriteriaCollection;
-import com.nvb.pojo.Thesis;
-import com.nvb.pojo.User;
+import com.nvb.dto.UserDTO;
+import com.nvb.dto.EvaluationCriteriaCollectionDTO;
+import com.nvb.dto.ThesesListDTO;
 import com.nvb.pojo.UserRole;
+import com.nvb.services.CommitteeService;
 import com.nvb.services.EmailService;
 import com.nvb.services.EvaluationCriteriaCollectionService;
 import com.nvb.services.ThesesService;
@@ -20,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.hibernate.LazyInitializationException;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -53,7 +54,7 @@ public class ThesesController {
     private EvaluationCriteriaCollectionService evaluationCriteriaCollectionService;
     
     @Autowired
-    private ModelMapper modelMapper;
+    private CommitteeService committeeService;
 
     @Autowired
     @Qualifier("thesesWebAppValidator")
@@ -70,7 +71,7 @@ public class ThesesController {
     @GetMapping("")
     public String showAll(Model model, @RequestParam(required = false) Map<String, String> params) {
         try {
-            List<Thesis> theses = thesesService.getTheses(params, true);
+            List<ThesesListDTO> theses = thesesService.getAllForListView(params, true);
             model.addAttribute("theses", theses);
             int page = 1;
             if (params.get("page") != null) {
@@ -95,15 +96,17 @@ public class ThesesController {
     @GetMapping("/add")
     public String showAddForm(Model model) {
         ThesesDTO thesesDTO = new ThesesDTO();
-        List<User> lecturersList = userDetailsService.getUsers(new HashMap<>(Map.of("role", UserRole.ROLE_LECTURER.toString())));
-        List<User> studentsList = userDetailsService.getUsers(new HashMap<>(Map.of("role", UserRole.ROLE_STUDENT.toString())));
-        List<EvaluationCriteriaCollection> evaluationCriteriaCollectionsList = evaluationCriteriaCollectionService.getEvaluationCriteriaCollections(new HashMap<>());
+        List<UserDTO> lecturersList = userDetailsService.getAll(new HashMap<>(Map.of("role", UserRole.ROLE_LECTURER.toString())));
+        List<UserDTO> studentsList = userDetailsService.getAll(new HashMap<>(Map.of("role", UserRole.ROLE_STUDENT.toString())));
+        List<EvaluationCriteriaCollectionDTO> evaluationCriteriaCollectionsList = evaluationCriteriaCollectionService.getAll(new HashMap<>());
+        List<CommitteeListDTO> committeeList = committeeService.getAllForListView(new HashMap<>(), true);
 
         model.addAttribute("theses", thesesDTO);
         model.addAttribute("lecturersList", lecturersList);
         model.addAttribute("studentsList", studentsList);
         model.addAttribute("evaluationCriteriaCollectionsList", evaluationCriteriaCollectionsList);
         model.addAttribute("reviewersList", lecturersList);
+        model.addAttribute("committeeList", committeeList);
         // addAttribute committee sau 
 
         return "theses/add";
@@ -113,12 +116,12 @@ public class ThesesController {
     public String addTheses(Model model, @ModelAttribute("theses") @Valid ThesesDTO thesesDTO,
             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            List<User> lecturersList = userDetailsService.getUsers(
+            List<UserDTO> lecturersList = userDetailsService.getAll(
                     new HashMap<>(Map.of("role", UserRole.ROLE_LECTURER.toString())));
-            List<User> studentsList = userDetailsService.getUsers(
+            List<UserDTO> studentsList = userDetailsService.getAll(
                     new HashMap<>(Map.of("role", UserRole.ROLE_STUDENT.toString())));
-            List<EvaluationCriteriaCollection> evaluationCriteriaCollectionsList
-                    = evaluationCriteriaCollectionService.getEvaluationCriteriaCollections(new HashMap<>());
+            List<EvaluationCriteriaCollectionDTO> evaluationCriteriaCollectionsList
+                    = evaluationCriteriaCollectionService.getAll(new HashMap<>());
 
             model.addAttribute("lecturersList", lecturersList);
             model.addAttribute("studentsList", studentsList);
@@ -135,29 +138,30 @@ public class ThesesController {
                         + "<p>Bạn vừa được phân công phản biện khóa luận <strong>%s</strong>.</p>",
                         thesesDTO.getTitle()
                 );
-                emailService.sendEmail(thesesDTO.getReviewerId().getUser().getEmail(), subject, body);
+                UserDTO reviewer = userDetailsService.get(Map.of("id", String.valueOf(thesesDTO.getReviewerId())));
+                if (reviewer != null) {
+                    emailService.sendEmail(reviewer.getEmail(), subject, body);
+                }
             } catch (MessagingException e) {
             }
-
         }
         return "redirect:/theses";
     }
     
     @GetMapping("/{id}")
     public String update(Model model, @PathVariable(name = "id") int id){
-        Thesis thesis = thesesService.getThesis(new HashMap<>(Map.of("id", String.valueOf(id))));
-        ThesesDTO thesesDTO = modelMapper.map(thesis, ThesesDTO.class);
-        thesesDTO.setLecturers(thesis.getLecturers());
-        thesesDTO.setStudents(thesis.getStudents());
-        List<User> lecturersList = userDetailsService.getUsers(new HashMap<>(Map.of("role", UserRole.ROLE_LECTURER.toString())));
-        List<User> studentsList = userDetailsService.getUsers(new HashMap<>(Map.of("role", UserRole.ROLE_STUDENT.toString())));
-        List<EvaluationCriteriaCollection> evaluationCriteriaCollectionsList = evaluationCriteriaCollectionService.getEvaluationCriteriaCollections(new HashMap<>());
-
+        ThesesDTO thesesDTO = thesesService.get(new HashMap<>(Map.of("id", String.valueOf(id))));
+        List<UserDTO> lecturersList = userDetailsService.getAll(new HashMap<>(Map.of("role", UserRole.ROLE_LECTURER.toString())));
+        List<UserDTO> studentsList = userDetailsService.getAll(new HashMap<>(Map.of("role", UserRole.ROLE_STUDENT.toString())));
+        List<EvaluationCriteriaCollectionDTO> evaluationCriteriaCollectionsList = evaluationCriteriaCollectionService.getAll(new HashMap<>());
+        List<CommitteeListDTO> committeeList = committeeService.getAllForListView(new HashMap<>(), true);
+        
         model.addAttribute("theses", thesesDTO);
         model.addAttribute("lecturersList", lecturersList);
         model.addAttribute("studentsList", studentsList);
         model.addAttribute("evaluationCriteriaCollectionsList", evaluationCriteriaCollectionsList);
         model.addAttribute("reviewersList", lecturersList);
+        model.addAttribute("committeeList", committeeList);
         return "theses/add";
     }
 }

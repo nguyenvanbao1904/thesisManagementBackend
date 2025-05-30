@@ -4,73 +4,53 @@
  */
 package com.nvb.pojo;
 
-import jakarta.persistence.Basic;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Set;
 
-/**
- *
- * @author nguyenvanbao
- */
 @Entity
 @Table(name = "lecturer")
 @XmlRootElement
+@DiscriminatorValue("ROLE_LECTURER")
 @NamedQueries({
     @NamedQuery(name = "Lecturer.findAll", query = "SELECT l FROM Lecturer l"),
     @NamedQuery(name = "Lecturer.findById", query = "SELECT l FROM Lecturer l WHERE l.id = :id"),
     @NamedQuery(name = "Lecturer.findByAcademicTitle", query = "SELECT l FROM Lecturer l WHERE l.academicTitle = :academicTitle"),
     @NamedQuery(name = "Lecturer.findByAcademicDegree", query = "SELECT l FROM Lecturer l WHERE l.academicDegree = :academicDegree")})
-public class Lecturer implements Serializable {
+@PrimaryKeyJoinColumn(name = "id") 
+public class Lecturer extends User implements Serializable { 
 
     private static final long serialVersionUID = 1L;
-    @Id
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "id")
-    private Integer id;
+    
     @Size(max = 19)
     @Column(name = "academic_title", nullable = true)
     private String academicTitle;
+
     @Size(max = 6)
     @Column(name = "academic_degree", nullable = false)
     @NotNull
     private String academicDegree;
+
     @ManyToMany(mappedBy = "lecturers")
     private Set<Thesis> thesesSupervisors;
-    @JoinColumn(name = "id")
-    @OneToOne(optional = false, fetch = FetchType.LAZY)
-    @MapsId
-    private User user;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lecturer")
     private Set<CommitteeMember> committeeMembers;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lecturer")
     private Set<EvaluationScore> evaluationScores;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "reviewerId")
     private Set<Thesis> thesesReviewer;
 
-    public Integer getId() {
-        return id;
+    public Lecturer() {
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public Lecturer(Integer id) {
+        super(id);
     }
 
     public String getAcademicTitle() {
@@ -97,14 +77,6 @@ public class Lecturer implements Serializable {
         this.thesesSupervisors = thesesSupervisors;
     }
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     public Set<CommitteeMember> getCommitteeMembers() {
         return committeeMembers;
     }
@@ -129,4 +101,3 @@ public class Lecturer implements Serializable {
         this.thesesReviewer = thesesReviewer;
     }
 }
-    

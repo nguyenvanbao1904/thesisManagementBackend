@@ -1,17 +1,24 @@
 <!<!doctype html>
-<html xmls:th="http://wwww.thymeleaf.org">
-    <head>
-        <title>Quản lý ngành</title>
-    <th:block th:replace="/base/base :: bootstrap" ></th:block>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản lý ngành</title>
+    <th:block th:replace="/base/base :: bootstrap"></th:block>
+    <link th:href="@{/css/addUser.css}" rel="stylesheet">
 </head>
 <body>
     <div th:replace="/base/base :: header"></div> <main>
         <div class="container mt-5 mb-5">
             <h1 class="text-center mb-4">Thêm hoặc cập nhật ngành</h1>
             <form method="post" th:action="@{/majors/add}" th:object="${major}" class="border p-4 rounded shadow">
+                <div th:if="${#fields.hasAnyErrors()}" class="alert-validation">
+                    <i class="fas fa-exclamation-circle"></i> Vui lòng kiểm tra lại thông tin đã nhập
+                </div>
+
                 <div class="mb-3">
                     <label for="name" class="form-label">Name: </label>
-                    <input type="text" class="form-control" id="name" placeholder="name" th:field="*{name}" required />
+                    <input type="text" th:class="${#fields.hasErrors('name')} ? 'form-control field-error' : 'form-control'"
+                           id="name" placeholder="Name: " th:field="*{name}" required />
+                    <div th:if="${#fields.hasErrors('name')}" class="error-message" th:errors="*{name}"></div>
                 </div>
 
                 <div class="text-center">

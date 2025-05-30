@@ -5,19 +5,14 @@
 package com.nvb.controllers;
 
 import com.nvb.dto.UserDTO;
-import com.nvb.pojo.User;
 import com.nvb.services.MajorService;
 import com.nvb.services.UserService;
 import com.nvb.validators.WebAppValidator;
-
 import jakarta.validation.Valid;
-
 import java.util.List;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-
 import java.util.Map;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -45,9 +40,6 @@ public class UserController {
     @Autowired
     @Qualifier("userWebAppValidator")
     private WebAppValidator userWebAppValidator;
-    
-    @Autowired
-    private ModelMapper modelMapper;
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -65,7 +57,7 @@ public class UserController {
 
     @GetMapping("/users")
     public String showAll(Model model, @RequestParam(required = false) Map<String, String> params) {
-        List<User> users = userDetailsService.getUsers(params);
+        List<UserDTO> users = userDetailsService.getAll(params, true, false);
         model.addAttribute("users", users);
         int page = 1;
         if (params.get("page") != null) {
@@ -74,7 +66,6 @@ public class UserController {
                     page = 0;
                 } else {
                     page = Integer.parseInt(params.get("page"));
-
                 }
             } catch (NumberFormatException e) {
                 page = 1;
@@ -87,7 +78,7 @@ public class UserController {
     @GetMapping("/users/add")
     public String addView(Model model) {
         model.addAttribute("user", new UserDTO());
-        model.addAttribute("majors", majorService.getMajors(null));
+        model.addAttribute("majors", majorService.getAll(null));
         return "users/add";
     }
 
@@ -98,19 +89,20 @@ public class UserController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);
-            model.addAttribute("majors", majorService.getMajors(null));
+            model.addAttribute("majors", majorService.getAll(null));
             return "users/add";
         }
 
-        userDetailsService.addOrUpdateUser(user, user.getFile());
+        userDetailsService.addOrUpdate(user, user.getFile());
 
         return "redirect:/users";
     }
-    
-    @GetMapping("users/{id}")
-    public String updateView(Model model, @PathVariable(name = "id") int id){
-        model.addAttribute("user", modelMapper.map(userDetailsService.getUser(Map.of("id", String.valueOf(id))), UserDTO.class));
-        model.addAttribute("majors", majorService.getMajors(null));
+
+    @GetMapping("/users/{id}")
+    public String updateView(Model model, @PathVariable(name = "id") int id) {
+        UserDTO userDTO = userDetailsService.get(Map.of("id", String.valueOf(id)));
+        model.addAttribute("user", userDTO);
+        model.addAttribute("majors", majorService.getAll(null));
         return "users/add";
     }
 }

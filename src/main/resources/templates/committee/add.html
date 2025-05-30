@@ -62,7 +62,7 @@
                                     <option value="">-- Chọn giảng viên --</option>
                                     <option th:each="lecturer : ${lecturers}" 
                                             th:value="${lecturer.id}" 
-                                            th:text="${lecturer.academicDegree + '. ' + lecturer.user.firstName + ' ' + lecturer.user.lastName}"
+                                            th:text="${(lecturer.academicDegree != null ? lecturer.academicDegree + '. ' : '') + lecturer.firstName + ' ' + lecturer.lastName}"
                                             th:selected="${committee.memberLecturerId != null && committee.memberLecturerId.length > 0 && committee.memberLecturerId[0] == lecturer.id}">
                                     </option>
                                 </select>
@@ -86,7 +86,7 @@
                                     <option value="">-- Chọn giảng viên --</option>
                                     <option th:each="lecturer : ${lecturers}" 
                                             th:value="${lecturer.id}" 
-                                            th:text="${lecturer.academicDegree + '. ' + lecturer.user.firstName + ' ' + lecturer.user.lastName}"
+                                            th:text="${(lecturer.academicDegree != null ? lecturer.academicDegree + '. ' : '') + lecturer.firstName + ' ' + lecturer.lastName}"
                                             th:selected="${committee.memberLecturerId != null && committee.memberLecturerId.length > 1 && committee.memberLecturerId[1] == lecturer.id}">
                                     </option>
                                 </select>
@@ -110,7 +110,7 @@
                                     <option value="">-- Chọn giảng viên --</option>
                                     <option th:each="lecturer : ${lecturers}" 
                                             th:value="${lecturer.id}" 
-                                            th:text="${lecturer.academicDegree + '. ' + lecturer.user.firstName + ' ' + lecturer.user.lastName}"
+                                            th:text="${(lecturer.academicDegree != null ? lecturer.academicDegree + '. ' : '') + lecturer.firstName + ' ' + lecturer.lastName}"
                                             th:selected="${committee.memberLecturerId != null && committee.memberLecturerId.length > 2 && committee.memberLecturerId[2] == lecturer.id}">
                                     </option>
                                 </select>
@@ -134,7 +134,7 @@
                                     <option value="">-- Chọn giảng viên --</option>
                                     <option th:each="lecturer : ${lecturers}" 
                                             th:value="${lecturer.id}" 
-                                            th:text="${lecturer.academicDegree + '. ' + lecturer.user.firstName + ' ' + lecturer.user.lastName}"
+                                            th:text="${(lecturer.academicDegree != null ? lecturer.academicDegree + '. ' : '') + lecturer.firstName + ' ' + lecturer.lastName}"
                                             th:selected="${committee.memberLecturerId != null && committee.memberLecturerId.length > 3 && committee.memberLecturerId[3] == lecturer.id}">
                                     </option>
                                 </select>
@@ -158,7 +158,7 @@
                                     <option value="">-- Chọn giảng viên --</option>
                                     <option th:each="lecturer : ${lecturers}" 
                                             th:value="${lecturer.id}" 
-                                            th:text="${lecturer.academicDegree + '. ' + lecturer.user.firstName + ' ' + lecturer.user.lastName}"
+                                            th:text="${(lecturer.academicDegree != null ? lecturer.academicDegree + '. ' : '') + lecturer.firstName + ' ' + lecturer.lastName}"
                                             th:selected="${committee.memberLecturerId != null && committee.memberLecturerId.length > 4 && committee.memberLecturerId[4] == lecturer.id}">
                                     </option>
                                 </select>

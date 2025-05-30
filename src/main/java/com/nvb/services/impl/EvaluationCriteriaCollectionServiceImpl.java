@@ -6,23 +6,33 @@ package com.nvb.services.impl;
 
 import com.nvb.dto.EvaluationCriteriaCollectionDTO;
 import com.nvb.dto.EvaluationCriteriaDTO;
+import com.nvb.dto.EvaluationCriteriaCollectionListDTO;
 import com.nvb.pojo.AcademicStaff;
 import com.nvb.pojo.EvaluationCriteria;
 import com.nvb.pojo.EvaluationCriteriaCollection;
 import com.nvb.pojo.EvaluationCriteriaCollectionDetail;
 import com.nvb.pojo.EvaluationCriteriaCollectionDetailPK;
 import com.nvb.repositories.EvaluationCriteriaCollectionRepository;
-import com.nvb.services.AcademicsStaffService;
+import com.nvb.repositories.EvaluationCriteriaRepository;
 import com.nvb.services.EvaluationCriteriaCollectionService;
-import java.util.HashMap;
+import com.nvb.repositories.UserRepository;
+import com.nvb.repositories.AcademicsStaffRepository;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.nvb.services.UserService;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  *
@@ -36,35 +46,72 @@ public class EvaluationCriteriaCollectionServiceImpl implements EvaluationCriter
     private EvaluationCriteriaCollectionRepository evaluationCriteriaCollectionRepository;
 
     @Autowired
-    private AcademicsStaffService academicsStaffService;
+    private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private AcademicsStaffRepository academicsStaffRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    @Autowired
+    private EvaluationCriteriaRepository evaluationCriteriaRepository;
 
     @Override
-    public List<EvaluationCriteriaCollection> getEvaluationCriteriaCollections(Map<String, String> params) {
-        return this.getEvaluationCriteriaCollections(params, false);
+    public List<EvaluationCriteriaCollectionDTO> getAll(Map<String, String> params) {
+        return this.getAll(params, false, false);
     }
 
     @Override
-    public List<EvaluationCriteriaCollection> getEvaluationCriteriaCollections(Map<String, String> params, boolean pagination) {
-        return evaluationCriteriaCollectionRepository.getEvaluationCriteriaCollections(params, pagination);
+    public List<EvaluationCriteriaCollectionDTO> getAll(Map<String, String> params, boolean pagination) {
+        return this.getAll(params, pagination, false);
     }
 
     @Override
-    public EvaluationCriteriaCollection addOrUpdateEvaluationCriteriaCollection(EvaluationCriteriaCollectionDTO evaluationCriteriaCollectionDTO) {
-        EvaluationCriteriaCollection evaluationCriteriaCollection;
+    public List<EvaluationCriteriaCollectionDTO> getAll(Map<String, String> params, boolean pagination, boolean details) {
+        return this.evaluationCriteriaCollectionRepository.getAll(params, pagination, details)
+                .stream().map(this::toEvaluationCriteriaCollectionDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EvaluationCriteriaCollectionListDTO> getAllForListView(Map<String, String> params, boolean pagination) {
+        return this.evaluationCriteriaCollectionRepository.getAll(params, pagination, false) // details = false
+                .stream().map(this::toEvaluationCriteriaCollectionListDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public EvaluationCriteriaCollectionDTO addOrUpdate(EvaluationCriteriaCollectionDTO evaluationCriteriaCollectionDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         AcademicStaff academicStaff = null;
 
         if (authentication != null && authentication.isAuthenticated()) {
-            academicStaff = academicsStaffService.getAcademicStaff(Map.of("username", authentication.getName()));
+            academicStaff = academicsStaffRepository.get(Map.of("username", authentication.getName()));
         }
-        
+
+        // Chuẩn bị map EvaluationCriteria
+        Set<Integer> criteriaIds = Optional.ofNullable(evaluationCriteriaCollectionDTO.getEvaluationCriterias())
+                .map(criterias -> criterias.stream()
+                .filter(c -> c.isSelectedForCollection() && c.getId() != null)
+                .map(EvaluationCriteriaDTO::getId)
+                .collect(Collectors.toSet()))
+                .orElse(Collections.emptySet());
+
+        Map<Integer, EvaluationCriteria> criteriaMap = criteriaIds.isEmpty() ? new HashMap<>()
+                : evaluationCriteriaRepository.getByIds(new ArrayList<>(criteriaIds)).stream()
+                        .collect(Collectors.toMap(EvaluationCriteria::getId, c -> c));
+
+        EvaluationCriteriaCollection evaluationCriteriaCollection;
+
         if (evaluationCriteriaCollectionDTO.getId() == null) {
             evaluationCriteriaCollection = new EvaluationCriteriaCollection();
             evaluationCriteriaCollection.setEvaluationCriteriaCollectionDetails(new HashSet<>());
         } else {
-            evaluationCriteriaCollection = evaluationCriteriaCollectionRepository.getEvaluationCriteriaCollection(
-                    Map.of("id", evaluationCriteriaCollectionDTO.getId().toString()));
-            
+            evaluationCriteriaCollection = evaluationCriteriaCollectionRepository.get(
+                    Map.of("id", String.valueOf(evaluationCriteriaCollectionDTO.getId())));
+
             evaluationCriteriaCollection.getEvaluationCriteriaCollectionDetails().clear();
         }
 
@@ -72,57 +119,72 @@ public class EvaluationCriteriaCollectionServiceImpl implements EvaluationCriter
         evaluationCriteriaCollection.setDescription(evaluationCriteriaCollectionDTO.getDescription());
         evaluationCriteriaCollection.setCreatedBy(academicStaff);
 
-        // luu de lay id
-        evaluationCriteriaCollection = evaluationCriteriaCollectionRepository.addOrUpdateEvaluationCriteriaCollection(evaluationCriteriaCollection);
-        
-        if (evaluationCriteriaCollectionDTO.getSelectedCriterias() != null && 
-            evaluationCriteriaCollectionDTO.getEvaluationCriterias() != null) {
-            
-            Map<Integer, Float> criteriaWeights = new HashMap<>();
+        evaluationCriteriaCollection = evaluationCriteriaCollectionRepository.addOrUpdate(evaluationCriteriaCollection);
+
+        // Thêm các chi tiết mới từ map đã chuẩn bị
+        if (!criteriaIds.isEmpty()) {
             for (EvaluationCriteriaDTO criteriaDTO : evaluationCriteriaCollectionDTO.getEvaluationCriterias()) {
-                if (criteriaDTO.getId() != null && criteriaDTO.getWeight() != null) {
-                    criteriaWeights.put(criteriaDTO.getId(), criteriaDTO.getWeight());
+                if (criteriaDTO.isSelectedForCollection() && criteriaDTO.getId() != null) {
+                    EvaluationCriteria criteria = criteriaMap.get(criteriaDTO.getId());
+                    if (criteria == null) {
+                        System.err.println("Cảnh báo: Không tìm thấy tiêu chí với ID " + criteriaDTO.getId());
+                        continue;
+                    }
+
+                    EvaluationCriteriaCollectionDetailPK pk = new EvaluationCriteriaCollectionDetailPK(
+                            evaluationCriteriaCollection.getId(),
+                            criteria.getId());
+                    EvaluationCriteriaCollectionDetail detail = new EvaluationCriteriaCollectionDetail(pk);
+                    detail.setEvaluationCriteriaCollection(evaluationCriteriaCollection);
+                    detail.setEvaluationCriteria(criteria);
+                    detail.setWeight(criteriaDTO.getWeight() != null ? criteriaDTO.getWeight() : 0f);
+                    evaluationCriteriaCollection.getEvaluationCriteriaCollectionDetails().add(detail);
                 }
             }
-            
-            for (EvaluationCriteria criteria : evaluationCriteriaCollectionDTO.getSelectedCriterias()) {
-                EvaluationCriteriaCollectionDetailPK pk = new EvaluationCriteriaCollectionDetailPK(
-                        evaluationCriteriaCollection.getId(), criteria.getId());
-                
-                EvaluationCriteriaCollectionDetail detail = new EvaluationCriteriaCollectionDetail(pk);
-                detail.setEvaluationCriteriaCollection(evaluationCriteriaCollection);
-                detail.setEvaluationCriteria(criteria);
-                
-                Float weight = criteriaWeights.getOrDefault(criteria.getId(), 0f);
-                detail.setWeight(weight);
-                
-                evaluationCriteriaCollection.getEvaluationCriteriaCollectionDetails().add(detail);
-            }
-            
-            evaluationCriteriaCollection = evaluationCriteriaCollectionRepository.addOrUpdateEvaluationCriteriaCollection(evaluationCriteriaCollection);
         }
 
-        return evaluationCriteriaCollection;
+        // Lưu lại với các chi tiết mới
+        EvaluationCriteriaCollection savedCollection = evaluationCriteriaCollectionRepository.addOrUpdate(evaluationCriteriaCollection);
+        return toEvaluationCriteriaCollectionDTO(savedCollection);
+    }
+
+    private EvaluationCriteriaCollectionDTO toEvaluationCriteriaCollectionDTO(EvaluationCriteriaCollection ecc) {
+        EvaluationCriteriaCollectionDTO dto = modelMapper.map(ecc, EvaluationCriteriaCollectionDTO.class);
+        if (ecc.getCreatedBy() != null) {
+            dto.setCreatedByName(ecc.getCreatedBy().getFirstName() + " " + ecc.getCreatedBy().getLastName());
+            dto.setCreatedById(ecc.getCreatedBy().getId());
+        }
+
+        if (ecc.getEvaluationCriteriaCollectionDetails() != null) {
+            List<EvaluationCriteriaDTO> criteriaDTOs = ecc.getEvaluationCriteriaCollectionDetails().stream()
+                    .map(detail -> {
+                        EvaluationCriteriaDTO criteriaDto = modelMapper.map(detail.getEvaluationCriteria(), EvaluationCriteriaDTO.class);
+                        criteriaDto.setWeight(detail.getWeight());
+                        return criteriaDto;
+                    })
+                    .collect(Collectors.toList());
+            dto.setEvaluationCriterias(criteriaDTOs);
+        }
+        return dto;
+    }
+
+    private EvaluationCriteriaCollectionListDTO toEvaluationCriteriaCollectionListDTO(EvaluationCriteriaCollection ecc) {
+        EvaluationCriteriaCollectionListDTO listDto = modelMapper.map(ecc, EvaluationCriteriaCollectionListDTO.class);
+        if (ecc.getCreatedBy() != null) {
+            listDto.setCreatedByName(ecc.getCreatedBy().getFirstName() + " " + ecc.getCreatedBy().getLastName());
+        }
+        return listDto;
     }
 
     @Override
-    public List<EvaluationCriteriaCollection> getEvaluationCriteriaCollectionsWithDetails(Map<String, String> params, boolean pagination) {
-        return evaluationCriteriaCollectionRepository.getEvaluationCriteriaCollectionsWithDetails(params, pagination);
+    public void delete(int id) {
+        evaluationCriteriaCollectionRepository.delete(id);
     }
 
     @Override
-    public List<EvaluationCriteriaCollection> getEvaluationCriteriaCollectionsWithDetails(Map<String, String> params) {
-        return this.getEvaluationCriteriaCollectionsWithDetails(params, false);
-    }
-
-    @Override
-    public void deleteEvaluationCriteriaCollection(int id) {
-        evaluationCriteriaCollectionRepository.deleteEvaluationCriteriaCollection(id);
-    }
-
-    @Override
-    public EvaluationCriteriaCollection getEvaluationCriteriaCollection(Map<String, String> params) {
-        return evaluationCriteriaCollectionRepository.getEvaluationCriteriaCollection(params);
+    public EvaluationCriteriaCollectionDTO get(Map<String, String> params) {
+        EvaluationCriteriaCollection entity = evaluationCriteriaCollectionRepository.get(params);
+        return entity != null ? toEvaluationCriteriaCollectionDTO(entity) : null;
     }
 
 }

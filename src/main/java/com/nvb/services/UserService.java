@@ -4,7 +4,6 @@
  */
 package com.nvb.services;
 
-import com.nvb.pojo.User;
 import java.util.List;
 import java.util.Map;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,9 +15,11 @@ import com.nvb.dto.UserDTO;
  * @author nguyenvanbao
  */
 public interface UserService extends UserDetailsService{
-    User getUser(Map<String, String> params);
-    User addOrUpdateUser(UserDTO userDto, MultipartFile avatar);
-    User authenticate(String userName, String password);
-    List<User> getUsers(Map<String, String> params);
-    void deleteUser(int id);
+    UserDTO get(Map<String, String> params);
+    UserDTO addOrUpdate(UserDTO userDto, MultipartFile avatar);
+    UserDTO authenticate(String username, String password);
+    List<UserDTO> getAll(Map<String, String> params);
+    List<UserDTO> getAll(Map<String, String> params, boolean pagination);
+    List<UserDTO> getAll(Map<String, String> params, boolean pagination, boolean details);
+    void delete(int id);
 }

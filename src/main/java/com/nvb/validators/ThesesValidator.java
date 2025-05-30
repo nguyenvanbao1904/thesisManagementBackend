@@ -4,11 +4,12 @@
  */
 package com.nvb.validators;
 
+import com.nvb.dto.CommitteeDTO;
 import com.nvb.dto.ThesesDTO;
-import com.nvb.pojo.Student;
-import com.nvb.pojo.Thesis;
-import com.nvb.services.StudentService;
+import com.nvb.dto.UserDTO;
+import com.nvb.services.CommitteeService;
 import com.nvb.services.ThesesService;
+import com.nvb.services.UserService;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,10 @@ public class ThesesValidator implements Validator {
     private ThesesService thesesService;
 
     @Autowired
-    private StudentService studentService;
+    private UserService userService;
+
+    @Autowired
+    private CommitteeService committeeService;
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -40,7 +44,7 @@ public class ThesesValidator implements Validator {
 
         // Kiểm tra trùng lặp title
         if (thesesDTO.getTitle() != null && !thesesDTO.getTitle().isBlank()) {
-            Thesis existingThesisByTitle = thesesService.getThesis(Map.of("title", thesesDTO.getTitle()));
+            ThesesDTO existingThesisByTitle = thesesService.get(Map.of("title", thesesDTO.getTitle()));
             if (thesesDTO.getId() == null) {
                 if (existingThesisByTitle != null) {
                     errors.rejectValue("title", "theses.title.duplicateMsg");
@@ -52,33 +56,39 @@ public class ThesesValidator implements Validator {
             }
         }
         // tối đa 2 giảng viên hướng dẫn
-        if (thesesDTO.getLecturers() != null && thesesDTO.getLecturers().size() > 2) {
-            errors.rejectValue("lecturers", "theses.lecturers.maxMsg");
+        if (thesesDTO.getLecturerIds() != null && thesesDTO.getLecturerIds().size() > 2) {
+            errors.rejectValue("lecturerIds", "theses.lecturers.maxMsg");
         }
-        // toi da 2 sinh vien tham gia
-        if (thesesDTO.getStudents() != null && thesesDTO.getStudents().size() > 2) {
-            errors.rejectValue("students", "theses.students.maxMsg");
+        // tối đa 2 sinh viên tham gia
+        if (thesesDTO.getStudentIds() != null && thesesDTO.getStudentIds().size() > 2) {
+            errors.rejectValue("studentIds", "theses.students.maxMsg");
         }
 
-        // 1 sinh vien chi duoc tham gia 1 khoa luan
-        for (Student student : thesesDTO.getStudents()) {
-            Student s = studentService.getStudentWithDetails(new HashMap<>(Map.of("studentId", student.getStudentId())));
-            if (thesesDTO.getId() == null) {
-                if (!s.getTheses().isEmpty()) {
-                    errors.rejectValue("students",
-                            null,
-                            String.format("Sinh viên %s %s đã được đăng ký khóa luận tốt nghiệp",
-                                    s.getUser().getLastName(), s.getUser().getFirstName()));
-                }
-            }else{
-                if (!s.getTheses().isEmpty() && !s.getTheses().iterator().next().getId().equals(thesesDTO.getId())) {
-                    errors.rejectValue("students",
-                            null,
-                            String.format("Sinh viên %s %s đã được đăng ký khóa luận tốt nghiệp",
-                                    s.getUser().getLastName(), s.getUser().getFirstName()));
+        // Tối đa 5 khóa luận cho 1 hội đồng
+        if (thesesDTO.getCommitteeId() != null) {
+            CommitteeDTO committeeDTO = committeeService.get(new HashMap<>(Map.of("id", thesesDTO.getCommitteeId().toString())));
+            if(committeeDTO.getTheses() != null && committeeDTO.getTheses().size() > 5){
+                errors.rejectValue("committeeId", "theses.committee.limitMsg");
+            }
+        }
+
+        // 1 sinh viên chỉ được tham gia 1 khóa luận
+        if (thesesDTO.getStudentIds() != null) {
+            for (Integer studentUserId : thesesDTO.getStudentIds()) {
+                if (thesesService.isStudentInAnotherActiveThesis(studentUserId, thesesDTO.getId())) {
+                    // Lấy thông tin user để hiển thị tên
+                    UserDTO studentUser = userService.get(Map.of("id", studentUserId.toString()));
+                    String studentName = "";
+                    if (studentUser != null) {
+                        studentName = studentUser.getLastName() + " " + studentUser.getFirstName();
+                    } else {
+                        studentName = "Sinh viên (ID: " + studentUserId + ")"; // Fallback nếu không lấy được user
+                    }
+                    errors.rejectValue("studentIds",
+                            "theses.student.alreadyRegistered",
+                            String.format("Sinh viên %s đã được đăng ký một khóa luận tốt nghiệp khác.", studentName));
                 }
             }
-
         }
     }
 }
