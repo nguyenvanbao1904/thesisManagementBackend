@@ -13,19 +13,27 @@ import com.nvb.pojo.CommitteeMember;
 import com.nvb.pojo.CommitteeMemberPK;
 import com.nvb.pojo.CommitteeMemberRole;
 import com.nvb.pojo.CommitteeStatus;
+import com.nvb.pojo.EvaluationFinalScore;
+import com.nvb.pojo.EvaluationScore;
 import com.nvb.pojo.Lecturer;
 import com.nvb.pojo.Thesis;
+import com.nvb.pojo.ThesisStatus;
 import com.nvb.repositories.AcademicsStaffRepository;
 import com.nvb.repositories.CommitteeRepository;
+import com.nvb.repositories.EvaluationRepository;
 import com.nvb.repositories.LecturerRepository;
 import com.nvb.repositories.ThesesRepository;
 import com.nvb.services.CommitteeService;
 import jakarta.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -58,6 +66,9 @@ public class CommitteeServiceImpl implements CommitteeService {
 
     @Autowired
     private ThesesRepository thesesRepository;
+    
+    @Autowired
+    private EvaluationRepository evaluationRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -118,14 +129,22 @@ public class CommitteeServiceImpl implements CommitteeService {
             academicStaff = academicsStaffRepository.get(Map.of("username", authentication.getName()));
         }
 
-        // Chuẩn bị map Lecturer
-        Set<Integer> dtoLecturerIds = Optional.ofNullable(committeeDTO.getMemberLecturerId())
-                .map(ids -> Arrays.stream(ids).filter(Objects::nonNull).collect(Collectors.toSet()))
-                .orElse(Collections.emptySet());
+        List<Integer> dtoLecturerIds = Optional.ofNullable(committeeDTO.getMemberLecturerId())
+                .map(ids -> Arrays.stream(ids).filter(Objects::nonNull).collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
 
-        Map<Integer, Lecturer> lecturerMap = dtoLecturerIds.isEmpty() ? new HashMap<>()
-                : lecturerRepository.getByIds(new ArrayList<>(dtoLecturerIds)).stream()
-                        .collect(Collectors.toMap(Lecturer::getId, l -> l));
+        Map<Integer, Lecturer> lecturerMap = new LinkedHashMap<>();
+        if (!dtoLecturerIds.isEmpty()) {
+            Map<Integer, Lecturer> fetchedLecturers = lecturerRepository.getByIds(dtoLecturerIds).stream()
+                    .collect(Collectors.toMap(Lecturer::getId, l -> l));
+
+            for (Integer id : dtoLecturerIds) {
+                Lecturer lecturer = fetchedLecturers.get(id);
+                if (lecturer != null) {
+                    lecturerMap.put(id, lecturer);
+                }
+            }
+        }
 
         // Chuan bi map Thesis
         Set<Integer> dtoThesesIds = Optional.ofNullable(committeeDTO.getThesesIds())
@@ -215,7 +234,7 @@ public class CommitteeServiceImpl implements CommitteeService {
         committeeRepository.delete(id);
     }
 
-    private CommitteeDTO toCommitteeDTO(Committee committee) {
+    public CommitteeDTO toCommitteeDTO(Committee committee) {
         CommitteeDTO dto = new CommitteeDTO();
 
         dto.setId(committee.getId());
@@ -260,5 +279,167 @@ public class CommitteeServiceImpl implements CommitteeService {
             dto.setCreatedByName(committee.getCreatedBy().getFirstName() + " " + committee.getCreatedBy().getLastName());
         }
         return dto;
+    }
+
+    //  schedule
+    @Override
+    public int activateCommitteesBeforeDefense(Date now, Date targetTime) {
+        // Convert Date to LocalDateTime
+        LocalDateTime nowLDT = now.toInstant()
+                .atZone(ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime targetLDT = targetTime.toInstant()
+                .atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        List<Committee> committees = committeeRepository
+                .findLockedCommitteesInTimeRange(nowLDT, targetLDT);
+
+        for (Committee committee : committees) {
+            committee.setStatus(CommitteeStatus.ACTIVE.toString());
+            committee.getTheses().forEach(e -> e.setStatus(ThesisStatus.IN_PROGRESS.toString()));
+            committeeRepository.addOrUpdate(committee);
+        }
+
+        return committees.size();
+    }
+
+    @Override
+    public int lockCommitteesAfterDefense(Date lockTime) {
+        LocalDateTime lockLDT = lockTime.toInstant()
+                .atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        List<Committee> committees = committeeRepository
+                .findActiveCommitteesAfterDefense(lockLDT);
+
+        for (Committee committee : committees) {
+            committee.setStatus(CommitteeStatus.LOCKED.toString());
+            
+            // Lấy danh sách thesisId để xử lý, không xử lý entity trực tiếp
+            Set<Integer> thesisIds = committee.getTheses().stream()
+                    .map(Thesis::getId)
+                    .collect(Collectors.toSet());
+                    
+            // Cập nhật trạng thái khóa luận
+            committee.getTheses().forEach(e -> e.setStatus(ThesisStatus.COMPLETED.toString()));
+            committeeRepository.addOrUpdate(committee);
+            
+            // Tính điểm trung bình cho từng khóa luận
+            for (Integer thesisId : thesisIds) {
+                calculateAndSaveFinalScore(thesisId);
+            }
+        }
+
+        return committees.size();
+    }
+
+    @Override
+    public int activateMissedCommittees(Date now, Date futureTime) {
+        LocalDateTime nowLDT = now.toInstant()
+                .atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        // Tính thời gian 30 phút trước now
+        LocalDateTime pastTime = nowLDT.minusMinutes(30);
+
+        List<Committee> committees = committeeRepository
+                .findMissedCommittees(pastTime, nowLDT);
+
+        for (Committee committee : committees) {
+            committee.setStatus(CommitteeStatus.ACTIVE.toString());
+            committee.getTheses().forEach(e -> e.setStatus(ThesisStatus.IN_PROGRESS.toString()));
+            committeeRepository.addOrUpdate(committee);
+        }
+
+        return committees.size();
+    }
+
+    @Override
+    public int lockOverdueCommittees(Date lockTime) {
+        LocalDateTime lockLDT = lockTime.toInstant()
+                .atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        List<Committee> committees = committeeRepository
+                .findOverdueCommittees(lockLDT);
+
+        for (Committee committee : committees) {
+            committee.setStatus(CommitteeStatus.LOCKED.toString());
+            // Lấy danh sách thesisId để xử lý, không xử lý entity trực tiếp
+            Set<Integer> thesisIds = committee.getTheses().stream()
+                    .map(Thesis::getId)
+                    .collect(Collectors.toSet());
+                    
+            // Cập nhật trạng thái khóa luận
+            committee.getTheses().forEach(e -> e.setStatus(ThesisStatus.COMPLETED.toString()));
+            committeeRepository.addOrUpdate(committee);
+            
+            // Tính điểm trung bình cho từng khóa luận
+            for (Integer thesisId : thesisIds) {
+                calculateAndSaveFinalScore(thesisId);
+            }
+        }
+
+        return committees.size();
+    }
+
+    // Phương thức tính điểm và lưu, nhận thesisId thay vì entity
+    private void calculateAndSaveFinalScore(Integer thesisId) {
+        // Tính điểm trung bình từ repository
+        Float averageScore = evaluationRepository.calculateAverageScore(thesisId);
+        
+        if (averageScore != null) {
+            Thesis thesis = thesesRepository.get(new HashMap<>(Map.of("id", thesisId.toString())));
+            if (thesis == null) {
+                return;
+            }
+            
+            // Lấy comment của chairman
+            String chairmanComment = null;
+            Committee committee = thesis.getCommitteeId();
+            if (committee != null) {
+                // Tìm chairman trong hội đồng
+                CommitteeMember chairman = committee.getCommitteeMembers().stream()
+                    .filter(member -> "ROLE_CHAIRMAN".equals(member.getRole()))
+                    .findFirst()
+                    .orElse(null);
+                    
+                if (chairman != null) {
+                    Integer chairmanId = chairman.getLecturer().getId();
+                    
+                    // Lấy tất cả comments của chairman
+                    Map<String, String> params = new HashMap<>();
+                    params.put("thesisId", thesisId.toString());
+                    params.put("lecturerId", chairmanId.toString());
+                    
+                    List<EvaluationScore> chairmanScores = evaluationRepository.getEvaluation(params);
+                    
+                    // Ghép tất cả comments lại
+                    StringBuilder commentBuilder = new StringBuilder();
+                    for (EvaluationScore score : chairmanScores) {
+                        if (score.getComment() != null && !score.getComment().isEmpty()) {
+                            if (commentBuilder.length() > 0) {
+                                commentBuilder.append("\n");
+                            }
+                            commentBuilder.append("Tiêu chí '")
+                                         .append(score.getEvaluationCriteria().getName())
+                                         .append("': ")
+                                         .append(score.getComment());
+                        }
+                    }
+                    
+                    chairmanComment = commentBuilder.length() > 0 ? commentBuilder.toString() : null;
+                }
+            }
+            
+            EvaluationFinalScore finalScore = thesis.getEvaluationFinalScore();
+            if (finalScore == null) {
+                finalScore = new EvaluationFinalScore();
+                finalScore.setThesis(thesis);
+                finalScore.setThesisId(thesisId);
+            }
+            
+            finalScore.setAverageScore(averageScore);
+            finalScore.setChairmanComment(chairmanComment);
+            
+            // Lưu vào database
+            evaluationRepository.addOrUpdateFinalScore(finalScore);
+        }
     }
 }

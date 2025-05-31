@@ -48,6 +48,8 @@ public class ThesesDTO {
     private String evaluationCriteriaCollectionName;
     private String reviewerName;
     private Float averageScore;
+    private Set<UserDTO> lecturers;
+    private Set<UserDTO> students;
 
     public ThesesDTO() {
     }
@@ -186,6 +188,22 @@ public class ThesesDTO {
 
     public void setAverageScore(Float averageScore) {
         this.averageScore = averageScore;
+    }
+
+    public Set<UserDTO> getLecturers() {
+        return lecturers;
+    }
+
+    public void setLecturers(Set<UserDTO> lecturers) {
+        this.lecturers = lecturers;
+    }
+
+    public Set<UserDTO> getStudents() {
+        return students;
+    }
+
+    public void setStudents(Set<UserDTO> students) {
+        this.students = students;
     }
 
     @Override

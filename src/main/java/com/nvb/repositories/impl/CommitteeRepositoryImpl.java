@@ -79,7 +79,7 @@ public class CommitteeRepositoryImpl implements CommitteeRepository {
                 try {
                     page = Integer.parseInt(params.get("page"));
                 } catch (NumberFormatException ex) {
-                    page = 1; 
+                    page = 1;
                 }
                 int start = (page - 1) * PAGE_SIZE;
                 q.setMaxResults(PAGE_SIZE);
@@ -197,4 +197,90 @@ public class CommitteeRepositoryImpl implements CommitteeRepository {
         Session s = factory.getObject().getCurrentSession();
         s.remove(s.get(Committee.class, id));
     }
+
+    // schedule
+    @Override
+    public List<Committee> findLockedCommitteesInTimeRange(LocalDateTime startTime, LocalDateTime endTime) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<Committee> query = builder.createQuery(Committee.class);
+        Root<Committee> root = query.from(Committee.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // status = 'LOCKED'
+        predicates.add(builder.equal(root.get("status"), "LOCKED"));
+
+        // defenseDate BETWEEN startTime AND endTime
+        predicates.add(builder.between(root.get("defenseDate"), startTime, endTime));
+
+        query.select(root);
+        query.where(predicates.toArray(new Predicate[0]));
+
+        return s.createQuery(query).getResultList();
+    }
+
+    @Override
+    public List<Committee> findActiveCommitteesAfterDefense(LocalDateTime lockTime) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<Committee> query = builder.createQuery(Committee.class);
+        Root<Committee> root = query.from(Committee.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // status = 'ACTIVE'
+        predicates.add(builder.equal(root.get("status"), "ACTIVE"));
+
+        // defenseDate <= lockTime (đã qua 2 ngày)
+        predicates.add(builder.lessThanOrEqualTo(root.get("defenseDate"), lockTime));
+
+        query.select(root);
+        query.where(predicates.toArray(new Predicate[0]));
+
+        return s.createQuery(query).getResultList();
+    }
+
+    @Override
+    public List<Committee> findMissedCommittees(LocalDateTime pastTime, LocalDateTime now) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<Committee> query = builder.createQuery(Committee.class);
+        Root<Committee> root = query.from(Committee.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // status = 'LOCKED' 
+        predicates.add(builder.equal(root.get("status"), "LOCKED"));
+
+        // defenseDate BETWEEN pastTime AND now (đã qua giờ nhưng vẫn LOCKED)
+        predicates.add(builder.between(root.get("defenseDate"), pastTime, now));
+
+        query.select(root);
+        query.where(predicates.toArray(new Predicate[0]));
+
+        return s.createQuery(query).getResultList();
+    }
+
+    @Override
+    public List<Committee> findOverdueCommittees(LocalDateTime lockTime) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<Committee> query = builder.createQuery(Committee.class);
+        Root<Committee> root = query.from(Committee.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // status = 'ACTIVE'
+        predicates.add(builder.equal(root.get("status"), "ACTIVE"));
+
+        // defenseDate <= lockTime
+        predicates.add(builder.lessThanOrEqualTo(root.get("defenseDate"), lockTime));
+
+        query.select(root);
+        query.where(predicates.toArray(new Predicate[0]));
+
+        return s.createQuery(query).getResultList();
+    }
+
 }

@@ -26,19 +26,17 @@ public class CommitteeMemberDTO {
     private String lecturerName;
     private String academicTitle;
     private String academicDegree;
-    private String committeeName;
 
     public CommitteeMemberDTO() {
     }
 
-    public CommitteeMemberDTO(Integer committeeId, Integer lecturerId, String role, String lecturerName, String academicTitle, String academicDegree, String committeeName) {
+    public CommitteeMemberDTO(Integer committeeId, Integer lecturerId, String role, String lecturerName, String academicTitle, String academicDegree) {
         this.committeeId = committeeId;
         this.lecturerId = lecturerId;
         this.role = role;
         this.lecturerName = lecturerName;
         this.academicTitle = academicTitle;
         this.academicDegree = academicDegree;
-        this.committeeName = committeeName;
     }
 
     public Integer getCommitteeId() {
@@ -88,22 +86,6 @@ public class CommitteeMemberDTO {
     public void setAcademicDegree(String academicDegree) {
         this.academicDegree = academicDegree;
     }
-
-    public String getCommitteeName() {
-        return committeeName;
-    }
-
-    public void setCommitteeName(String committeeName) {
-        this.committeeName = committeeName;
-    }
-
-    @Override
-    public String toString() {
-        return "CommitteeMemberDTO{" +
-                "committeeId=" + committeeId +
-                ", lecturerId=" + lecturerId +
-                ", role='" + role + '\'' +
-                ", lecturerName='" + lecturerName + '\'' +
-                '}';
-    }
+    
+    
 } 

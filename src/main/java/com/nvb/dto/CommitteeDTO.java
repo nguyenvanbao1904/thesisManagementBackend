@@ -21,7 +21,7 @@ public class CommitteeDTO {
     private Integer id;
     
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-    @Future(message = "{committee.defenseDate.future}")
+//    @Future(message = "{committee.defenseDate.future}")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime defenseDate;
     

@@ -31,24 +31,34 @@ import java.io.Serializable;
 @NamedQueries({
     @NamedQuery(name = "EvaluationFinalScore.findAll", query = "SELECT e FROM EvaluationFinalScore e"),
     @NamedQuery(name = "EvaluationFinalScore.findById", query = "SELECT e FROM EvaluationFinalScore e WHERE e.id = :id"),
+    @NamedQuery(name = "EvaluationFinalScore.findByThesisId", query = "SELECT e FROM EvaluationFinalScore e WHERE e.thesisId = :thesisId"),
     @NamedQuery(name = "EvaluationFinalScore.findByAverageScore", query = "SELECT e FROM EvaluationFinalScore e WHERE e.averageScore = :averageScore")})
 public class EvaluationFinalScore implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "id")
     private Integer id;
+    
+    @Basic(optional = false)
+    @NotNull
+    @Column(name = "thesis_id")
+    private Integer thesisId;
+    
     @Basic(optional = false)
     @NotNull
     @Column(name = "average_score")
     private float averageScore;
+    
     @Lob
     @Size(max = 65535)
     @Column(name = "chairman_comment")
     private String chairmanComment;
-    @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
+    
+    @JoinColumn(name = "thesis_id", referencedColumnName = "id", insertable = false, updatable = false)
     @OneToOne(optional = false)
     private Thesis thesis;
 
@@ -59,8 +69,9 @@ public class EvaluationFinalScore implements Serializable {
         this.id = id;
     }
 
-    public EvaluationFinalScore(Integer id, float averageScore) {
+    public EvaluationFinalScore(Integer id, Integer thesisId, float averageScore) {
         this.id = id;
+        this.thesisId = thesisId;
         this.averageScore = averageScore;
     }
 
@@ -70,6 +81,14 @@ public class EvaluationFinalScore implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+    
+    public Integer getThesisId() {
+        return thesisId;
+    }
+
+    public void setThesisId(Integer thesisId) {
+        this.thesisId = thesisId;
     }
 
     public float getAverageScore() {
@@ -120,5 +139,4 @@ public class EvaluationFinalScore implements Serializable {
     public String toString() {
         return "com.nvb.configs.EvaluationFinalScore[ id=" + id + " ]";
     }
-    
 }

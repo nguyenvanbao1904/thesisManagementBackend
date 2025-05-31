@@ -6,6 +6,7 @@ package com.nvb.services.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.nvb.dto.EvaluationFinalScoreDTO;
 import com.nvb.dto.ThesesDTO;
 import com.nvb.pojo.AcademicStaff;
 import com.nvb.pojo.Thesis;
@@ -33,8 +34,12 @@ import com.nvb.repositories.StudentRepository;
 import java.util.HashSet;
 import java.util.Set;
 import com.nvb.dto.ThesesListDTO;
+import com.nvb.dto.UserDTO;
 import com.nvb.pojo.Committee;
+import com.nvb.pojo.CommitteeStatus;
 import com.nvb.repositories.CommitteeRepository;
+import com.nvb.services.EvaluationService;
+import java.util.HashMap;
 
 /**
  *
@@ -43,63 +48,68 @@ import com.nvb.repositories.CommitteeRepository;
 @Transactional
 @Service
 public class ThesesServiceImpl implements ThesesService {
-
+    
     @Autowired
     private ThesesRepository thesesRepository;
-
+    
     @Autowired
     private UserRepository userRepository;
-
+    
     @Autowired
     private EvaluationCriteriaCollectionRepository evaluationCriteriaCollectionRepository;
-
+    
     @Autowired
     private Cloudinary cloudinary;
-
+    
     @Autowired
     private ModelMapper modelMapper;
-
+    
     @Autowired
     private StudentRepository studentRepository;
     
     @Autowired
     private CommitteeRepository committeeRepository;
-
+    
     @Autowired
     private LecturerRepository lecturerRepository;
-
+    
+    @Autowired
+    private EvaluationService evaluationService;
+    
     @Override
     public List<ThesesDTO> getAll(Map<String, String> params) {
         return getAll(params, false, false);
     }
-
+    
     @Override
     public List<ThesesDTO> getAll(Map<String, String> params, boolean pagination) {
         return getAll(params, pagination, false);
     }
-
+    
     @Override
     public List<ThesesDTO> getAll(Map<String, String> params, boolean pagination, boolean details) {
         return thesesRepository.getAll(params, pagination, details)
                 .stream().map(this::toDTO).collect(Collectors.toList());
     }
-
+    
     @Override
     public ThesesDTO addOrUpdate(ThesesDTO thesesDTO) {
         Thesis thesis;
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        AcademicStaff createdByAcademicStaff = null;
-
-        if (authentication != null && authentication.isAuthenticated()) {
-            User currentUser = userRepository.get(Map.of("username", authentication.getName()));
-            if (currentUser != null && currentUser instanceof AcademicStaff) {
-                createdByAcademicStaff = (AcademicStaff) currentUser;
-            }
-        }
-
+        
         if (thesesDTO.getId() == null) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            AcademicStaff createdByAcademicStaff = null;
+            
+            if (authentication != null && authentication.isAuthenticated()) {
+                User currentUser = userRepository.get(Map.of("username", authentication.getName()));
+                if (currentUser != null && currentUser instanceof AcademicStaff) {
+                    createdByAcademicStaff = (AcademicStaff) currentUser;
+                }
+            }
+            
             thesis = new Thesis();
             thesis.setStatus(ThesisStatus.DRAFT.toString());
+            thesis.setCreatedBy(createdByAcademicStaff);
         } else {
             thesis = thesesRepository.get(Map.of("id", thesesDTO.getId().toString()));
             if (thesis.getLecturers() != null) {
@@ -110,7 +120,6 @@ public class ThesesServiceImpl implements ThesesService {
             }
         }
         modelMapper.map(thesesDTO, thesis);
-        thesis.setCreatedBy(createdByAcademicStaff);
 
         // Set EvaluationCriteriaCollection
         if (thesesDTO.getEvaluationCriteriaCollectionId() != null) {
@@ -129,11 +138,16 @@ public class ThesesServiceImpl implements ThesesService {
         } else {
             thesis.setReviewerId(null);
         }
-        
+
         // Set Committee
-        if (thesesDTO.getCommitteeId()!= null) {
+        if (thesesDTO.getCommitteeId() != null) {
             Committee committee = committeeRepository.get(Map.of("id", String.valueOf(thesesDTO.getCommitteeId())));
             thesis.setCommitteeId(committee);
+            if (committee.getStatus().equals(CommitteeStatus.ACTIVE.toString())) {
+                thesis.setStatus(ThesisStatus.IN_PROGRESS.toString());
+            } else if (committee.getStatus().equals(CommitteeStatus.LOCKED.toString())) {
+                thesis.setStatus(ThesisStatus.COMPLETED.toString());
+            }
         } else {
             thesis.setCommitteeId(null);
         }
@@ -167,7 +181,7 @@ public class ThesesServiceImpl implements ThesesService {
                 String publicId = originalFilename != null
                         ? originalFilename.replaceAll("\\s+", "_")
                         : "uploaded_file";
-
+                
                 Map uploadResult = cloudinary.uploader().upload(
                         thesesDTO.getFile().getBytes(),
                         ObjectUtils.asMap("resource_type", "raw", "public_id", publicId)
@@ -177,21 +191,21 @@ public class ThesesServiceImpl implements ThesesService {
                 System.err.println("File upload error: " + ex.getMessage());
             }
         }
-
+        
         return toDTO(thesesRepository.addOrUpdate(thesis));
     }
-
+    
     @Override
     public ThesesDTO get(Map<String, String> params) {
         Thesis thesis = thesesRepository.get(params);
         return thesis != null ? toDTO(thesis) : null;
     }
-
+    
     @Override
     public void delete(int id) {
         thesesRepository.delete(id);
     }
-
+    
     @Override
     public boolean isStudentInAnotherActiveThesis(Integer studentUserId, Integer currentThesisIdToExclude) {
         if (studentUserId == null) {
@@ -200,7 +214,7 @@ public class ThesesServiceImpl implements ThesesService {
         long count = this.thesesRepository.countThesesByStudentAndNotThisThesis(studentUserId, currentThesisIdToExclude);
         return count > 0;
     }
-
+    
     @Override
     public List<ThesesListDTO> getAllForListView(Map<String, String> params, boolean pagination) {
         return thesesRepository.getAll(params, pagination, false)
@@ -208,12 +222,13 @@ public class ThesesServiceImpl implements ThesesService {
                 .map(this::toListDTO)
                 .collect(Collectors.toList());
     }
-
+    
     private ThesesListDTO toListDTO(Thesis thesis) {
         return new ThesesListDTO(thesis.getId(), thesis.getTitle(), thesis.getDescription(), thesis.getStatus(), thesis.getFileUrl());
     }
-
-    private ThesesDTO toDTO(Thesis thesis) {
+    
+    @Override
+    public ThesesDTO toDTO(Thesis thesis) {
         // Tạo DTO mới và map các trường cơ bản
         ThesesDTO dto = new ThesesDTO();
         dto.setId(thesis.getId());
@@ -221,6 +236,13 @@ public class ThesesServiceImpl implements ThesesService {
         dto.setDescription(thesis.getDescription());
         dto.setStatus(thesis.getStatus());
         dto.setFileUrl(thesis.getFileUrl());
+        EvaluationFinalScoreDTO finalScore = evaluationService.getFinalScore(thesis.getId());
+        if (finalScore != null) {
+            dto.setAverageScore(finalScore.getAverageScore());
+            
+        } else {
+            dto.setAverageScore(null);
+        }
 
         // Map committeeId
         if (thesis.getCommitteeId() != null) {
@@ -246,6 +268,12 @@ public class ThesesServiceImpl implements ThesesService {
 
         // Map lecturers
         if (thesis.getLecturers() != null) {
+            dto.setLecturers(thesis.getLecturers().stream()
+                    .map(item -> {
+                        UserDTO u = new UserDTO();
+                        modelMapper.map(item, u);
+                        return u;
+                    }).collect(Collectors.toSet()));
             dto.setLecturerIds(thesis.getLecturers().stream()
                     .map(Lecturer::getId)
                     .collect(Collectors.toSet()));
@@ -253,10 +281,16 @@ public class ThesesServiceImpl implements ThesesService {
 
         // Map students
         if (thesis.getStudents() != null) {
+            dto.setStudents(thesis.getStudents().stream()
+                    .map(item -> {
+                        UserDTO u = new UserDTO();
+                        modelMapper.map(item, u);
+                        return u;
+                    }).collect(Collectors.toSet()));
             dto.setStudentIds(thesis.getStudents().stream()
                     .map(Student::getId)
                     .collect(Collectors.toSet()));
-
+            
             List<String> studentFullNames = thesis.getStudents().stream()
                     .map(s -> s.getFirstName() + " " + s.getLastName()
                     + (s.getStudentId() != null ? " (" + s.getStudentId() + ")" : ""))
@@ -264,10 +298,19 @@ public class ThesesServiceImpl implements ThesesService {
         }
         return dto;
     }
-
+    
     @Override
     public List<ThesesDTO> getByIds(List<Integer> ids) {
         return thesesRepository.getByIds(ids)
                 .stream().map(this::toDTO).collect(Collectors.toList());
+    }
+    
+    @Override
+    public void changeStatus(int thesisId, String thesisStatus) {
+        Thesis thesis = thesesRepository.get(new HashMap<>(Map.of("id", String.valueOf(thesisId))));
+        if (thesis != null) {
+            thesis.setStatus(thesisStatus);
+            thesesRepository.addOrUpdate(thesis);
+        }
     }
 }

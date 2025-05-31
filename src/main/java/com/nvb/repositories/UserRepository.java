@@ -18,4 +18,5 @@ public interface UserRepository {
     User authenticate(String username, String password);
     List<User> getAll(Map<String,String> params, boolean pagination, boolean details);
     void delete(User u);
+    List<User> getByIds(List<Integer> ids);
 }

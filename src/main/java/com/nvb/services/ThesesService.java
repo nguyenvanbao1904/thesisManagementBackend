@@ -6,6 +6,7 @@ package com.nvb.services;
 
 import com.nvb.dto.ThesesDTO;
 import com.nvb.dto.ThesesListDTO;
+import com.nvb.pojo.Thesis;
 import java.util.List;
 import java.util.Map;
 
@@ -32,4 +33,8 @@ public interface ThesesService {
     boolean isStudentInAnotherActiveThesis(Integer studentUserId, Integer currentThesisIdToExclude);
     
     List<ThesesDTO> getByIds(List<Integer> ids);
+    
+    ThesesDTO toDTO(Thesis thesis);
+    
+    void changeStatus(int thesisId, String thesisStatus);
 }

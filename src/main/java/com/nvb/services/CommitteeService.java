@@ -6,7 +6,7 @@ package com.nvb.services;
 
 import com.nvb.dto.CommitteeDTO;
 import com.nvb.dto.CommitteeListDTO;
-// import com.nvb.pojo.Committee; // Removed
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +27,15 @@ public interface CommitteeService {
     CommitteeDTO get(Map<String, String> params);
 
     CommitteeDTO addOrUpdate(CommitteeDTO committeeDTO);
-    
+
     void delete(int id);
+    
+    // schedule 
+    int activateCommitteesBeforeDefense(Date now, Date targetTime);
+
+    int lockCommitteesAfterDefense(Date locktime);
+
+    int activateMissedCommittees(Date now, Date futureTime);
+
+    int lockOverdueCommittees(Date lockTime);
 }

@@ -4,11 +4,13 @@
  */
 package com.nvb.repositories.impl;
 
+import com.nvb.dto.UserDTO;
 import com.nvb.pojo.Lecturer;
 import com.nvb.pojo.Student;
 import com.nvb.pojo.Thesis;
 import com.nvb.pojo.User;
 import com.nvb.repositories.ThesesRepository;
+import com.nvb.repositories.UserRepository;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -39,6 +41,9 @@ public class ThesesRepositoryImpl implements ThesesRepository {
 
     @Autowired
     private LocalSessionFactoryBean factory;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public List<Thesis> getAll(Map<String, String> params, boolean pagination, boolean details) {

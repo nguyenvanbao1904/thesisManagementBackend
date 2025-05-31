@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/committees")
 @CrossOrigin
-public class ApiCommitteeControllers {
+public class ApiCommitteeController {
 
     @Autowired
     private CommitteeService committeeService;

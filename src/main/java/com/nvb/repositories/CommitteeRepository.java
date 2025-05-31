@@ -5,6 +5,7 @@
 package com.nvb.repositories;
 
 import com.nvb.pojo.Committee;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -17,4 +18,10 @@ public interface CommitteeRepository {
     Committee get(Map<String, String> params);
     Committee addOrUpdate(Committee committee);
     void delete(int id);
+    
+    // schedule 
+    List<Committee> findLockedCommitteesInTimeRange(LocalDateTime startTime, LocalDateTime endTime);
+    List<Committee> findActiveCommitteesAfterDefense(LocalDateTime lockTime);
+    List<Committee> findMissedCommittees(LocalDateTime pastTime, LocalDateTime now);
+    List<Committee> findOverdueCommittees(LocalDateTime lockTime);
 }

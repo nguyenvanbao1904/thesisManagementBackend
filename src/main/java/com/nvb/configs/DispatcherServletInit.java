@@ -23,7 +23,8 @@ public class DispatcherServletInit extends AbstractAnnotationConfigDispatcherSer
             MessageSourceConfigs.class,
             MailConfig.class,
             WebAppContextConfigs.class,
-            JacksonConfig.class
+            JacksonConfig.class,
+            SchedulingConfig.class
         };
     }
 

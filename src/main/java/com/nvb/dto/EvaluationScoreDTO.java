@@ -19,7 +19,6 @@ public class EvaluationScoreDTO {
     @NotNull(message = "{evaluationScore.criteriaId.notNullMsg}")
     private Integer criteriaId;
     
-    @NotNull(message = "{evaluationScore.lecturerId.notNullMsg}")
     private Integer lecturerId;
     
     @NotNull(message = "{evaluationScore.score.notNullMsg}")

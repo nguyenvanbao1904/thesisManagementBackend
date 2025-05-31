@@ -170,4 +170,19 @@ public class UserRepositoryImpl implements UserRepository {
         Session s = this.factory.getObject().getCurrentSession();
         s.remove(u);
     }
+
+    @Override
+    public List<User> getByIds(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return new ArrayList<>();
+        }
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder builder = s.getCriteriaBuilder();
+        CriteriaQuery<User> query = builder.createQuery(User.class);
+        Root<User> root = query.from(User.class);
+        query.select(root);
+        query.where(root.get("id").in(ids));
+        query.distinct(true); 
+        return s.createQuery(query).getResultList();
+    }
 }
