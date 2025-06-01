@@ -194,7 +194,11 @@ public class CommitteeServiceImpl implements CommitteeService {
                 committee.getTheses().forEach(thesis -> thesis.setCommitteeId(null));
                 committee.getTheses().clear();
             }
-            committee.setStatus(committeeDTO.getStatus());
+            if(committeeDTO.getStatus() != null){
+                committee.setStatus(committeeDTO.getStatus());
+            }else{
+                committee.setStatus(CommitteeStatus.LOCKED.toString());
+            }
         }
 
         committee.setLocation(committeeDTO.getLocation());

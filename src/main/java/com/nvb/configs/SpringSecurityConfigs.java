@@ -45,43 +45,43 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 })
 @PropertySource("classpath:application.properties")
 public class SpringSecurityConfigs {
-
+    
     @Autowired
     private Environment env;
-
+    
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
+    
     @Bean
     public HandlerMappingIntrospector mvcHandlerMappingIntrospector() {
         return new HandlerMappingIntrospector();
     }
-
+    
     @Bean
     @Order(0)
     public StandardServletMultipartResolver multipartResolver() {
         return new StandardServletMultipartResolver();
     }
-
+    
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-
+        
         CorsConfiguration config = new CorsConfiguration();
-
+        
         config.setAllowedOrigins(List.of("http://localhost:3000/"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
-
+        
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-
+        
         return source;
     }
-
+    
     @Bean
     public Cloudinary cloudinary() {
         Cloudinary cloudinary
@@ -92,17 +92,18 @@ public class SpringSecurityConfigs {
                         "secure", true));
         return cloudinary;
     }
-
+    
     @Autowired
     private JwtFilter jwtFilter;
-
+    
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws
             Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(c -> c.disable())
                 .authorizeHttpRequests(requests -> requests
-                .requestMatchers("/").hasRole("ADMIN")
+                .requestMatchers("/").hasAnyRole("ADMIN", "ACADEMICSTAFF")
+                .requestMatchers("/**").hasRole("ADMIN")
                 // 📘 Theses
                 .requestMatchers(HttpMethod.DELETE, "/api/theses/**").hasAnyRole("ACADEMICSTAFF", "ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/theses/**").hasAnyRole("ACADEMICSTAFF", "ADMIN")

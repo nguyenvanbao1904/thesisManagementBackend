@@ -17,4 +17,5 @@ public interface EvaluationService {
     void evaluate(List<EvaluationScoreDTO> evaluationScoreDTOs);
     List<EvaluationScoreDTO> getEvaluation(Map<String, String> params);
     EvaluationFinalScoreDTO getFinalScore(Integer thesisId);
+    Map<Integer, Map<String, Object>> groupScoresByLecturer(List<EvaluationScoreDTO> scores);
 }

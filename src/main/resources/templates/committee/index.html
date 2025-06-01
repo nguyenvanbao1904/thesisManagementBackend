@@ -43,6 +43,7 @@
                         <td>
                             <a class="btn btn-danger btn-sm" th:onclick="'deleteItem(\''+@{/api/committees/}+'\','+${committee.id}+')'">Xóa</a>
                             <a class="btn btn-success btn-sm" th:href="@{'/committees/' + ${committee.id}}">Cập nhật️</a>
+                            <a class="btn btn-primary btn-sm" th:href="@{'/api/export/committee/' + ${committee.id} + '/scores'}" target="_blank">Xuất PDF</a>
                         </td>
                     </tr>
                 </tbody>

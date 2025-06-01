@@ -6,6 +6,8 @@ package com.nvb.services.impl;
 
 import com.nvb.dto.EvaluationFinalScoreDTO;
 import com.nvb.dto.EvaluationScoreDTO;
+import com.nvb.pojo.Committee;
+import com.nvb.pojo.CommitteeMember;
 import com.nvb.pojo.CommitteeStatus;
 import com.nvb.pojo.EvaluationCriteria;
 import com.nvb.pojo.EvaluationFinalScore;
@@ -22,6 +24,7 @@ import com.nvb.services.EvaluationService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -93,15 +96,15 @@ public class EvaluationServiceImpl implements EvaluationService {
             Thesis thesis = thesesMap.get(evaluationScoreDTO.getThesisId());
 
             if (thesis == null) {
-                throw new RuntimeException("Không tìm thấy luận văn");
+                throw new RuntimeException("Không tìm thấy Khóa luận");
             }
 
             if (thesis.getCommitteeId().getStatus().equals(CommitteeStatus.LOCKED.toString())) {
-                throw new RuntimeException("Hội đồng của luận văn \"" + thesis.getTitle() + "\" đã bị khóa.");
+                throw new RuntimeException("Hội đồng của Khóa luận \"" + thesis.getTitle() + "\" đã bị khóa.");
             }
 
             if (thesis.getStatus().equals(ThesisStatus.COMPLETED.toString())) {
-                throw new RuntimeException("Luận văn \"" + thesis.getTitle() + "\" đã hoàn thành, không thể chỉnh sửa điểm.");
+                throw new RuntimeException("Khóa luận \"" + thesis.getTitle() + "\" đã hoàn thành, không thể chỉnh sửa điểm.");
             }
 
             EvaluationScore evaluationScore = new EvaluationScore();
@@ -147,6 +150,51 @@ public class EvaluationServiceImpl implements EvaluationService {
         rs.setThesisId(score.getThesisId());
         rs.setThesisTitle(score.getThesis().getTitle());
         return rs;
+    }
+
+    @Override
+    public Map<Integer, Map<String, Object>> groupScoresByLecturer(List<EvaluationScoreDTO> scores) {
+        Map<Integer, Map<String, Object>> result = new LinkedHashMap<>();
+        
+        // Nhóm theo giảng viên
+        for (EvaluationScoreDTO score : scores) {
+            Integer lecturerId = score.getLecturerId();
+            
+            if (!result.containsKey(lecturerId)) {
+                Map<String, Object> lecturerData = new HashMap<>();
+                lecturerData.put("lecturerName", score.getLecturerName());
+                
+                // Lấy vai trò của giảng viên trong hội đồng
+                Thesis thesis = thesesRepository.get(Map.of("id", score.getThesisId().toString()));
+                if (thesis != null && thesis.getCommitteeId() != null) {
+                    Committee committee = thesis.getCommitteeId();
+                    String role = "MEMBER"; // Mặc định
+                    
+                    for (CommitteeMember member : committee.getCommitteeMembers()) {
+                        if (member.getLecturer().getId().equals(lecturerId)) {
+                            role = member.getRole();
+                            if (role.startsWith("ROLE_")) {
+                                role = role.substring(5); // Bỏ tiền tố ROLE_
+                            }
+                            break;
+                        }
+                    }
+                    
+                    lecturerData.put("role", role);
+                } else {
+                    lecturerData.put("role", "MEMBER");
+                }
+                
+                lecturerData.put("scores", new ArrayList<EvaluationScoreDTO>());
+                result.put(lecturerId, lecturerData);
+            }
+            
+            // Thêm điểm vào danh sách của giảng viên
+            List<EvaluationScoreDTO> lecturerScores = (List<EvaluationScoreDTO>) result.get(lecturerId).get("scores");
+            lecturerScores.add(score);
+        }
+        
+        return result;
     }
 
 }
