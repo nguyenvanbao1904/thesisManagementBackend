@@ -7,6 +7,8 @@ package com.nvb.services.impl;
 import com.nvb.dto.CommitteeDTO;
 import com.nvb.dto.CommitteeListDTO;
 import com.nvb.dto.CommitteeMemberDTO;
+import com.nvb.dto.ThesesDTO;
+import com.nvb.dto.UserDTO;
 import com.nvb.pojo.AcademicStaff;
 import com.nvb.pojo.Committee;
 import com.nvb.pojo.CommitteeMember;
@@ -24,6 +26,10 @@ import com.nvb.repositories.EvaluationRepository;
 import com.nvb.repositories.LecturerRepository;
 import com.nvb.repositories.ThesesRepository;
 import com.nvb.services.CommitteeService;
+import com.nvb.services.EmailService;
+import com.nvb.services.ThesesService;
+import com.nvb.services.UserService;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -42,6 +48,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -66,9 +74,18 @@ public class CommitteeServiceImpl implements CommitteeService {
 
     @Autowired
     private ThesesRepository thesesRepository;
-    
+
     @Autowired
     private EvaluationRepository evaluationRepository;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private UserService userDetailsService;
+
+    @Autowired
+    private ThesesService thesesService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -177,6 +194,7 @@ public class CommitteeServiceImpl implements CommitteeService {
                 committee.getTheses().forEach(thesis -> thesis.setCommitteeId(null));
                 committee.getTheses().clear();
             }
+            committee.setStatus(committeeDTO.getStatus());
         }
 
         committee.setLocation(committeeDTO.getLocation());
@@ -250,28 +268,49 @@ public class CommitteeServiceImpl implements CommitteeService {
 
         // Map committee members
         if (committee.getCommitteeMembers() != null) {
+            List<String> memberRoles = new ArrayList<>();
             List<CommitteeMemberDTO> memberDTOs = committee.getCommitteeMembers().stream()
                     .map(member -> {
                         CommitteeMemberDTO memberDTO = new CommitteeMemberDTO();
                         memberDTO.setLecturerId(member.getLecturer().getId());
                         memberDTO.setLecturerName(member.getLecturer().getFirstName() + " " + member.getLecturer().getLastName());
                         memberDTO.setRole(member.getRole());
+                        memberRoles.add(member.getRole());
                         return memberDTO;
                     })
                     .collect(Collectors.toList());
             dto.setCommitteeMembers(memberDTOs);
+            dto.setMemberRole(memberRoles.toArray(new String[0]));
         }
 
-        // Map thesis IDs
+        // Map thesis
         if (committee.getTheses() != null) {
-            List<Integer> thesisIds = committee.getTheses().stream()
-                    .map(Thesis::getId)
+            List<ThesesDTO> thesesDTOs = committee.getTheses().stream()
+                    .map(thesis -> {
+                        return thesesService.toDTO(thesis);
+                    })
                     .collect(Collectors.toList());
-            dto.setThesesIds(thesisIds.toArray(new Integer[0]));
+            dto.setTheses(thesesDTOs);
         }
 
-        return dto;
-    }
+            // Map members IDs
+            if (committee.getCommitteeMembers() != null) {
+                List<Integer> memberIds = committee.getCommitteeMembers().stream()
+                        .map(member -> member.getLecturer().getId())
+                        .collect(Collectors.toList());
+                dto.setMemberLecturerId(memberIds.toArray(new Integer[0]));
+            }
+
+            // Map thesis IDs
+            if (committee.getTheses() != null) {
+                List<Integer> thesisIds = committee.getTheses().stream()
+                        .map(Thesis::getId)
+                        .collect(Collectors.toList());
+                dto.setThesesIds(thesisIds.toArray(new Integer[0]));
+            }
+
+            return dto;
+        }
 
     private CommitteeListDTO toCommitteeListDTO(Committee committee) {
         CommitteeListDTO dto = modelMapper.map(committee, CommitteeListDTO.class);
@@ -312,16 +351,16 @@ public class CommitteeServiceImpl implements CommitteeService {
 
         for (Committee committee : committees) {
             committee.setStatus(CommitteeStatus.LOCKED.toString());
-            
+
             // Lấy danh sách thesisId để xử lý, không xử lý entity trực tiếp
             Set<Integer> thesisIds = committee.getTheses().stream()
                     .map(Thesis::getId)
                     .collect(Collectors.toSet());
-                    
+
             // Cập nhật trạng thái khóa luận
             committee.getTheses().forEach(e -> e.setStatus(ThesisStatus.COMPLETED.toString()));
             committeeRepository.addOrUpdate(committee);
-            
+
             // Tính điểm trung bình cho từng khóa luận
             for (Integer thesisId : thesisIds) {
                 calculateAndSaveFinalScore(thesisId);
@@ -365,11 +404,11 @@ public class CommitteeServiceImpl implements CommitteeService {
             Set<Integer> thesisIds = committee.getTheses().stream()
                     .map(Thesis::getId)
                     .collect(Collectors.toSet());
-                    
+
             // Cập nhật trạng thái khóa luận
             committee.getTheses().forEach(e -> e.setStatus(ThesisStatus.COMPLETED.toString()));
             committeeRepository.addOrUpdate(committee);
-            
+
             // Tính điểm trung bình cho từng khóa luận
             for (Integer thesisId : thesisIds) {
                 calculateAndSaveFinalScore(thesisId);
@@ -383,33 +422,33 @@ public class CommitteeServiceImpl implements CommitteeService {
     private void calculateAndSaveFinalScore(Integer thesisId) {
         // Tính điểm trung bình từ repository
         Float averageScore = evaluationRepository.calculateAverageScore(thesisId);
-        
+
         if (averageScore != null) {
             Thesis thesis = thesesRepository.get(new HashMap<>(Map.of("id", thesisId.toString())));
             if (thesis == null) {
                 return;
             }
-            
+
             // Lấy comment của chairman
             String chairmanComment = null;
             Committee committee = thesis.getCommitteeId();
             if (committee != null) {
                 // Tìm chairman trong hội đồng
                 CommitteeMember chairman = committee.getCommitteeMembers().stream()
-                    .filter(member -> "ROLE_CHAIRMAN".equals(member.getRole()))
-                    .findFirst()
-                    .orElse(null);
-                    
+                        .filter(member -> "ROLE_CHAIRMAN".equals(member.getRole()))
+                        .findFirst()
+                        .orElse(null);
+
                 if (chairman != null) {
                     Integer chairmanId = chairman.getLecturer().getId();
-                    
+
                     // Lấy tất cả comments của chairman
                     Map<String, String> params = new HashMap<>();
                     params.put("thesisId", thesisId.toString());
                     params.put("lecturerId", chairmanId.toString());
-                    
+
                     List<EvaluationScore> chairmanScores = evaluationRepository.getEvaluation(params);
-                    
+
                     // Ghép tất cả comments lại
                     StringBuilder commentBuilder = new StringBuilder();
                     for (EvaluationScore score : chairmanScores) {
@@ -418,28 +457,75 @@ public class CommitteeServiceImpl implements CommitteeService {
                                 commentBuilder.append("\n");
                             }
                             commentBuilder.append("Tiêu chí '")
-                                         .append(score.getEvaluationCriteria().getName())
-                                         .append("': ")
-                                         .append(score.getComment());
+                                    .append(score.getEvaluationCriteria().getName())
+                                    .append("': ")
+                                    .append(score.getComment());
                         }
                     }
-                    
+
                     chairmanComment = commentBuilder.length() > 0 ? commentBuilder.toString() : null;
                 }
             }
-            
+
             EvaluationFinalScore finalScore = thesis.getEvaluationFinalScore();
             if (finalScore == null) {
                 finalScore = new EvaluationFinalScore();
                 finalScore.setThesis(thesis);
                 finalScore.setThesisId(thesisId);
             }
-            
+
             finalScore.setAverageScore(averageScore);
             finalScore.setChairmanComment(chairmanComment);
-            
+            String cm = chairmanComment;
+            thesis.getStudents().forEach(e -> {
+                UserDTO student = userDetailsService.get(Map.of("id", e.getId().toString()));
+                if (student != null && student.getEmail() != null) {
+                    String subject = "Kết quả khóa luận tốt nghiệp";
+
+                    String body = String.format(
+                            "<h3>Thân gửi %s,</h3>"
+                            + "<p>Bạn đã hoàn thành khóa luận với đề tài: <strong>%s</strong>.</p>"
+                            + "<p><strong>Điểm trung bình:</strong> %.2f</p>"
+                            + (cm != null
+                                    ? "<p><strong>Nhận xét của Chủ tịch hội đồng:</strong></p><pre>%s</pre>"
+                                    : "<p><em>Không có nhận xét từ Chủ tịch hội đồng.</em></p>"),
+                            student.getFullName(),
+                            thesis.getTitle(),
+                            averageScore,
+                            cm
+                    );
+
+                    try {
+                        emailService.sendEmail(student.getEmail(), subject, body);
+                    } catch (MessagingException ex) {
+                        System.getLogger(CommitteeServiceImpl.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+                    }
+                }
+            });
+            thesis.setStatus(ThesisStatus.COMPLETED.toString());
             // Lưu vào database
             evaluationRepository.addOrUpdateFinalScore(finalScore);
+        }
+    }
+
+    @Override
+    public CommitteeDTO updateStatus(CommitteeDTO existing, String status) {
+        try {
+            CommitteeStatus.valueOf(status);
+            existing.setStatus(status);
+
+            if (existing.getStatus().equals(CommitteeStatus.LOCKED.toString())) {
+                if (existing.getTheses() != null) {
+                    existing.getTheses().forEach(e -> {
+                        this.calculateAndSaveFinalScore(e.getId());
+                    });
+
+                }
+            }
+            return this.addOrUpdate(existing);
+
+        } catch (IllegalArgumentException ex) {
+            return null;
         }
     }
 }

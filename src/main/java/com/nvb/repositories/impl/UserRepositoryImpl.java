@@ -144,6 +144,13 @@ public class UserRepositoryImpl implements UserRepository {
                 Boolean isActiveBool = Boolean.valueOf(isActive);
                 predicates.add(builder.equal(root.get("isActive"), isActiveBool));
             }
+            
+            if(pagination){
+                String page = params.get("page");
+                if(page == null || page.isEmpty()){
+                    params.put("page", "1");
+                }
+            }
 
             query.where(predicates.toArray(Predicate[]::new));
         }
@@ -152,13 +159,9 @@ public class UserRepositoryImpl implements UserRepository {
         Query q = s.createQuery(query);
 
         if (params != null && params.containsKey("page")) {
-            int page = 1;
-            try {
-                page = Integer.parseInt(params.get("page"));
-            } catch (NumberFormatException ex) {
-                page = 1;
-            }
+            int page = Integer.parseInt(params.get("page"));
             int start = (page - 1) * PAGE_SIZE;
+
             q.setMaxResults(PAGE_SIZE);
             q.setFirstResult(start);
         }

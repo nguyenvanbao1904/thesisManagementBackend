@@ -5,6 +5,7 @@
 package com.nvb.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -38,11 +39,10 @@ public class CommitteeDTO {
     @NotNull(message = "{committee.memberRole.notNull}")
     private String[] memberRole;
     
-    // Danh sách khóa luận thuộc hội đồng
     private Integer[] thesesIds;
     
-    // Thông tin bổ sung cho hiển thị
     private List<CommitteeMemberDTO> committeeMembers;
+    @JsonIgnore
     private List<ThesesDTO> theses;
     private String createdByName;
 

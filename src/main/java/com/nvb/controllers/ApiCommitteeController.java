@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -87,7 +88,7 @@ public class ApiCommitteeController {
         CommitteeDTO rs = committeeService.addOrUpdate(committeeDTO);
         return new ResponseEntity<>(rs, HttpStatus.OK);
     }
-    
+
     @PutMapping(value = "/{id}")
     public ResponseEntity<CommitteeDTO> update(
             @PathVariable(value = "id") int id,
@@ -100,4 +101,24 @@ public class ApiCommitteeController {
         CommitteeDTO rs = committeeService.addOrUpdate(committeeDTO);
         return new ResponseEntity<>(rs, HttpStatus.OK);
     }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<CommitteeDTO> updateStatus(
+            @PathVariable(value = "id") int id,
+            @RequestParam("status") String status
+    ) {
+        CommitteeDTO existing = committeeService.get(Map.of("id", String.valueOf(id)));
+        if (existing == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        CommitteeDTO updated = committeeService.updateStatus(existing, status);
+
+        if (updated == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>(updated, HttpStatus.OK);
+    }
+
 }

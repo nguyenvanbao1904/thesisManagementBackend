@@ -71,7 +71,7 @@ public class SpringSecurityConfigs {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of("http://localhost:3000/"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
@@ -112,6 +112,7 @@ public class SpringSecurityConfigs {
                 .requestMatchers(HttpMethod.DELETE, "/api/committees/**").hasAnyRole("ACADEMICSTAFF", "ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/committees/**").hasAnyRole("ACADEMICSTAFF", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/committees/**").hasAnyRole("ACADEMICSTAFF", "ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/committees/**").hasAnyRole("ACADEMICSTAFF", "ADMIN")
                 .requestMatchers("/api/committees/**").hasAnyRole("LECTURER", "ACADEMICSTAFF", "ADMIN")
                 // 📘 Evaluation Criteria Collections
                 .requestMatchers(HttpMethod.DELETE, "/api/evaluation_criteria_collections/**").hasAnyRole("ACADEMICSTAFF", "ADMIN")

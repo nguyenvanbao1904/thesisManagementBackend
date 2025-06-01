@@ -63,25 +63,21 @@ public class EvaluationCriteriaCollectionRepositoryImpl implements EvaluationCri
                 if (name != null && !name.isEmpty()) {
                     predicates.add(builder.like(root.get("name"), String.format("%%%s%%", name)));
                 }
+                if (pagination) {
+                    String page = params.get("page");
+                    if (page == null || page.isEmpty()) {
+                        params.put("page", "1");
+                    }
+                }
 
             }
             query.where(predicates.toArray(new Predicate[0]));
             Query q = s.createQuery(query);
 
-            if (pagination && params != null && params.containsKey("page")) {
-
-                if (params.get("page") != null && Integer.parseInt(params.get("page")) == 0) {
-                    return new ArrayList<>();
-                }
-
-                int page = 1;
-                try {
-                    page = Integer.parseInt(params.getOrDefault("page", "1"));
-                } catch (NumberFormatException ex) {
-                    page = 1;
-                    System.err.println("Invalid page number format: " + params.get("page"));
-                }
+            if (params != null && params.containsKey("page")) {
+                int page = Integer.parseInt(params.get("page"));
                 int start = (page - 1) * PAGE_SIZE;
+
                 q.setMaxResults(PAGE_SIZE);
                 q.setFirstResult(start);
             }
@@ -118,23 +114,21 @@ public class EvaluationCriteriaCollectionRepositoryImpl implements EvaluationCri
                 if (name != null && !name.isEmpty()) {
                     predicates.add(builder.like(root.get("name"), String.format("%%%s%%", name)));
                 }
+                if (pagination) {
+                    String page = params.get("page");
+                    if (page == null || page.isEmpty()) {
+                        params.put("page", "1");
+                    }
+                }
             }
             query.select(root).distinct(true);
             query.where(predicates.toArray(new Predicate[0]));
             Query q = s.createQuery(query);
 
-            if (pagination && params != null && params.containsKey("page")) {
-                if (Integer.parseInt(params.get("page")) == 0) {
-                    return new ArrayList<>();
-                }
-                int page = 1;
-                try {
-                    page = Integer.parseInt(params.getOrDefault("page", "1"));
-                } catch (NumberFormatException ex) {
-                    page = 1;
-                    System.err.println("Invalid page number format: " + params.get("page"));
-                }
+            if (params != null && params.containsKey("page")) {
+                int page = Integer.parseInt(params.get("page"));
                 int start = (page - 1) * PAGE_SIZE;
+
                 q.setMaxResults(PAGE_SIZE);
                 q.setFirstResult(start);
             }
