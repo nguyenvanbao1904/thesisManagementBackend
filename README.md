@@ -12,7 +12,7 @@ A role-based web application for managing university graduation thesis processes
 
 ## Repositories
 - **Backend (this repo)**  
-- **Frontend:** [Link to FE repo](https://github.com/your-frontend-repo)
+- **Frontend:** [Link to FE repo]([https://github.com/your-frontend-repo](https://github.com/nguyenvanbao1904/thesisManagementFrontend))
 
 ## How to Run
 1. Clone backend and frontend repositories.
